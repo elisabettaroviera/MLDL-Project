@@ -2,7 +2,13 @@ import torch
 import torch.nn as nn
 
 affine_par = True
-
+# ----------------------
+# Classe Bottleneck
+# ----------------------
+# Questa classe rappresenta un blocco residuo ("bottleneck") usato nella ResNet.
+# Esegue tre convoluzioni (1x1 → 3x3 → 1x1) e aggiunge una connessione residua (skip connection).
+# Se necessario, fa il "downsample" del residuo per farlo combaciare.
+# Usata per costruire i layer1–4 della ResNet.
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -44,11 +50,18 @@ class Bottleneck(nn.Module):
 
         return out
 
+# ----------------------
+# Classe ClassifierModule
+# ----------------------
+# È il modulo ASPP (Atrous Spatial Pyramid Pooling) in DeepLab v2.
+# Contiene convoluzioni 3x3 con diversi dilation e padding.
+# Somma le predizioni di tutti i rami per ottenere una mappa finale.
+# In ResNetMulti, è chiamato layer6.
 
 class ClassifierModule(nn.Module):
     def __init__(self, inplanes, dilation_series, padding_series, num_classes):
         super(ClassifierModule, self).__init__()
-        self.conv2d_list = nn.ModuleList()
+        self.conv2d_list = nn.ModuleList() #credo siano i 4 branch  in ASPP diciamo cioè quelli che poi vengono sommati
         for dilation, padding in zip(dilation_series, padding_series):
             self.conv2d_list.append(
                 nn.Conv2d(inplanes, num_classes, kernel_size=3, stride=1, padding=padding,
@@ -60,9 +73,22 @@ class ClassifierModule(nn.Module):
     def forward(self, x):
         out = self.conv2d_list[0](x)
         for i in range(len(self.conv2d_list) - 1):
-            out += self.conv2d_list[i + 1](x)
+            out += self.conv2d_list[i + 1](x) #infatti qua li sommo (sum-fusion in figura pag 8)
         return out
 
+
+# ----------------------
+# Classe ResNetMulti
+# ----------------------
+# È il backbone completo ResNet + ASPP, adattato per la segmentazione semantica.
+# Struttura:
+#   - conv1 + bn1 + ReLU + maxpool
+#   - layer1: 3 bottleneck
+#   - layer2: 4 bottleneck
+#   - layer3: 23 bottleneck (con dilation=2)
+#   - layer4: 3 bottleneck (con dilation=4)
+#   - layer6: ClassifierModule (ASPP)
+# Nel forward, restituisce la predizione finale (upscalata alla dimensione originale dell’immagine).
 
 class ResNetMulti(nn.Module):
     def __init__(self, block, layers, num_classes):
@@ -86,6 +112,14 @@ class ResNetMulti(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
+
+    # ----------------------
+    # Metodo _make_layer
+    # ----------------------
+    # Costruisce una sequenza di blocchi Bottleneck (es. 3, 4, 6, 3 per ResNet-50).
+    # Decide se applicare downsampling (es. per cambiare la dimensione dei canali o la risoluzione).
+    # Crea i layer1, layer2, layer3 e layer4 nella classe ResNetMulti.
+
 
     def _make_layer(self, block, planes, blocks, stride=1, dilation=1):
         downsample = None
@@ -169,6 +203,14 @@ class ResNetMulti(nn.Module):
     def optim_parameters(self, lr):
         return [{'params': self.get_1x_lr_params_no_scale(), 'lr': lr},
                 {'params': self.get_10x_lr_params(), 'lr': 10 * lr}]
+
+
+# ----------------------
+# Metodo get_deeplab_v2
+# ----------------------
+# Istanzia il modello ResNetMulti con configurazione DeepLab v2.
+# Usa la struttura ResNet-101 (3, 4, 23, 3 bottleneck blocks).
+# Carica i pesi pre-addestrati da un checkpoint di ImageNet, se pretrain=True.
 
 
 def get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path='DeepLab_resnet_pretrained_imagenet.pth'):

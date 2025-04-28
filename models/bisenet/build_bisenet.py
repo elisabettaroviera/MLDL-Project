@@ -4,7 +4,7 @@ from .build_contextpath import build_contextpath
 import warnings
 warnings.filterwarnings(action='ignore')
 
-
+# questo è ognuno dei blocchi dentro Spatial Path con le trasformazioni conv+bn+relu
 class ConvBlock(torch.nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=2, padding=1):
         super().__init__()
@@ -17,7 +17,7 @@ class ConvBlock(torch.nn.Module):
         x = self.conv1(input)
         return self.relu(self.bn(x))
 
-
+#sussueguri di blocchi in spatial path
 class Spatial_path(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -26,7 +26,7 @@ class Spatial_path(torch.nn.Module):
         self.convblock3 = ConvBlock(in_channels=128, out_channels=256)
 
     def forward(self, input):
-        x = self.convblock1(input)
+        x = self.convblock1(input) # Qui PyTorch chiama automaticamente ConvBlock.forward(input)
         x = self.convblock2(x)
         x = self.convblock3(x)
         return x
@@ -85,7 +85,7 @@ class BiSeNet(torch.nn.Module):
     def __init__(self, num_classes, context_path):
         super().__init__()
         # build spatial path
-        self.saptial_path = Spatial_path()
+        self.spatial_path = Spatial_path()
 
         # build context path
         self.context_path = build_contextpath(name=context_path)
@@ -118,7 +118,7 @@ class BiSeNet(torch.nn.Module):
         self.init_weight()
 
         self.mul_lr = []
-        self.mul_lr.append(self.saptial_path)
+        self.mul_lr.append(self.spatial_path)
         self.mul_lr.append(self.attention_refinement_module1)
         self.mul_lr.append(self.attention_refinement_module2)
         self.mul_lr.append(self.supervision1)
@@ -139,7 +139,7 @@ class BiSeNet(torch.nn.Module):
 
     def forward(self, input):
         # output of spatial path
-        sx = self.saptial_path(input)
+        sx = self.spatial_path(input)
 
         # output of context path
         cx1, cx2, tail = self.context_path(input)
