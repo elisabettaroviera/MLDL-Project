@@ -103,9 +103,9 @@ Choosing and tuning the mini-batch size is critical for training efficiency, con
 #### 🛠️ Tuning Strategy
 
 - **Learning Rate Scaling**: If you change the batch size \( B \), scale the learning rate \( \eta \) proportionally:
-  \[
+  $$
   \eta_{\text{new}} = \eta_{\text{original}} \cdot \frac{B_{\text{new}}}{B_{\text{original}}}
-  \]
+  $$
 
 - **Gradient Accumulation**: If you want a large effective batch size but are constrained by memory, accumulate gradients over multiple steps.
 
