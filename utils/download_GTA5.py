@@ -2,16 +2,16 @@
 import requests
 from zipfile import ZipFile
 from io import BytesIO
+import gdown
 
-# Define the path to the dataset
-gta5_path = 'https://drive.google.com/file/d/1xYxlcMR2WFCpayNrW2-Rb7N-950vvl23/view?usp=sharing'
+gta5_id = '1xYxlcMR2WFCpayNrW2-Rb7N-950vvl23'  # Google Drive file ID
+gta5_url = f'https://drive.google.com/uc?id={gta5_id}' # Construct the download URL
 
-# Send a GET request to the URL
-response = requests.get(gta5_path)
+gta5_output = 'gta5.zip' # Name of the output file
 
-# Check if the request was successful
-# if response.status_code == 200:
+gdown.download(gta5_url, gta5_output, quiet=False) # Download the file using gdown
+
 # Open the downloaded bytes and extract them
-with ZipFile(BytesIO(response.content)) as zip_file:
-    zip_file.extractall('./datasets')
+with ZipFile("gta5.zip", "r") as zip_ref:
+    zip_ref.extractall('./datasets')
 print('Download of the dataset GTA5 and extraction complete!')
