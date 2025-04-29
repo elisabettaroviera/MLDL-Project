@@ -3,6 +3,5 @@ torchvision
 matplotlib
 requests
 numpy
-zipfile
 wandb
 io
