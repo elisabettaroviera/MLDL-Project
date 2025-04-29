@@ -1,3 +1,4 @@
+# Preprocessing Cityscapes
 ### ✅ Complete pre-processing checklist for Cityscapes images
 
 #### 1. 📥 **Input RGB (images)**
@@ -74,3 +75,45 @@ def transform_cityscapes_img():
 def transform_cityscapes_label():
     return transforms.Resize((1024, 512), interpolation=Image.NEAREST)
 ```
+
+# Mini batch-size 
+### 🧠 2. Mini-batch Size in Semantic Segmentation
+
+Choosing and tuning the mini-batch size is critical for training efficiency, convergence, and generalization.
+
+#### 📌 How to Choose Mini-Batch Size
+
+- **Hardware Limitations**: 
+  - The batch size is primarily constrained by the GPU memory. Semantic segmentation models are memory-intensive due to large input sizes (e.g., 1024×2048 in Cityscapes).
+  - Start with a small batch size (e.g., 2 or 4) and increase it until you hit OOM (Out of Memory) errors.
+
+- **Normalization Layers**:
+  - If you use **Batch Normalization**, small batch sizes can cause noisy statistics. Consider replacing it with **GroupNorm** or **InstanceNorm** for small batches.
+
+- **Gradient Stability**:
+  - Larger batches generally offer more stable gradients and faster convergence, but they may require lower learning rates.
+  - Smaller batches introduce more noise, potentially aiding generalization, but might slow convergence.
+
+#### 📅 When to Choose the Batch Size
+
+- Before training begins, based on:
+  - Memory profiling on a subset of the dataset.
+  - Your model architecture and input resolution.
+
+#### 🛠️ Tuning Strategy
+
+- **Learning Rate Scaling**: If you change the batch size \( B \), scale the learning rate \( \eta \) proportionally:
+  \[
+  \eta_{\text{new}} = \eta_{\text{original}} \cdot \frac{B_{\text{new}}}{B_{\text{original}}}
+  \]
+
+- **Gradient Accumulation**: If you want a large effective batch size but are constrained by memory, accumulate gradients over multiple steps.
+
+- **Validation Performance**: Tune the batch size by observing its effect on:
+  - Validation loss curves
+  - mIoU (mean Intersection over Union)
+
+#### 🧪 Empirical Advice
+
+- For DeepLabV2 + Cityscapes on a single GPU, batch sizes of 2 to 8 are typical.
+- Use mixed-precision training (`torch.cuda.amp`) to save memory if using PyTorch.
