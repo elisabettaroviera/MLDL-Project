@@ -28,6 +28,66 @@ def get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path='DeepLab_r
 
     return model
 ```
+---
+# DeepLabV2: Semantic Image Segmentation Architecture
+
+DeepLabV2 is a deep convolutional neural network (DCNN) framework designed for semantic image segmentation. It addresses key challenges in dense prediction, including reduced spatial resolution, multi-scale object representation, and precise boundary localization.
+
+## 🧠 Core Components
+
+### 1. Atrous Convolution (Dilated Convolution)
+- **Goal**: Increase receptive field without increasing parameters or reducing resolution.
+- **How**: Inserts holes ("à trous") in convolutional kernels, effectively allowing computation of denser feature maps.
+- **Benefits**:
+  - Preserves spatial detail.
+  - Allows explicit control of feature resolution.
+  - Enables extraction of features at multiple scales efficiently.
+
+### 2. Atrous Spatial Pyramid Pooling (ASPP)
+- **Goal**: Capture multi-scale information from feature maps.
+- **How**: Applies multiple parallel atrous convolutions with different dilation rates to the same feature map.
+- **Example**: Using rates {6, 12, 18, 24} allows different effective receptive fields to be captured in parallel.
+- **Effect**: Improves robustness to object scale variation and enhances context understanding.
+
+### 3. Fully Convolutional Backbone
+- **Backbones**: Commonly used networks include VGG-16 and ResNet-101.
+- Fully connected layers are replaced with convolutions to handle arbitrary input sizes.
+
+### 4. Bilinear Upsampling
+- Upsamples low-resolution score maps to original image resolution.
+- Maintains smooth score distributions and avoids the need for learned deconvolution layers.
+
+### 5. Fully Connected Conditional Random Fields (CRF)
+- **Goal**: Refine segmentation boundaries.
+- **Method**: Combines DCNN outputs with CRFs that model long-range dependencies and fine details using Gaussian edge potentials.
+- **Impact**: Substantially improves boundary accuracy without requiring complex training.
+
+## 🛠 Implementation Highlights
+
+- Uses **no stride** in the last max-pooling layers and replaces later convolutions with atrous convolutions.
+- Employs **batch normalization and weight decay** for regularization.
+- Supports **multi-scale input processing** (optional, for better performance at the cost of speed).
+- Uses **SGD** or similar optimizers with cross-entropy loss at each spatial location.
+
+## 🧪 Performance & Results
+
+- Achieved state-of-the-art results on datasets such as **PASCAL VOC 2012**, **PASCAL Context**, **PASCAL-Person-Part**, and **Cityscapes**.
+- CRFs contribute up to **3–5%** mIoU improvement, especially around object boundaries.
+- ASPP and ResNet backbones lead to large gains in accuracy and generalization.
+
+## ✅ Advantages
+
+- Efficient dense prediction using atrous convolution.
+- Multi-scale robustness with ASPP.
+- Accurate boundary refinement via CRFs.
+- Straightforward integration with existing CNNs.
+
+## 📚 Reference
+
+The architectural details and results are derived from the following paper:
+> L.-C. Chen, G. Papandreou, I. Kokkinos, K. Murphy, and A. L. Yuille, *DeepLab: Semantic Image Segmentation with Deep Convolutional Nets, Atrous Convolution, and Fully Connected CRFs*, IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI), 2018. [[Link]](http://liangchiehchen.com/projects/DeepLab.html)
+
+---
 
 
 # deeplabv2.py
