@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 affine_par = True
+
 # ----------------------
 # Classe Bottleneck
 # ----------------------
@@ -10,9 +11,19 @@ affine_par = True
 # Se necessario, fa il "downsample" del residuo per farlo combaciare.
 # Usata per costruire i layer1–4 della ResNet.
 
+# **Bottleneck**. This class implements a modified version of the standard ResNet bottleneck residual block.
+# It includes support for optional dilation and handling the downsampling connection. A key feature is that
+# its batch normalization layers are configured to have their parameters fixed (not trained).
 class Bottleneck(nn.Module):
+    # **Bottleneck.expansion**. This is a class attribute. It indicates the channel expansion factor
+    # within the bottleneck block, which is set to 4.
     expansion = 4
 
+    # **Bottleneck.__init__**. This is the constructor method. It initializes the three convolutional
+    # layers (`conv1`, `conv2`, `conv3`), their corresponding batch normalization layers
+    # (`bn1`, `bn2`, `bn3`), and a ReLU activation. It explicitly sets `requires_grad=False`
+    # for the parameters of all three batch normalization layers. It also takes parameters for
+    # `stride`, `dilation`, and an optional `downsample` module.
     def __init__(self, inplanes, planes, stride=1, dilation=1, downsample=None):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, stride=stride, bias=False)
@@ -33,6 +44,11 @@ class Bottleneck(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
+    # **Bottleneck.forward**. This method defines the forward pass for the bottleneck block.
+    # It processes the input (`x`) sequentially through the three convolutional layers with
+    # intermediate BN and ReLU activations. It computes the residual connection (applying the
+    # `downsample` module to the input if provided) and adds this `residual` to the main path
+    # output (`out`) before the final ReLU activation.
     def forward(self, x):
         residual = x
         out = self.conv1(x)
@@ -58,7 +74,15 @@ class Bottleneck(nn.Module):
 # Somma le predizioni di tutti i rami per ottenere una mappa finale.
 # In ResNetMulti, è chiamato layer6.
 
+# **ClassifierModule**. This module implements a simple classification head, likely used for pixel-wise prediction
+# in a semantic segmentation model. It applies multiple 3x3 convolutional layers to the input feature map, each using
+# a different dilation rate from a provided series (`dilation_series`), and then sums the outputs of these convolutions.
 class ClassifierModule(nn.Module):
+    # **ClassifierModule.__init__**. This is the constructor method. It initializes a `nn.ModuleList` 
+    # to hold multiple `nn.Conv2d` layers. It iterates through the provided `dilation_series` and 
+    # `padding_series` to create a 3x3 convolutional layer for each pair, setting the corresponding 
+    # `dilation` and `padding`. It also initializes the weights of these convolutional layers using 
+    # a normal distribution.
     def __init__(self, inplanes, dilation_series, padding_series, num_classes):
         super(ClassifierModule, self).__init__()
         self.conv2d_list = nn.ModuleList() #credo siano i 4 branch  in ASPP diciamo cioè quelli che poi vengono sommati
@@ -70,12 +94,13 @@ class ClassifierModule(nn.Module):
         for m in self.conv2d_list:
             m.weight.data.normal_(0, 0.01)
 
+    # **ClassifierModule.forward**. This method defines the forward pass. It applies each convolutional 
+    # layer within `self.conv2d_list` to the input feature map `x` and returns the sum of their outputs.
     def forward(self, x):
         out = self.conv2d_list[0](x)
         for i in range(len(self.conv2d_list) - 1):
             out += self.conv2d_list[i + 1](x) #infatti qua li sommo (sum-fusion in figura pag 8)
         return out
-
 
 # ----------------------
 # Classe ResNetMulti
@@ -90,7 +115,17 @@ class ClassifierModule(nn.Module):
 #   - layer6: ClassifierModule (ASPP)
 # Nel forward, restituisce la predizione finale (upscalata alla dimensione originale dell’immagine).
 
+# **ResNetMulti**. This class implements a modified ResNet backbone, specifically designed for tasks like 
+# semantic segmentation (similar to the backbone used in DeepLabV2). It utilizes the `Bottleneck` blocks, 
+# incorporates dilated convolutions in the later layers (`layer3`, `layer4`) to preserve spatial resolution, 
+# and includes the `ClassifierModule` as the final classification head (`layer6`). The parameters of batch normalization
+# layers within the main body are fixed.
 class ResNetMulti(nn.Module):
+    # **ResNetMulti.__init__**. This is the constructor method. It initializes the initial layers of
+    # the network (conv1, bn1, relu, maxpool) and builds the main sequential layers (`layer1` through `layer4`)
+    # using the `_make_layer` helper method, applying specific strides and dilation rates (dilation 2 for 
+    # layer3, dilation 4 for layer4). It also initializes `layer6` using the `ClassifierModule` and applies 
+    # weight initialization to most modules within the network.
     def __init__(self, block, layers, num_classes):
         self.inplanes = 64
         super(ResNetMulti, self).__init__()
@@ -118,9 +153,14 @@ class ResNetMulti(nn.Module):
     # ----------------------
     # Costruisce una sequenza di blocchi Bottleneck (es. 3, 4, 6, 3 per ResNet-50).
     # Decide se applicare downsampling (es. per cambiare la dimensione dei canali o la risoluzione).
-    # Crea i layer1, layer2, layer3 e layer4 nella classe ResNetMulti.
+    # Crea i layer1, layer2, layer3 e layer4 nella classe ResNetMulti.            
 
-
+    # **ResNetMulti._make_layer**. This is a helper method used by the `__init__` method to construct a 
+    # sequence of `Bottleneck` blocks. It handles the creation of the `downsample` module (a 1x1 convolution 
+    # followed by Batch Normalization) when it's needed (due to changes in feature map dimensions or the 
+    # presence of dilation). It specifically sets `requires_grad=False` for the batch normalization 
+    # parameters within the downsample module. It then creates and appends the specified number of 
+    # `Bottleneck` blocks to a list, returning them as a `nn.Sequential` module.
     def _make_layer(self, block, planes, blocks, stride=1, dilation=1):
         downsample = None
         if (stride != 1
@@ -141,7 +181,12 @@ class ResNetMulti(nn.Module):
             layers.append(block(self.inplanes, planes, dilation=dilation))
 
         return nn.Sequential(*layers)
-
+    
+    # **ResNetMulti.forward**. This method defines the forward pass of the entire `ResNetMulti` model. 
+    # It processes the input through the initial layers, then through `layer1` to `layer4`. 
+    # The output of `layer4` is then passed to the `ClassifierModule` (`layer6`). The final 
+    # output of `layer6` is bilinearly upsampled back to the original input spatial dimensions. 
+    # During training (`self.training == True`), it returns the upsampled output along with two `None` values.
     def forward(self, x):
         _, _, H, W = x.size()
 
@@ -162,6 +207,10 @@ class ResNetMulti(nn.Module):
 
         return x
 
+    # **ResNetMulti.get_1x_lr_params_no_scale**. This is a generator method intended to yield parameters 
+    # from most of the network's layers (conv1, bn1, layer1-layer4), typically used to set up an optimizer. 
+    # It specifically excludes parameters where `requires_grad` is False (such as the fixed batch 
+    # normalization parameters) and parameters from the final classification layer (`layer6`).
     def get_1x_lr_params_no_scale(self):
         """
         This generator returns all the parameters of the net except for
@@ -186,6 +235,10 @@ class ResNetMulti(nn.Module):
                     if k.requires_grad:
                         yield k
 
+    # **ResNetMulti.get_10x_lr_params**. This is a generator method intended to yield parameters specifically
+    #  from the final classification layer (`layer6`). This is often used to assign a higher learning rate
+    #  (e.g., 10 times the base rate) to the classifier in the optimizer, as it's trained from scratch 
+    # while the backbone is pre-trained.
     def get_10x_lr_params(self):
         """
         This generator returns all the parameters for the last layer of the net,
@@ -200,6 +253,11 @@ class ResNetMulti(nn.Module):
             for i in b[j]:
                 yield i
 
+    # **ResNetMulti.optim_parameters**. This method prepares parameter groups suitable for configuring 
+    # an optimizer (like `torch.optim.SGD`). It returns a list containing two dictionaries: one with 
+    # parameters from the main body (obtained via `get_1x_lr_params_no_scale`) assigned a base learning 
+    # rate (`lr`), and one with parameters from the classifier (obtained via `get_10x_lr_params`) assigned 
+    # a learning rate of `10 * lr`.
     def optim_parameters(self, lr):
         return [{'params': self.get_1x_lr_params_no_scale(), 'lr': lr},
                 {'params': self.get_10x_lr_params(), 'lr': 10 * lr}]
@@ -212,7 +270,11 @@ class ResNetMulti(nn.Module):
 # Usa la struttura ResNet-101 (3, 4, 23, 3 bottleneck blocks).
 # Carica i pesi pre-addestrati da un checkpoint di ImageNet, se pretrain=True.
 
-
+# **get_deeplab_v2**. This function serves as a factory to create an instance of the `ResNetMulti`
+# model specifically configured as a DeepLabV2 backbone (using the `Bottleneck` block and layer 
+# counts corresponding to a ResNet-101). It also includes functionality to load pre-trained weights 
+# from a specified file path if the `pretrain` flag is set to `True`, adapting the state dictionary 
+# keys as needed.
 def get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path='DeepLab_resnet_pretrained_imagenet.pth'):
     model = ResNetMulti(Bottleneck, [3, 4, 23, 3], num_classes)
 
