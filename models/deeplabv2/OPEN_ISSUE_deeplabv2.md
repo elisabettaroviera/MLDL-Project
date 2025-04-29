@@ -117,3 +117,56 @@ Choosing and tuning the mini-batch size is critical for training efficiency, con
 
 - For DeepLabV2 + Cityscapes on a single GPU, batch sizes of 2 to 8 are typical.
 - Use mixed-precision training (`torch.cuda.amp`) to save memory if using PyTorch.
+
+
+## How to deal with the batch-size? 
+### ✅ **1. Where the batch size** is used
+- The **batch size** is a parameter you give to your PyTorch `DataLoader`:
+  ```python
+  train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, ...)
+  ```
+- In each iteration of the training loop, the network receives **batch_size images and labels**, and calculates the loss and backward on that batch.
+
+---
+
+### 🔍 **2. How to choose the batch size (real criteria)**
+
+#### 🧠 Technical criteria:
+- **Heavy dataset + large model (e.g. DeepLabV2)** ⇒ small batch size
+- **Input 1024x512 + ResNet-101 + ASPP** ≈ ~2-4 images per GPU with 12-24 GB VRAM
+
+#### 🔧 Practical tip:
+- Start with `batch_size=2`.
+- Try `batch_size=4` and see if you have **Out Of Memory (OOM)**.
+- If you want a larger ‘virtual’ batch, you can use **gradient accumulation**
+
+---
+
+### 🛠️ **3. When choosing**
+You must choose the batch size **before training**, and keep it fixed (unless experimenting or tuning). Changing it **often** also implies an adjustment of the learning rate.
+
+---
+
+### ⚖️ **4. Batch Size Effects**
+| Batch Size | Positive Effects | Negative Effects |
+|------------|------------------------------------------|---------------------------------------|
+| Small (1-2) | Low memory; + generalisation | Noisier gradients; slow training |
+| Medium (4-8) | Good memory/stability balance | Requires tuning of LR |
+| Large (8+) | Stable gradients; fast training | Requires a lot of memory |
+
+---
+
+### 📏 **5. Learning rate and batch size**
+As per theory and practice:
+> **If you double the batch size, consider doubling the learning rate**.
+
+For example:
+- `batch_size = 2` → `lr = 0.01`.
+- batch_size = 4` → `lr = 0.02`.
+
+DeepLabV2 uses `base_lr = 2.5e-4` by default for `batch_size=10` in the paper. Adjust accordingly.
+
+---
+
+### 🔧 Automatic tuning (optional)
+Want to do **batch size dynamic tuning**? You can use `torch.cuda.amp` (mixed precision) and tools like [PyTorch Lightning's auto_scale_batch_size](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#auto-scaling-of-batch-size), but *it's not necessary* in a manual pipeline.
