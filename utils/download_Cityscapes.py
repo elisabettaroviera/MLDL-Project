@@ -4,20 +4,13 @@ from zipfile import ZipFile
 from io import BytesIO
 import gdown
 
-# Define the path to the dataset
 cityscapes_id = '1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2'  # Google Drive file ID
-# cityscapes_path = 'https://drive.google.com/file/d/1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2/view?usp=sharing'  
-cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}'
-# output = './datasets/cityscapes.zip'
-output = 'cityscapes.zip' # Name of the output file
+cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
 
-gdown.download(cityscapes_url, output, quiet=False)
+cityscapes_output = 'cityscapes.zip' # Name of the output file
 
-# Send a GET request to the URL
-# response = requests.get(cityscapes_path)
+gdown.download(cityscapes_url, cityscapes_output, quiet=False) # Download the file using gdown
 
-# Check if the request was successful
-# if response.status_code == 200:
 # Open the downloaded bytes and extract them
 with ZipFile("cityscapes.zip", "r") as zip_ref:
     zip_ref.extractall('./datasets')
