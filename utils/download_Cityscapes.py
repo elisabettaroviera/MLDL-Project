@@ -10,8 +10,8 @@ cityscapes_path = 'https://drive.google.com/file/d/1Qb4UrNsjvlU-wEsR9d7rckB0YS_L
 response = requests.get(cityscapes_path)
 
 # Check if the request was successful
-# if response.status_code == 200:
-# Open the downloaded bytes and extract them
-with ZipFile(BytesIO(response.content)) as zip_file:
-    zip_file.extractall('./datasets')
-print('Download of the dataset Cityscapes and extraction complete!')
+if response.status_code == 200:
+    # Open the downloaded bytes and extract them
+    with ZipFile(BytesIO(response.content)) as zip_file:
+        zip_file.extractall('./datasets')
+    print('Download of the dataset Cityscapes and extraction complete!')
