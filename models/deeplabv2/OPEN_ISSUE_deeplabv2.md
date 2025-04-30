@@ -15,6 +15,20 @@ transforms.Compose([
 ])
 ```
 
+
+###### 🔍 Why do you normalise with ImageNet values?
+
+The ResNet-101 backbone used in DeepLabV2 is **pre-trained on ImageNet**, so during training it ‘saw’ images normalised with:
+
+```python
+mean = [0.485, 0.456, 0.406] # for RGB channels
+std = [0.229, 0.224, 0.225].
+```
+
+These statistics represent **the distribution of pixels in ImageNet images**, and are crucial because the **first convolutional layers** of the network have adapted to those values. If I normalised instead with the average/std of Cityscapes, the input values would be out of scale with those seen during pretraining, leading to unpredictable behaviour (or worse performance).
+
+❌ **Do not use statistics calculated from scratch** on the Cityscapes dataset (unless you train the network from scratch, which is not the case here).
+
 ---
 
 #### 2. 🏷️ **Target (ground truth/label)**
