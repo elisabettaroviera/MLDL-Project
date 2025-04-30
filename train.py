@@ -12,6 +12,7 @@ from fvcore.nn import FlopCountAnalysis, flop_count_table
 
 
 """   
+
     DEFINION OF THE METRICS
     1. mIoU% --> compute_miou
     2. Latency & FPS --> compute_latency_and_fps
@@ -53,14 +54,14 @@ def compute_miou(gt_images, pred_images, num_classes):
     return mean_iou, iou_per_class
 
 
-# Is it specific for the model? Not for a image?
+# 2. Latency & FPS
 # Function to compute the latency and FPS of a model on a given input size
 # model := the model to be evaluated
 # height := the height of the input image
 # width := the width of the input image
 # iterations := number of iterations to compute the latency and FPS
 def compute_latency_and_fps(model, height=512, width=1024, iterations=1000):
-    # Genera un'immagine casuale con shape (3, height, width)
+    # Generates a random image with shape (3, height, width)
     image = np.random.rand(3, height, width).astype(np.float32)
 
     latencies = []
@@ -90,6 +91,7 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000):
 
     return mean_latency, std_latency, mean_fps, std_fps
 
+# 3. FLOPs
 # Function to compute the FLOPs of a model on a given input size
 # model := the model to be evaluated
 # height := the height of the input image
@@ -139,9 +141,14 @@ def train(epoch, model, dataloader_train, criterion, optimizer): # criterion = l
 
 
 """
+# WHAT WE HAVE TO DO IN THE TRAINING - VALIDATION LOOP?
+
 -- TRAIN --
-for epoche 
-    for batch 
+Note that the number of epochs is fixed = 50
+
+1. for epoche 
+2.   for batch 
+3. TODO: WE HAVE TO THINK ABOUT THE STRUCTURE!!!!!!!!!
 
     
           
@@ -156,7 +163,7 @@ for epoche
 
 
 -- VAL --
-
+# TODO
 
 
 
