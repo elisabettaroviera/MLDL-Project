@@ -226,7 +226,7 @@ if __name__ == "__main__":
     first_batch = next(iter(dataloader_cs_train))
     images, masks, filenames = first_batch
     # Check the pixel values of the first mask in the batch
-    mask = masks[23].cpu().numpy()  # Convert mask tensor to NumPy array
+    mask = masks[3].cpu().numpy()  # Convert mask tensor to NumPy array
 
     # Show the unique class values in the mask
     print(f"Unique class values in the mask: {np.unique(mask)}")
