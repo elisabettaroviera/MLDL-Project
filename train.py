@@ -189,7 +189,7 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
     # DataLoader
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, False, True)
     # Create output dir if needed
     os.makedirs('./outputs', exist_ok=True)
 
@@ -216,16 +216,6 @@ if __name__ == "__main__":
 
         print(f"Saved image to {img_path}")
         print(f"Saved mask to {mask_path}")
-
-        # Optional: show inline
-        fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-        ax[0].imshow(img_pil)
-        ax[0].set_title("Image")
-        ax[0].axis("off")
-        ax[1].imshow(mask_pil, cmap='jet')
-        ax[1].set_title("Mask")
-        ax[1].axis("off")
-        plt.show()
     # Definition of the parameters
 
     # 
