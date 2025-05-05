@@ -18,59 +18,62 @@ __len__      | Returns the total number of samples in the dataset         | At t
 """
 
 class CityScapes(Dataset):
-    def __init__(self, root_dir, split, transform=None, target_transform=None):
-        self.root_dir = root_dir
-        self.split = split
-        self.transform = transform
-        self.target_transform = target_transform
+    def __init__(self, root_dir, split='train', transform=None, target_transform=None):
+        super(CityScapes, self).__init__()
+
         self.images = []
         self.masks = []
+        self.transform = transform
+        self.target_transform = target_transform
 
-        # Construct paths for images and masks
-        image_dir = os.path.join(root_dir, 'Cityscapes', 'images', split)
-        mask_dir = os.path.join(root_dir, 'Cityscapes', 'gtFine', split)
+        # Define image and mask directories
+        image_dir = os.path.join(root_dir, 'Cityspaces/images', split)
+        mask_dir = os.path.join(root_dir, 'Cityspaces/gtFine', split)
 
+        # Check if paths exist
+        if not os.path.exists(image_dir):
+            raise FileNotFoundError(f"Image directory not found: {image_dir}")
+        if not os.path.exists(mask_dir):
+            raise FileNotFoundError(f"Mask directory not found: {mask_dir}")
+
+        # Iterate over cities
         for city in os.listdir(image_dir):
-            city_image_dir = os.path.join(image_dir, city)
-            city_mask_dir = os.path.join(mask_dir, city)
+            img_city_path = os.path.join(image_dir, city)
+            mask_city_path = os.path.join(mask_dir, city)
 
-            if os.path.isdir(city_image_dir):  # Check if directory exists
-                for img_name in os.listdir(city_image_dir):
-                    if img_name.endswith('.png'):  # Ensure it's a .png image
-                        # Add image path to list
-                        self.images.append(os.path.join(city_image_dir, img_name))
+            # Iterate over image files
+            for img_name in os.listdir(img_city_path):
+                if img_name.endswith('_leftImg8bit.png'):
+                    img_path = os.path.join(img_city_path, img_name)
 
-                        # Construct mask name by replacing 'leftImg8bit' with 'labelTrainIds' (label mask)
-                        # We need the label mask for training beause it contains the class IDs while the color mask is only a visual representation
-                        # The label mask is usually named 'gtFine_labelTrainIds.png'
-                        mask_name = img_name.replace('leftImg8bit.png', 'gtFine_labelTrainIds.png')
-                        mask_path = os.path.join(city_mask_dir, mask_name)
+                    # Generate corresponding mask name
+                    base_name = img_name.replace('_leftImg8bit.png', '')
+                    mask_name = base_name + '_gtFine_labelTrainIds.png'
+                    mask_path = os.path.join(mask_city_path, mask_name)
 
-                        # Check if the label mask exists
-                        if os.path.exists(mask_path):
-                            self.masks.append(mask_path)
-                        else:
-                            print(f"Warning: Label mask for {img_name} is missing.")
-                            continue  # Skip if no label mask found
+                    if not os.path.exists(mask_path):
+                        print(f"Warning: mask not found for image {img_name}")
+                        continue
 
-        # Debugging: Output the number of images and masks
+                    self.images.append(img_path)
+                    self.masks.append(mask_path)
+
         print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
-        if len(self.images) == 0 or len(self.masks) == 0:
-            raise ValueError(f"No images or masks were found in the {split} set!")
 
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
-        # Load the image and mask
-        img = Image.open(self.images[idx])
-        mask = Image.open(self.masks[idx])
+        img_path = self.images[idx]
+        mask_path = self.masks[idx]
 
-        # Apply transformations if provided
+        image = Image.open(img_path).convert('RGB')
+        mask = Image.open(mask_path)
+
         if self.transform:
-            img = self.transform(img)
-
+            image = self.transform(image)
         if self.target_transform:
             mask = self.target_transform(mask)
 
-        return img, mask
+        return image, mask
+
