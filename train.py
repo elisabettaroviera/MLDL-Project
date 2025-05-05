@@ -203,7 +203,7 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.show()  # <- ultima riga!
 
-
+"""
     # Determine the number of classes and samples
     num_classes = len(cs_train.classes)
     num_samples = len(cs_train)
@@ -214,3 +214,4 @@ if __name__ == "__main__":
     # Definition of the parameters
 
     # 
+"""
