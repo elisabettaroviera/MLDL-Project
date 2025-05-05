@@ -197,10 +197,12 @@ if __name__ == "__main__":
     # Optionally, visualize the first image in the batch
     import matplotlib.pyplot as plt
 
-    plt.imshow(inputs[0].permute(1, 2, 0))  # Convert (C, H, W) to (H, W, C) for visualization
+    # Questo è corretto
+    plt.imshow(inputs[0].permute(1, 2, 0))
     plt.title(f"Label: {targets[0]}")
-    plt.show()
-    
+    plt.axis('off')
+    plt.show()  # <- ultima riga!
+
 
     # Determine the number of classes and samples
     num_classes = len(cs_train.classes)
