@@ -15,11 +15,13 @@ def transform_cityscapes():
     return transform
 
 def transform_cityscapes_mask():
-    # Resize using nearest neighbor to preserve class IDs
-    mask = mask.resize((1024, 512), Image.NEAREST)
-    
-    # Convert to numpy array (preserving integer labels)
-    mask_np = np.array(mask, dtype=np.uint8)
+    def to_tensor_no_normalization(mask):
+        # Convert the PIL image to a NumPy array, then to a tensor without normalization
+        return torch.from_numpy(np.array(mask)).long()
 
-    # Convert to tensor of type long (required for segmentation loss)
-    return torch.from_numpy(mask_np).long()
+    transform = transforms.Compose([
+        # Resize the segmentation mask to 1024x512 using NEAREST interpolation
+        transforms.Resize((1024, 512), interpolation=Image.NEAREST),
+        to_tensor_no_normalization  # Custom function to preserve label IDs
+    ])
+    return transform
