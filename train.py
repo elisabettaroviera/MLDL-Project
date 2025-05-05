@@ -225,11 +225,6 @@ if __name__ == "__main__":
     # Get first batch
     first_batch = next(iter(dataloader_cs_train))
     images, masks, filenames = first_batch
-    # Check the pixel values of the first mask in the batch
-    mask = masks[3].cpu().numpy()  # Convert mask tensor to NumPy array
-
-    # Show the unique class values in the mask
-    print(f"Unique class values in the mask: {np.unique(mask)}")
 
     # Number of samples you want to save from the batch
     num_to_save = min(5, len(images))  # e.g., save 5 or fewer
@@ -238,8 +233,15 @@ if __name__ == "__main__":
         img_tensor = images[i]
         mask_tensor = masks[i]
 
+        # Check the pixel values of the first mask in the batch
+        mask = mask_tensor.cpu().numpy()  # Convert mask tensor to NumPy array
+
+        # Show the unique class values in the mask
+        print(f"Unique class values in the mask: {np.unique(mask)}")
+
         img_pil = TF.to_pil_image(img_tensor.cpu())
-        mask_pil = TF.to_pil_image(mask_tensor.cpu())
+        # Convert mask tensor to PIL image, i am using long int64 to keep the class labels but image fromarray doen't support them
+        mask_pil = Image.fromarray(mask_tensor.byte().cpu().numpy())  # Convert to uint8 before Image.fromarray
 
         base_filename = filenames[i].replace("leftImg8bit", "")
         img_path = f'./outputs/{base_filename}_image.png'
