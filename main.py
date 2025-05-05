@@ -26,8 +26,9 @@ if __name__ == "__main__":
 
     set_seed(23)  # Set a seed for reproducibility
 
-    #### STEP 2.a
-    # Load the dataset CITYSCAPES
+    ############################################################################################################
+    ################################################# STEP 2.a #################################################
+
     # Define transformations
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
@@ -39,14 +40,18 @@ if __name__ == "__main__":
     # DataLoader
     # also saving filenames for the images, when doing train i should not need them
     # each batch is a nuple: images, masks, filenames 
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
+    # I modify the value of the batch size because it has to match with the one of the model
+    batch_size = 2 # 3 or the number the we will use in the model
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
     # Create output dir if needed
     os.makedirs('./outputs', exist_ok=True)
 
     # Get first batch
     first_batch = next(iter(dataloader_cs_train))
-    # i need filenames to save the images, but i don't think we need it when doing training
+    # I need filenames to save the images, but i don't think we need it when doing training
+    # The idea is to save some images and masks for the report (maybe we can understand if the image is so much worse at the first
+    # epochs is so much worse that at the 50 and discuss some comparison in the report)
     images, masks, filenames = first_batch
 
     # Number of samples you want to save from the batch
