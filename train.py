@@ -8,7 +8,9 @@ from datasets.transform_datasets import *
 from data.dataloader import dataloader
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 from fvcore.nn import FlopCountAnalysis, flop_count_table
+import torchvision.transforms.functional as TF
 
 
 """   
@@ -203,7 +205,7 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.show()  # <- ultima riga!
 
-"""
+
     # Determine the number of classes and samples
     num_classes = len(cs_train.classes)
     num_samples = len(cs_train)
@@ -211,7 +213,29 @@ if __name__ == "__main__":
     print(f'Number of classes for Cityscapes train: {num_classes}')
     print(f'Number of samples for Cityscapes train: {num_samples}')
 
+
+
+    # Create output directory if it doesn't exist
+    os.makedirs('./outputs', exist_ok=True)
+
+    """# If transform includes normalization, denormalize before saving
+    mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+    img_tensor = inputs[0] * std + mean  # denormalize"""
+    img_tensor = inputs[0]
+
+    # Convert to PIL and save
+    img_pil = TF.to_pil_image(img_tensor.cpu())
+    save_path = './outputs/sample_0.png'
+    img_pil.save(save_path)
+    print(f"Saved image to {save_path}")
+
+    # Optionally display image inline (works in Colab)
+    plt.imshow(img_pil)
+    plt.title(f"Label: {targets[0]}")
+    plt.axis('off')
+    plt.show()
+
     # Definition of the parameters
 
     # 
-"""
