@@ -11,7 +11,7 @@ import time
 import matplotlib.pyplot as plt
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
-
+from datasets.cityscapes import CityScapes
 
 """   
 
@@ -180,11 +180,17 @@ if __name__ == "__main__":
 
     #### STEP 2.a
     # Load the dataset CITYSCAPES
-    cs_train = ImageFolder(root='./datasets/Cityscapes/Cityspaces/images/train', transform=transform_cityscapes())
-    cs_val = ImageFolder(root='./datasets/Cityscapes/Cityspaces/images/val', transform=transform_cityscapes())
+    # Define transformations
+    transform = transform_cityscapes()
+    target_transform = transform_cityscapes_mask()
+
+    # Dataset
+    cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
+    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
     # DataLoader
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
+    dataloader_cs_train = DataLoader(cs_train, batch_size=64, shuffle=True)
+    dataloader_cs_val = DataLoader(cs_val, batch_size=64, shuffle=False)
     # Now i return the first result 
     # Get the first batch from the training dataloader
     first_batch = next(iter(dataloader_cs_train))

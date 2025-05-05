@@ -1,4 +1,7 @@
 from torch.utils.data import Dataset
+import os
+from PIL import Image
+import torchvision.transforms as transforms
 
 # TODO: implement here your custom dataset class for Cityscapes
 
@@ -14,20 +17,59 @@ __len__      | Returns the total number of samples in the dataset         | At t
 
 """
 
-
+# Define the CityScapes dataset class
 class CityScapes(Dataset):
-    def __init__(self):
+    def __init__(self, root_dir, split='train', transform=None, target_transform=None):
         super(CityScapes, self).__init__()
-        # TODO
+        
+        self.root_dir = root_dir
+        self.split = split  # either 'train' or 'val'
+        self.transform = transform
+        self.target_transform = target_transform
 
-        pass
+        self.images = []
+        self.masks = []
+
+        images_base = os.path.join(root_dir, 'images', split)
+        masks_base = os.path.join(root_dir, 'gtFine', split)
+
+        # Loop through all cities in the split
+        for city in os.listdir(images_base):
+            img_dir = os.path.join(images_base, city)
+            mask_dir = os.path.join(masks_base, city)
+
+            # Loop through all image files in the city's folder
+            for file_name in os.listdir(img_dir):
+                if file_name.endswith('_leftImg8bit.png'):
+                    base_name = file_name.replace('_leftImg8bit.png', '')
+                    img_path = os.path.join(img_dir, file_name)
+                    mask_name = base_name + '_gtFine_labelIds.png'
+                    mask_path = os.path.join(mask_dir, mask_name)
+
+                    # Only include samples that have both image and mask
+                    if os.path.exists(mask_path):
+                        self.images.append(img_path)
+                        self.masks.append(mask_path)
 
     def __getitem__(self, idx):
-        # TODO
+        # Load the image and corresponding segmentation mask
+        image = Image.open(self.images[idx]).convert('RGB')
+        mask = Image.open(self.masks[idx])  # mask is a grayscale image
 
-        pass
+        # Apply image transform (e.g., resize, ToTensor)
+        if self.transform:
+            image = self.transform(image)
 
+        # Apply mask transform (e.g., resize with NEAREST)
+        if self.target_transform:
+            mask = self.target_transform(mask)
+        else:
+            # Convert mask to tensor without normalization (preserve label IDs)
+            mask = transforms.PILToTensor()(mask).squeeze(0).long()  # shape: (H, W)
+
+        return image, mask
+    
     def __len__(self):
-        # TODO
+        # Return the number of samples
+        return len(self.images)
 
-        pass
