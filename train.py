@@ -189,7 +189,7 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
     # DataLoader
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, False, True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
     # Create output dir if needed
     os.makedirs('./outputs', exist_ok=True)
 
