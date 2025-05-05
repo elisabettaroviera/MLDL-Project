@@ -10,8 +10,21 @@ import matplotlib.pyplot as plt
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
+import random
+
+
+def set_seed(seed):
+    torch.manual_seed(seed) # Set the seed for CPU
+    torch.cuda.manual_seed_all(seed) # Set the seed for all GPUs
+    np.random.seed(seed) # Set the seed for NumPy
+    random.seed(seed) # Set the seed for random
+    torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
+    torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
+
 
 if __name__ == "__main__":
+
+    set_seed(23)  # Set a seed for reproducibility
 
     #### STEP 2.a
     # Load the dataset CITYSCAPES
