@@ -189,8 +189,7 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
     # DataLoader
-    dataloader_cs_train = DataLoader(cs_train, batch_size=64, shuffle=True)
-    dataloader_cs_val = DataLoader(cs_val, batch_size=64, shuffle=False)
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
     # Now i return the first result 
     # Get the first batch from the training dataloader
     first_batch = next(iter(dataloader_cs_train))
@@ -202,45 +201,36 @@ if __name__ == "__main__":
     print(f"Inputs shape: {inputs.shape}")
     print(f"Targets shape: {targets.shape}")
 
-    # Optionally, visualize the first image in the batch
-    import matplotlib.pyplot as plt
+    # Visualize the image and the mask side by side
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 
-    # Questo è corretto
-    plt.imshow(inputs[0].permute(1, 2, 0))
-    plt.title(f"Label: {targets[0]}")
-    plt.axis('off')
-    plt.show()  # <- ultima riga!
+    # Display the image
+    ax[0].imshow(inputs[0].permute(1, 2, 0))  # Convert (C, H, W) to (H, W, C) for visualization
+    ax[0].set_title("Input Image")
+    ax[0].axis('off')
 
+    # Display the mask
+    ax[1].imshow(targets[0], cmap='jet')  # The mask is an image of labels, so use a colormap
+    ax[1].set_title("Mask")
+    ax[1].axis('off')
 
-    # Determine the number of classes and samples
-    num_classes = len(cs_train.classes)
-    num_samples = len(cs_train)
-
-    print(f'Number of classes for Cityscapes train: {num_classes}')
-    print(f'Number of samples for Cityscapes train: {num_samples}')
-
-
+    plt.show()
 
     # Create output directory if it doesn't exist
     os.makedirs('./outputs', exist_ok=True)
 
-    """# If transform includes normalization, denormalize before saving
-    mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
-    std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
-    img_tensor = inputs[0] * std + mean  # denormalize"""
+    # Save the image
     img_tensor = inputs[0]
-
-    # Convert to PIL and save
     img_pil = TF.to_pil_image(img_tensor.cpu())
-    save_path = './outputs/sample_0.png'
-    img_pil.save(save_path)
-    print(f"Saved image to {save_path}")
+    image_save_path = './outputs/sample_0_image.png'
+    img_pil.save(image_save_path)
+    print(f"Saved image to {image_save_path}")
 
-    # Optionally display image inline (works in Colab)
-    plt.imshow(img_pil)
-    plt.title(f"Label: {targets[0]}")
-    plt.axis('off')
-    plt.show()
+    # Save the mask
+    mask_pil = TF.to_pil_image(targets[0].cpu())  # Convert mask to PIL image
+    mask_save_path = './outputs/sample_0_mask.png'
+    mask_pil.save(mask_save_path)
+    print(f"Saved mask to {mask_save_path}")
 
     # Definition of the parameters
 
