@@ -190,33 +190,42 @@ if __name__ == "__main__":
 
     # DataLoader
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
-    # Now i return the first result 
-    # Get the first batch from the training dataloader
-    first_batch = next(iter(dataloader_cs_train))
-
-    # Unpack the batch into inputs (images) and targets (labels)
-    inputs, targets = first_batch
-
-    # Print the shapes of the inputs and targets
-    print(f"Inputs shape: {inputs.shape}")
-    print(f"Targets shape: {targets.shape}")
-
-    # Create output directory if it doesn't exist
+    # Create output dir if needed
     os.makedirs('./outputs', exist_ok=True)
 
-    # Save the image
-    img_tensor = inputs[0]
-    img_pil = TF.to_pil_image(img_tensor.cpu())
-    image_save_path = './outputs/sample_0_image.png'
-    img_pil.save(image_save_path)
-    print(f"Saved image to {image_save_path}")
+    # Get first batch
+    first_batch = next(iter(dataloader_cs_train))
+    images, masks, filenames = first_batch
 
-    # Save the mask
-    mask_pil = TF.to_pil_image(targets[0].cpu())  # Convert mask to PIL image
-    mask_save_path = './outputs/sample_0_mask.png'
-    mask_pil.save(mask_save_path)
-    print(f"Saved mask to {mask_save_path}")
+    # Number of samples you want to save from the batch
+    num_to_save = min(5, len(images))  # e.g., save 5 or fewer
 
+    for i in range(num_to_save):
+        img_tensor = images[i]
+        mask_tensor = masks[i]
+
+        img_pil = TF.to_pil_image(img_tensor.cpu())
+        mask_pil = TF.to_pil_image(mask_tensor.cpu())
+
+        base_filename = filenames[i].replace("leftImg8bit", "")
+        img_path = f'./outputs/{base_filename}_image.png'
+        mask_path = f'./outputs/{base_filename}_mask.png'
+
+        img_pil.save(img_path)
+        mask_pil.save(mask_path)
+
+        print(f"Saved image to {img_path}")
+        print(f"Saved mask to {mask_path}")
+
+        # Optional: show inline
+        fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+        ax[0].imshow(img_pil)
+        ax[0].set_title("Image")
+        ax[0].axis("off")
+        ax[1].imshow(mask_pil, cmap='jet')
+        ax[1].set_title("Mask")
+        ax[1].axis("off")
+        plt.show()
     # Definition of the parameters
 
     # 
