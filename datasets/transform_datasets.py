@@ -14,8 +14,9 @@ def transform_cityscapes():
 
 def transform_cityscapes_mask():
     transform =  transforms.Compose([
-        # Resize the segmentation mask to 256x512 using NEAREST interpolation
-        # This is important to preserve label IDs (integers) without interpolation artifacts
-        transforms.Resize((256, 512), interpolation=Image.NEAREST)
-    ])
+                                    # Resize the segmentation mask to 256x512 using NEAREST interpolation
+                                    # This is important to preserve label IDs (integers) without interpolation artifacts
+                                    transforms.Resize((256, 512), interpolation=Image.NEAREST), 
+                                    transforms.ToTensor()
+                                ])
     return transform
