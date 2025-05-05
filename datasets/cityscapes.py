@@ -60,7 +60,7 @@ class CityScapes(Dataset):
                     self.images.append(img_path)
                     self.masks.append(mask_path)
 
-        print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
+        #print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
 
     def __len__(self):
         return len(self.images)
