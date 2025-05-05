@@ -7,6 +7,13 @@ import gdown
 cityscapes_id = '1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2'  # Google Drive file ID
 cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
 
+"""
+
+Personal Google Drive links for the datasets:
+cityscapes_id = '11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb'  # Google Drive file ID
+
+"""
+
 cityscapes_output = 'cityscapes.zip' # Name of the output file
 
 gdown.download(cityscapes_url, cityscapes_output, quiet=False) # Download the file using gdown
