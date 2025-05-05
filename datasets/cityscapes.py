@@ -43,7 +43,7 @@ class CityScapes(Dataset):
 
             # Iterate over image files
             for img_name in os.listdir(img_city_path):
-                print(f"  Image: {img_name}")  # Debugging line
+                #print(f"  Image: {img_name}")  # Debugging line
                 if img_name.endswith('_leftImg8bit.png'):
                     img_path = os.path.join(img_city_path, img_name)
 
@@ -60,7 +60,7 @@ class CityScapes(Dataset):
                     self.images.append(img_path)
                     self.masks.append(mask_path)
 
-        #print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
+        print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
 
     def __len__(self):
         return len(self.images)
@@ -69,7 +69,7 @@ class CityScapes(Dataset):
         image = Image.open(self.images[idx]).convert('RGB')
         mask = Image.open(self.masks[idx])
 
-        # Apply transformations if any
+        # Apply transformations if provided
         if self.transform:
             image = self.transform(image)
         if self.target_transform:

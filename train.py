@@ -217,6 +217,8 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
     # DataLoader
+    # also saving filenames for the images, when doing train i should not need them
+    # each batch is a nuple: images, masks, filenames 
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
 
     # Create output dir if needed
@@ -224,6 +226,7 @@ if __name__ == "__main__":
 
     # Get first batch
     first_batch = next(iter(dataloader_cs_train))
+    # i need filenames to save the images, but i don't think we need it when doing training
     images, masks, filenames = first_batch
 
     # Number of samples you want to save from the batch
@@ -233,7 +236,7 @@ if __name__ == "__main__":
         img_tensor = images[i]
         mask_tensor = masks[i]
 
-        # Check the pixel values of the first mask in the batch
+        # Check the pixel values of the first mask in the batch, each value should be in the range [0, 18]? (bc 19 classes) + 255 for void
         mask = mask_tensor.cpu().numpy()  # Convert mask tensor to NumPy array
 
         # Show the unique class values in the mask
@@ -252,6 +255,7 @@ if __name__ == "__main__":
 
         print(f"Saved image to {img_path}")
         print(f"Saved mask to {mask_path}")
+
     # Definition of the parameters
     # Search on the pdf!!
     num_epochs = 50 # Number of epochs
