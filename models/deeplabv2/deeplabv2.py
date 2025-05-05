@@ -290,3 +290,15 @@ def get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path='DeepLab_r
         model.load_state_dict(new_params, strict=False)
 
     return model
+
+# Learning rate policy function
+# optimizer (torch.optim.Optimizer): Optimizer to update.
+# init_lr (float): Initial learning rate
+# iter (int): Current iteration.
+# max_iter (int): Maximum number of iterations.
+# power (float): Power factor (default = 0.9).
+def lr_policy(optimizer, init_lr, iter, max_iter, power=0.9):
+    new_lr = init_lr * (1 - iter / max_iter) ** power
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = new_lr # Update the learning rate in the optimizer
+    return new_lr
