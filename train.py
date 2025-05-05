@@ -183,6 +183,24 @@ if __name__ == "__main__":
 
     # DataLoader
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
+    # Now i return the first result 
+    # Get the first batch from the training dataloader
+    first_batch = next(iter(dataloader_cs_train))
+
+    # Unpack the batch into inputs (images) and targets (labels)
+    inputs, targets = first_batch
+
+    # Print the shapes of the inputs and targets
+    print(f"Inputs shape: {inputs.shape}")
+    print(f"Targets shape: {targets.shape}")
+
+    # Optionally, visualize the first image in the batch
+    import matplotlib.pyplot as plt
+
+    plt.imshow(inputs[0].permute(1, 2, 0))  # Convert (C, H, W) to (H, W, C) for visualization
+    plt.title(f"Label: {targets[0]}")
+    plt.show()
+    
 
     # Determine the number of classes and samples
     num_classes = len(cs_train.classes)
