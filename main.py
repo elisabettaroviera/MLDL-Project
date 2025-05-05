@@ -24,6 +24,8 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
     # DataLoader
+    # also saving filenames for the images, when doing train i should not need them
+    # each batch is a nuple: images, masks, filenames 
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
 
     # Create output dir if needed
@@ -31,12 +33,8 @@ if __name__ == "__main__":
 
     # Get first batch
     first_batch = next(iter(dataloader_cs_train))
+    # i need filenames to save the images, but i don't think we need it when doing training
     images, masks, filenames = first_batch
-    # Check the pixel values of the first mask in the batch
-    mask = masks[23].cpu().numpy()  # Convert mask tensor to NumPy array
-
-    # Show the unique class values in the mask
-    print(f"Unique class values in the mask: {np.unique(mask)}")
 
     # Number of samples you want to save from the batch
     num_to_save = min(5, len(images))  # e.g., save 5 or fewer
@@ -45,8 +43,15 @@ if __name__ == "__main__":
         img_tensor = images[i]
         mask_tensor = masks[i]
 
+        # Check the pixel values of the first mask in the batch, each value should be in the range [0, 18]? (bc 19 classes) + 255 for void
+        mask = mask_tensor.cpu().numpy()  # Convert mask tensor to NumPy array
+
+        # Show the unique class values in the mask
+        print(f"Unique class values in the mask: {np.unique(mask)}")
+
         img_pil = TF.to_pil_image(img_tensor.cpu())
-        mask_pil = TF.to_pil_image(mask_tensor.cpu())
+        # Convert mask tensor to PIL image, i am using long int64 to keep the class labels but image fromarray doen't support them
+        mask_pil = Image.fromarray(mask_tensor.byte().cpu().numpy())  # Convert to uint8 before Image.fromarray
 
         base_filename = filenames[i].replace("leftImg8bit", "")
         img_path = f'./outputs/{base_filename}_image.png'
@@ -57,6 +62,7 @@ if __name__ == "__main__":
 
         print(f"Saved image to {img_path}")
         print(f"Saved mask to {mask_path}")
+
     # Definition of the parameters
     # Search on the pdf!!
     num_epochs = 50 # Number of epochs
