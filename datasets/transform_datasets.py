@@ -9,7 +9,7 @@ def transform_cityscapes():
     # NOTE: The training resolution and the val resolution are equal in Cityscapes
     # Hence, we can use the same transform for both train and test
     transform = transforms.Compose([
-                                    transforms.Resize((1024, 512)), # Resize to 1024x512
+                                    transforms.Resize((512,1024)), # Resize to 1024x512
                                     transforms.ToTensor() # Convert to tensor
                                     ])
     return transform
@@ -22,7 +22,7 @@ def transform_cityscapes_mask():
 
     # Compose the transformations: Resize + Convert to tensor
     transform = transforms.Compose([
-        transforms.Resize((1024, 512), interpolation=Image.NEAREST),  # Resize with nearest neighbor to preserve label IDs
+        transforms.Resize((512,1024), interpolation=Image.NEAREST),  # Resize with nearest neighbor to preserve label IDs
         transforms.Lambda(lambda mask: to_tensor_no_normalization(mask))  # Apply the custom tensor conversion
     ])
     return transform
