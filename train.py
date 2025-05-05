@@ -184,10 +184,10 @@ if __name__ == "__main__":
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
 
-    # Dataset
-    cs_train = CityScapes('./datasets/Cityscapes/Cityspaces', 'train', transform, target_transform)
-    cs_val = CityScapes('./datasets/Cityscapes/Cityspaces', 'val', transform, target_transform)
-
+    # Load the datasets (Cityspaces)
+    cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
+    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
+    
     # DataLoader
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
     # Now i return the first result 

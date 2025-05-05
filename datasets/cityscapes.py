@@ -21,7 +21,7 @@ __len__      | Returns the total number of samples in the dataset         | At t
 class CityScapes(Dataset):
     def __init__(self, root_dir, split='train', transform=None, target_transform=None):
         super(CityScapes, self).__init__()
-        
+
         self.root_dir = root_dir
         self.split = split  # either 'train' or 'val'
         self.transform = transform
@@ -30,8 +30,9 @@ class CityScapes(Dataset):
         self.images = []
         self.masks = []
 
-        images_base = os.path.join(root_dir, 'images', split)
-        masks_base = os.path.join(root_dir, 'gtFine', split)
+        # Construct the paths for images and masks under the 'Cityspaces' folder
+        images_base = os.path.join(root_dir, 'Cityspaces', 'images', split)
+        masks_base = os.path.join(root_dir, 'Cityspaces', 'gtFine', split)
 
         # Loop through all cities in the split
         for city in os.listdir(images_base):
