@@ -1,5 +1,6 @@
 # Import necessary libraries
 import os
+from models.deeplabv2.deeplabv2 import lr_policy
 import torch
 from torchvision.datasets import ImageFolder
 from datasets.transform_datasets import *
@@ -121,6 +122,10 @@ if __name__ == "__main__":
         model = None # Put the model with wandb
 
         loss = torch.nn.CrossEntropyLoss() # Loss function (CrossEntropyLoss for segmentation tasks)
+        
+        # MODIFY THE LEARNING RATE: we have to update the lr at each batch, not only at the beginning of the epoch
+        lr = lr_policy(optimizer, init_lr=learning_rate, iter=current_iter, max_iter=total_iters)
+        
         optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
 
         # 2. Training step
