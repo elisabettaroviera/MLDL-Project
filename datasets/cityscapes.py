@@ -26,26 +26,34 @@ class CityScapes(Dataset):
         self.images = []
         self.masks = []
 
-        # Construct the paths for images and masks under the 'Cityscapes' folder
-        image_dir = os.path.join(root_dir, 'Cityspaces', 'images', split)
-        mask_dir = os.path.join(root_dir, 'Cityspaces', 'gtFine', split)
+        # Construct paths for images and masks
+        image_dir = os.path.join(root_dir, 'Cityscapes', 'images', split)
+        mask_dir = os.path.join(root_dir, 'Cityscapes', 'gtFine', split)
 
-        # Loop through each city folder and get image and mask paths
         for city in os.listdir(image_dir):
             city_image_dir = os.path.join(image_dir, city)
             city_mask_dir = os.path.join(mask_dir, city)
-            
-            if os.path.isdir(city_image_dir):  # Ensure it's a directory
-                for img_name in os.listdir(city_image_dir):
-                    if img_name.endswith('.png'):  # Filter for images (assuming .png extension)
-                        # Add image paths to list
-                        self.images.append(os.path.join(city_image_dir, img_name))
-                        
-                        # Assume the corresponding mask has the same name with "_labelIds" suffix
-                        mask_name = img_name.replace('.png', '_labelIds.png')
-                        self.masks.append(os.path.join(city_mask_dir, mask_name))
 
-        # Debugging: Print out the number of images and masks loaded
+            if os.path.isdir(city_image_dir):  # Check if directory exists
+                for img_name in os.listdir(city_image_dir):
+                    if img_name.endswith('.png'):  # Ensure it's a .png image
+                        # Add image path to list
+                        self.images.append(os.path.join(city_image_dir, img_name))
+
+                        # Construct mask name by replacing 'leftImg8bit' with 'labelTrainIds' (label mask)
+                        # We need the label mask for training beause it contains the class IDs while the color mask is only a visual representation
+                        # The label mask is usually named 'gtFine_labelTrainIds.png'
+                        mask_name = img_name.replace('leftImg8bit.png', 'gtFine_labelTrainIds.png')
+                        mask_path = os.path.join(city_mask_dir, mask_name)
+
+                        # Check if the label mask exists
+                        if os.path.exists(mask_path):
+                            self.masks.append(mask_path)
+                        else:
+                            print(f"Warning: Label mask for {img_name} is missing.")
+                            continue  # Skip if no label mask found
+
+        # Debugging: Output the number of images and masks
         print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
         if len(self.images) == 0 or len(self.masks) == 0:
             raise ValueError(f"No images or masks were found in the {split} set!")
