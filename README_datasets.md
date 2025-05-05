@@ -12,3 +12,9 @@ Cityscapes is a large-scale dataset for semantic segmentation, collected from 50
 
 **GTA5**.
 GTA5 is a synthetic dataset for semantic segmentation, consisting of 24,966 high-resolution (1914×1052) images collected from the video game Grand Theft Auto V. The dataset provides pixel-wise annotations across 33 classes, with 19 classes aligned to the Cityscapes categories for standard evaluation. Images are captured by recording every 40th frame during gameplay, ensuring a wide variety of urban scenes. GTA5 enables effective domain adaptation research, as models trained on it are commonly adapted and evaluated on real-world datasets like Cityscapes.
+
+**IMPORTANT**
+In the event that these links could not be used correctly, due to overloading in the download of the datasets, I created a drive where I uploaded them so that, by just changing the previous links with these, we could access them at any time.
+
+**Cityscapes**: https://drive.google.com/file/d/11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb/view?usp=drive_link
+**GTA5**: https://drive.google.com/file/d/1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO/view?usp=drive_link
