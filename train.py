@@ -187,7 +187,7 @@ if __name__ == "__main__":
     # Load the datasets (Cityspaces)
     cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
-    
+
     # DataLoader
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, 64, True, True)
     # Now i return the first result 
@@ -200,21 +200,6 @@ if __name__ == "__main__":
     # Print the shapes of the inputs and targets
     print(f"Inputs shape: {inputs.shape}")
     print(f"Targets shape: {targets.shape}")
-
-    # Visualize the image and the mask side by side
-    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-
-    # Display the image
-    ax[0].imshow(inputs[0].permute(1, 2, 0))  # Convert (C, H, W) to (H, W, C) for visualization
-    ax[0].set_title("Input Image")
-    ax[0].axis('off')
-
-    # Display the mask
-    ax[1].imshow(targets[0], cmap='jet')  # The mask is an image of labels, so use a colormap
-    ax[1].set_title("Mask")
-    ax[1].axis('off')
-
-    plt.show()
 
     # Create output directory if it doesn't exist
     os.makedirs('./outputs', exist_ok=True)
