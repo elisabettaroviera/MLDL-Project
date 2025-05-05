@@ -104,21 +104,39 @@ def compute_flops(model, height=512, width=1024):
 
     return flop_count_table(flops)
 
+# 4. Parameters
+def compute_parameters(model):
+    # Compute the number of parameters in the model
+    tot_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def train(epoch, model, dataloader_train, criterion, optimizer): # criterion = loss
-    model.train() # Here start the training of the model
-    
+    return tot_params, trainable_params
+
+
+
+
+# TRAIN LOOP
+def train(epoch, old_model, dataloader_train, criterion, optimizer): # criterion = loss
+    # 1. Obtain the pretrained model
+    model = old_model 
+
+    # 2. Set the hyperparameters of the model i.e. learning rate, optimizer, etc.
     running_loss = 0.0 
     correct = 0
     total = 0
+    iou_per_class = {}
 
+    # 3. Start the training of the model
+    model.train() 
+    
+    # 4. Loop on the batches of the dataset
     for batch_idx, (inputs, targets) in enumerate(dataloader_train): #(X,y)
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
 
-        # Compute prediction and loss
-        outputs = model(inputs) # Contains the prediction of the model of the current batch
-        # outputs contains for each row the tuple (class, prob)
+        # Compute outout of the train
+        outputs = model(inputs) 
         
+        # Compute the loss
         loss = criterion(outputs, targets)
 
         # Backpropagation
@@ -126,50 +144,60 @@ def train(epoch, model, dataloader_train, criterion, optimizer): # criterion = l
         loss.backward()
         optimizer.step()
 
+        # Compute the accuracy metrics, i.e. mIoU 
         running_loss += loss.item() # Update of the loss = contain the total loss of the epoch
-        _, predicted = outputs.max(1) # Predicted class
-        # outputs.max(0) = the maximum value for each row
-        # outputs.max(1) = the predicted class
-        total += targets.size(0) # Number of element in the current batch, in total there is the total number of processated batch
-        correct += predicted.eq(targets).sum().item() # Sum of correctly predicted element
+        for target, output in zip(targets, outputs):
+            iou_per_class = compute_miou(target, output, num_classes) 
+
+
+        
 
     train_loss = running_loss / len(dataloader_train) # Mean loss of the all dataset
-    train_accuracy = 100. * correct / total
-    print(f'Train Epoch: {epoch} Loss: {train_loss:.6f} Acc: {train_accuracy:.2f}%') # epoch = is the current epoch
-
-
-
-
-"""
-# WHAT WE HAVE TO DO IN THE TRAINING - VALIDATION LOOP?
-
--- TRAIN --
-Note that the number of epochs is fixed = 50
-
-1. for epoche 
-2.   for batch 
-3. TODO: WE HAVE TO THINK ABOUT THE STRUCTURE!!!!!!!!!
-
     
-          
+    # 5. Compute the computation metrics, i.e. FLOPs
+    compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
+    compute_flops(model, height=512, width=1024)
+    compute_parameters(model)
 
+    # 6. SAVE THE PARAMETERS OF THE MODEL 
+    # 6. SAVE MODEL!
 
+    # 7. Return all the metrics
+    metrics = {}
+    return metrics, new_model
 
+# VALIDATION LOOP
+def validate(new_model, val_loader, criterion):
+    # 1. Obtai the pretrained model 
+    model = new_model
 
+    model.eval()
+    val_loss = 0
 
+    correct, total = 0, 0
 
+    with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
+        for batch_idx, (inputs, targets) in enumerate(val_loader):
+            inputs, targets = inputs.cuda(), targets.cuda()
 
+            outputs = model(inputs) # Predicted
+            
+            # Compute the accuracy metrics, i.e. mIoU 
+            loss = criterion(outputs, targets) # Computation of the loss
 
+            # As computed in the train part
+            val_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
 
+    # 2. Compute the computation metrics, i.e. FLOPs
+    val_loss = val_loss / len(val_loader)
+    val_accuracy = 100. * correct / total
 
--- VAL --
-# TODO
-
-
-
-
-"""
-
+    # 3. Return all the metrics
+    metrics = {}
+    return metrics
 
 
 
@@ -192,5 +220,20 @@ if __name__ == "__main__":
     print(f'Number of samples for Cityscapes train: {num_samples}')
 
     # Definition of the parameters
+    # Search on the pdf!!
+    num_epochs = 50 # Number of epochs
 
-    # 
+    # FOR LOOP ON THE EPOCHS
+    for epoch in range(1, num_epochs + 1):
+        # 1. Obtain the pretrained model
+        model = None # Put the model with wandb
+
+        # Training
+        metrics_train, new_model = train(epoch, model, dataloader_cs_train, criterion, optimizer)
+        # PRINT all the metrics!
+
+        # Validation
+        metrics_val = validate(new_model, val_loader, criterion) # Compute the accuracy on the validation set
+        
+        # PRINT all the metrics!
+
