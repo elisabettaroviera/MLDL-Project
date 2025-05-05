@@ -103,7 +103,7 @@ if __name__ == "__main__":
         print(f"Saved mask to {mask_path}")
 
     # Definition of the parameters
-    # Search on the pdf!!
+    # Search on the pdf!! REVIEWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
     num_epochs = 50 # Number of epochs
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     
