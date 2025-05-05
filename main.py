@@ -11,8 +11,12 @@ from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
+from train import train
+from validation import validate
 
 
+# Function to set the seed for reproducibility
+# This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
     torch.manual_seed(seed) # Set the seed for CPU
     torch.cuda.manual_seed_all(seed) # Set the seed for all GPUs
@@ -20,6 +24,23 @@ def set_seed(seed):
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
+
+# Function to print the metrics
+# This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
+def print_metrics(title, metrics):
+    print(f"{title} Metrics")
+    print(f"Loss: {metrics['loss']:.4f}")
+    print(f"Latency: {metrics['latency']:.2f} ms")
+    print(f"FPS: {metrics['fps']:.2f} frames/sec")
+    print(f"FLOPs: {metrics['flops']:.2f} GFLOPs")
+    print(f"Parameters: {metrics['params']:.2f} M")
+    print(f"Mean IoU (mIoU): {metrics['miou']:.2f} %")
+
+    print("\nClass-wise mIoU (%):")
+    print(f"{'Class':<20} {'mIoU':>6}")
+    print("-" * 28)
+    for cls, val in metrics['miou_per_class'].items():
+        print(f"{cls:<20} {val:>6.2f}")
 
 
 if __name__ == "__main__":
@@ -84,17 +105,36 @@ if __name__ == "__main__":
     # Definition of the parameters
     # Search on the pdf!!
     num_epochs = 50 # Number of epochs
+    num_classes = 19 # Number of classes in the dataset (Cityscapes)
+    
+    learning_rate = 0.001 # Learning rate for the optimizer
+    momentum = 0.9 # Momentum for the optimizer
+    weight_decay = 0.0005 # Weight decay for the optimizer
+    batch_size = 2 # Batch size for the DataLoader
 
     # FOR LOOP ON THE EPOCHS
     for epoch in range(1, num_epochs + 1):
+        print(f"Epoch {epoch}")
+
+        print("Load the model")
         # 1. Obtain the pretrained model
         model = None # Put the model with wandb
 
-        # Training
-        metrics_train, new_model = train(epoch, model, dataloader_cs_train, criterion, optimizer)
-        # PRINT all the metrics!
+        loss = torch.nn.CrossEntropyLoss() # Loss function (CrossEntropyLoss for segmentation tasks)
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
 
-        # Validation
-        metrics_val = validate(new_model, val_loader, criterion) # Compute the accuracy on the validation set
-        
+        # 2. Training step
+        print("Training step")
+        metrics_train, new_model = train(epoch, model, dataloader_cs_train, loss, optimizer)
+        print("Training step done")
+
         # PRINT all the metrics!
+        print_metrics("Training", metrics_train)
+
+        # 3. Validation step
+        print("Validation step")
+        metrics_val = validate(new_model, dataloader_cs_val, loss) # Compute the accuracy on the validation set
+        print("Validation step done")
+
+        # PRINT all the metrics!
+        print_metrics("Validation", metrics_val)
