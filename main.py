@@ -105,7 +105,7 @@ if __name__ == "__main__":
         print(f"Saved mask to {mask_path}")
         
     print("trying out compute_miou:")
-    mean_iou, iou_per_class = compute_miou(images, images, 19)
+    mean_iou, iou_per_class = compute_miou(masks, masks, 19)
     print(f"mean iou = {mean_iou}")
     print(f"iou per class= {iou_per_class}")
 
