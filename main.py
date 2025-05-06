@@ -1,6 +1,6 @@
 # Import necessary libraries
 import os
-from models.deeplabv2.deeplabv2 import lr_policy
+from models.deeplabv2.deeplabv2 import get_deeplab_v2, lr_policy
 import torch
 from torchvision.datasets import ImageFolder
 from datasets.transform_datasets import *
@@ -13,8 +13,11 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
+from utils.utils import poly_lr_scheduler
 from validation import validate
 from utils.metrics import compute_miou
+from torch import nn
+import wandb
 
 
 # Function to set the seed for reproducibility
@@ -76,15 +79,31 @@ if __name__ == "__main__":
     batch_size = 2 # 3 or the number the we will use in the model
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
-    # Definition of the parameters
-    # Search on the pdf!! REVIEWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+    # Definition of the parameters for CITYSCAPES
+    # Search on the pdf!! 
     num_epochs = 50 # Number of epochs
+
+    # The void label is not considered for evaluation (paper 2)
+    # Hence the class are 0-18 (19 classes in total) without the void label
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
-    
+    ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
     learning_rate = 0.001 # Learning rate for the optimizer
     momentum = 0.9 # Momentum for the optimizer
     weight_decay = 0.0005 # Weight decay for the optimizer
     batch_size = 2 # Batch size for the DataLoader
+    iter = 0 # Initialize the iteration counter
+
+    # Pretrained model path 
+    model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path='DeepLab_resnet_pretrained_imagenet.pth')
+
+    # Definition of the optimizer for the first epoch
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
+
+    # Defintion of the loss function
+    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    
+    # To save the model we need to initialize of wanddb 
+    wandb.init(project="DeepLabV2", entity="s328422") # Replace with your wandb entity name
 
     # FOR LOOP ON THE EPOCHS
     for epoch in range(1, num_epochs + 1):
@@ -92,18 +111,20 @@ if __name__ == "__main__":
 
         print("Load the model")
         # 1. Obtain the pretrained model
-        model = None # Put the model with wandb
+        if epoch != 1:
+            # Load the model from the previous epoch by wandb
+            # Carica il checkpoint del modello (ad esempio dalla terza epoca)
+            checkpoint_path = wandb.restore(f"model_epoch_{epoch-1}.pt")  # Nome del file salvato su wandb
+            checkpoint = torch.load(checkpoint_path.name)  # Carica il checkpoint
 
-        loss = torch.nn.CrossEntropyLoss() # Loss function (CrossEntropyLoss for segmentation tasks)
+            # Carica il modello e lo stato dell'ottimizzatore
+            model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         
-        # MODIFY THE LEARNING RATE: we have to update the lr at each batch, not only at the beginning of the epoch
-        lr = lr_policy(optimizer, init_lr=learning_rate, iter=current_iter, max_iter=total_iters)
-        
-        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
-
+    
         # 2. Training step
         print("Training step")
-        metrics_train, new_model = train(epoch, model, dataloader_cs_train, loss, optimizer)
+        metrics_train = train(epoch, model, dataloader_cs_train, loss, optimizer, iter, learning_rate, num_classes)
         print("Training step done")
 
         # PRINT all the metrics!
@@ -111,7 +132,7 @@ if __name__ == "__main__":
 
         # 3. Validation step
         print("Validation step")
-        metrics_val = validate(new_model, dataloader_cs_val, loss) # Compute the accuracy on the validation set
+        metrics_val = validate(model, dataloader_cs_val, loss, num_classes) # Compute the accuracy on the validation set
         print("Validation step done")
 
         # PRINT all the metrics!
