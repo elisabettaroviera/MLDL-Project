@@ -106,7 +106,7 @@ if __name__ == "__main__":
     print("trying out compute_miou:")
     mean_iou, iou_per_class = compute_miou(images, images, 19)
     print(f"mean iou = {mean_iou}")
-    print(f"iou per class= "{iou_per_class})
+    print(f"iou per class= {iou_per_class}")
 
     '''
     # Definition of the parameters
