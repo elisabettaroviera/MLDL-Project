@@ -14,6 +14,7 @@ from datasets.cityscapes import CityScapes
 import random
 from train import train
 from validation import validate
+from metrics import *
 
 
 # Function to set the seed for reproducibility
