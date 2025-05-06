@@ -25,6 +25,8 @@ from datasets.cityscapes import CityScapes
 # gt_images := all the ground truth images (all the images of the dataset)
 # pred_images := all the predicted images (all the images of the dataset)
 # num_classes := number of classes in the dataset
+''' 
+I REWRITE AN UPDATED VERSION OF COMPIUTE_MIOU TO ACCUMULATE INTERSECTIONS AND UNIONS PER CLASS FOR EVERY BATCH
 def compute_miou(gt_images, pred_images, num_classes):
     iou_per_class = np.zeros(num_classes)
     eps = 1e-10  # To avoid division by 0
@@ -52,7 +54,44 @@ def compute_miou(gt_images, pred_images, num_classes):
 
     mean_iou = np.nanmean(iou_per_class)
     return mean_iou, iou_per_class
+'''
+# 1. mIoU% 
+# Function to compute the mean Intersection over Union (mIoU) for a given set of predictions and targets
+# gt_images := the ground truth images (masks)
+# pred_images := the predicted images (masks)
+# num_classes := number of classes in the dataset
+# with return_raw = True also return the count of per class intersections and unions for the batch
+# NB: useful to compute iou for the entire train/val set 
+# with reurn_raw = False only return the miou and iou per class
+# NB: useful to compute the metrics for the single batch of images
+def compute_miou(gt_images, pred_images, num_classes, return_raw=True):
+    intersections = np.zeros(num_classes)
+    unions = np.zeros(num_classes)
+    eps = 1e-10  # Small epsilon to avoid division by zero
+    
+    # for every couple of gt_image and pred_image in the current batch
+    for gt, pred in zip(gt_images, pred_images):
+        # for every class
+        for class_id in range(num_classes):
+            # compute intersection of gt and pred
+            inter = np.logical_and(gt == class_id, pred == class_id).sum()
+            # compute union of gt and pred
+            union = np.logical_or(gt == class_id, pred == class_id).sum()
+            # accumulate intersections
+            intersections[class_id] += inter
+            # accumulate unions
+            unions[class_id] += union
+    # compute iou per class of current batch
+    iou_per_class = (intersections / (unions + eps)) * 100
+    # compute mean iou (discarting nan)
+    mean_iou = np.nanmean(iou_per_class)
 
+    # if return_raw = True also return the raw sum of intersections and unions
+    if return_raw:
+        return mean_iou, iou_per_class, intersections, unions
+    # else only return the batch mean_iou and iou_per_class
+    else:
+        return mean_iou, iou_per_class
 
 # 2. Latency & FPS
 # Function to compute the latency and FPS of a model on a given input size
