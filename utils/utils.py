@@ -11,12 +11,13 @@ def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
             :param power is a polymomial power
 
     """
-    # if iter % lr_decay_iter or iter > max_iter:
-    # 	return optimizer
-
+    
     lr = init_lr*(1 - iter/max_iter)**power
     optimizer.param_groups[0]['lr'] = lr
     return lr
+
+    # if iter % lr_decay_iter or iter > max_iter:
+    # 	return optimizer
     # return lr
 
 
