@@ -29,7 +29,7 @@ def validate(new_model, val_loader, criterion, num_classes):
 
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
-        for batch_idx, (inputs, targets) in enumerate(val_loader):
+        for batch_idx, (inputs, targets, file_names) in enumerate(val_loader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             # Compute output of the model
