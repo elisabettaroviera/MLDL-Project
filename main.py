@@ -94,7 +94,14 @@ if __name__ == "__main__":
     iter = 0 # Initialize the iteration counter
 
     # Pretrained model path 
-    model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path='DeepLab_resnet_pretrained_imagenet.pth')
+    pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
+    if not os.path.exists(pretrain_model_path):
+        os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
+        url = "https://drive.google.com/uc?id=1ZX0UCXvJwqd2uBGCX7LI2n-DfMg3t74v"
+        gdown.download(url, pretrain_model_path, quiet=False)
+
+    model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
+
 
     # Definition of the optimizer for the first epoch
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
