@@ -63,12 +63,15 @@ if __name__ == "__main__":
 
     ############################################################################################################
     ################################################# STEP 2.a #################################################
-    
+
+    print("************STEP 2.a: TRAINING DEEPLABV2 ON CITYSCAPES***************")
     # Define transformations
+    print("Define transformations")
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
 
     # Load the datasets (Cityspaces)
+    print("Load the datasets")
     cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
@@ -77,10 +80,12 @@ if __name__ == "__main__":
     # each batch is a nuple: images, masks, filenames 
     # I modify the value of the batch size because it has to match with the one of the model
     batch_size = 2 # 3 or the number the we will use in the model
+    print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
     # Definition of the parameters for CITYSCAPES
     # Search on the pdf!! 
+    print("Define the parameters")
     num_epochs = 50 # Number of epochs
 
     # The void label is not considered for evaluation (paper 2)
@@ -94,6 +99,7 @@ if __name__ == "__main__":
     iter = 0 # Initialize the iteration counter
 
     # Pretrained model path 
+    print("Pretrained model path")
     pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
     if not os.path.exists(pretrain_model_path):
         os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
@@ -101,17 +107,21 @@ if __name__ == "__main__":
         url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
         gdown.download(url, pretrain_model_path, quiet=False)
 
+    print("Load the model")
     model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
 
-
+    
     # Definition of the optimizer for the first epoch
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
-
+    print("Optimizer loaded")
+    
     # Defintion of the loss function
     loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    
+    print("loss loaded")
+
     # To save the model we need to initialize of wanddb 
-    wandb.init(project="DeepLabV2", entity="s328422") # Replace with your wandb entity name
+    wandb.init(project="DeepLabV2_ALBG_23", entity="s328422") # Replace with your wandb entity name
+    print("Wandb initialized")
 
     # FOR LOOP ON THE EPOCHS
     for epoch in range(1, num_epochs + 1):
