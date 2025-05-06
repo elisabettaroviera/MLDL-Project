@@ -105,23 +105,38 @@ if __name__ == "__main__":
         print(f"Saved mask to {mask_path}")
         
     print("************trying out compute_miou:***************")
-    # Dummy ground truth and prediction with 2 classes (0 and 1)
+    # Dummy ground truth and prediction with 3 classes 
     gt_images = [
-        np.array([[0, 1], [1, 0]]),
-        np.array([[1, 1], [0, 0]])
-    ]
-
+    np.array([
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+    ]),
+    np.array([
+        [2, 2, 2],
+        [1, 1, 1],
+        [0, 0, 0]
+    ])]
     pred_images = [
-        np.array([[0, 1], [0, 0]]),  # 2 correct, 2 wrong
-        np.array([[1, 0], [0, 0]])   # 3 correct, 1 wrong
-    ]
-    mean_iou_dummy, iou_per_class_dummy = compute_miou(gt_images, pred_images, num_classes=2)
+    np.array([
+        [0, 1, 2],   # correct
+        [0, 0, 2],   # 1 → 0 (mistake)
+        [0, 1, 1]    # 2 → 1 (mistake)
+    ]),
+    np.array([
+        [2, 1, 2],   # 2 → 1 (mistake)
+        [1, 1, 1],   # correct
+        [0, 1, 0]    # 1 → 0 (mistake)
+    ])]
+
+    mean_iou_dummy, iou_per_class_dummy = compute_miou(gt_images, pred_images, num_classes=3)
     print("__________dummy try_________")
     print("Mean IoU:", mean_iou_dummy)
     print("IoU per class:", iou_per_class_dummy)
 
     print("_________try with saved masks________")
-    gt_mask = np.array(Image.open("outputs/hanover_000000_006922_.png_mask.png").convert("L"))
+    gt_mask = np.array(Image.open("outputs/monchengladbach_000000_019500_.png_mask.png")).convert("L")
+    #gt_mask = np.array(Image.open("outputs/hanover_000000_006922_.png_mask.png").convert("L"))
     print("GT labels:", np.unique(gt_mask))
     valid_mask = gt_mask != 255
     num_classes = int(np.max(gt_mask[valid_mask]) + 1)
