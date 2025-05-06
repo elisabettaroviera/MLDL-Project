@@ -104,7 +104,23 @@ if __name__ == "__main__":
         print(f"Saved image to {img_path}")
         print(f"Saved mask to {mask_path}")
         
-    print("trying out compute_miou:")
+    print("************trying out compute_miou:***************")
+    # Dummy ground truth and prediction with 2 classes (0 and 1)
+    gt_images = [
+        np.array([[0, 1], [1, 0]]),
+        np.array([[1, 1], [0, 0]])
+    ]
+
+    pred_images = [
+        np.array([[0, 1], [0, 0]]),  # 2 correct, 2 wrong
+        np.array([[1, 0], [0, 0]])   # 3 correct, 1 wrong
+    ]
+
+    mean_iou_dummy, iou_per_class_dummy = compute_miou(gt_images, pred_images, num_classes=2)
+    print("__________dummy try_________")
+    print("Mean IoU:", mean_iou_dummy)
+    print("IoU per class:", iou_per_class_dummy)
+    print("_________try with saved masks________")
     mean_iou, iou_per_class = compute_miou(masks, masks, 19)
     print(f"mean iou = {mean_iou}")
     print(f"iou per class= {iou_per_class}")
