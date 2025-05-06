@@ -120,7 +120,7 @@ if __name__ == "__main__":
     print("loss loaded")
 
     # To save the model we need to initialize of wanddb 
-    wandb.init(project="DeepLabV2_ALBG_23", entity="s328422") # Replace with your wandb entity name
+    wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino") # Replace with your wandb entity name
     print("Wandb initialized")
 
     # FOR LOOP ON THE EPOCHS
