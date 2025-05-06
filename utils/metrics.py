@@ -22,41 +22,6 @@ from datasets.cityscapes import CityScapes
 
 # 1. mIoU% 
 # Function to compute the mean Intersection over Union (mIoU) for a given set of predictions and targets
-# gt_images := all the ground truth images (all the images of the dataset)
-# pred_images := all the predicted images (all the images of the dataset)
-# num_classes := number of classes in the dataset
-''' 
-I REWRITE AN UPDATED VERSION OF COMPIUTE_MIOU TO ACCUMULATE INTERSECTIONS AND UNIONS PER CLASS FOR EVERY BATCH
-def compute_miou(gt_images, pred_images, num_classes):
-    iou_per_class = np.zeros(num_classes)
-    eps = 1e-10  # To avoid division by 0
-
-    for class_id in range(num_classes):
-        total_intersection = 0
-        total_union = 0
-
-        # gt_im := ground truth image (only one image)
-        # pred_im := predicted image (only one image)
-        for gt_im, pred_im in zip(gt_images, pred_images):
-            target = (gt_im == class_id)
-            prediction = (pred_im == class_id)
-
-            intersection = np.logical_and(target, prediction).sum()
-            union = np.logical_or(target, prediction).sum()
-
-            total_intersection += intersection
-            total_union += union
-
-        if total_union > 0:
-            iou_per_class[class_id] = (total_intersection / (total_union + eps)) * 100  # Convert to percentage
-        else:
-            iou_per_class[class_id] = np.nan  # If the class is not present in the image, set to NaN
-
-    mean_iou = np.nanmean(iou_per_class)
-    return mean_iou, iou_per_class
-'''
-# 1. mIoU% 
-# Function to compute the mean Intersection over Union (mIoU) for a given set of predictions and targets
 # gt_images := the ground truth images (masks)
 # pred_images := the predicted images (masks)
 # num_classes := number of classes in the dataset
