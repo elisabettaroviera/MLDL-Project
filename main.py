@@ -60,6 +60,7 @@ def print_metrics(title, metrics):
 if __name__ == "__main__":
 
     set_seed(23)  # Set a seed for reproducibility
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     ############################################################################################################
     ################################################# STEP 2.a #################################################
@@ -109,7 +110,7 @@ if __name__ == "__main__":
 
     print("Load the model")
     model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
-
+    model = model.to(device)
     
     # Definition of the optimizer for the first epoch
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
