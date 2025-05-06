@@ -30,18 +30,27 @@ def set_seed(seed):
 # Function to print the metrics
 # This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
 def print_metrics(title, metrics):
+    # NB: this is how the metrics dictionary returned in train is defined
+    # metrics = {
+    #    'mean_loss': mean_loss,
+    #    'mean_iou': mean_iou,
+    #    'iou_per_class': iou_per_class,
+    #    'mean_latency' : mean_latency,
+    #    'num_flops' : num_flops,
+    #    'trainable_params': trainable_params}
+    
     print(f"{title} Metrics")
-    print(f"Loss: {metrics['loss']:.4f}")
-    print(f"Latency: {metrics['latency']:.2f} ms")
-    print(f"FPS: {metrics['fps']:.2f} frames/sec")
-    print(f"FLOPs: {metrics['flops']:.2f} GFLOPs")
-    print(f"Parameters: {metrics['params']:.2f} M")
-    print(f"Mean IoU (mIoU): {metrics['miou']:.2f} %")
+    print(f"Loss: {metrics['mean_loss']:.4f}")
+    print(f"Latency: {metrics['mean_latency']:.2f} ms")
+    #print(f"FPS: {metrics['fps']:.2f} frames/sec")
+    print(f"FLOPs: {metrics['num_flops']:.2f} GFLOPs")
+    print(f"Parameters: {metrics['trainable_params']:.2f} M")
+    print(f"Mean IoU (mIoU): {metrics['mean_iou']:.2f} %")
 
-    print("\nClass-wise mIoU (%):")
-    print(f"{'Class':<20} {'mIoU':>6}")
+    print("\nClass-wise IoU (%):")
+    print(f"{'Class':<20} {'IoU':>6}")
     print("-" * 28)
-    for cls, val in metrics['miou_per_class'].items():
+    for cls, val in metrics['iou_per_class'].items():
         print(f"{cls:<20} {val:>6.2f}")
 
 
@@ -103,7 +112,8 @@ if __name__ == "__main__":
 
         print(f"Saved image to {img_path}")
         print(f"Saved mask to {mask_path}")
-        
+    
+    # ''' TRYING OUT COMPUTE_MIOU
     print("************trying out compute_miou:***************")
     # Dummy ground truth and prediction with 3 classes 
     gt_images = [
@@ -129,10 +139,12 @@ if __name__ == "__main__":
         [0, 1, 0]    # 1 → 0 (mistake)
     ])]
 
-    mean_iou_dummy, iou_per_class_dummy = compute_miou(gt_images, pred_images, num_classes=3)
+    mean_iou_dummy, iou_per_class_dummy, intersections_dummy, unions_dummy = compute_miou(gt_images, pred_images, num_classes=3)
     print("__________dummy try_________")
     print("Mean IoU:", mean_iou_dummy)
     print("IoU per class:", iou_per_class_dummy)
+    print("Intersections:", intersections_dummy)
+    print("Unions:", unions_dummy)
 
     print("_________try with saved masks________")
     gt_mask = np.array(Image.open("outputs/monchengladbach_000000_019500_.png_mask.png").convert("L"))
@@ -140,11 +152,13 @@ if __name__ == "__main__":
     print("GT labels:", np.unique(gt_mask))
     valid_mask = gt_mask != 255
     num_classes = int(np.max(gt_mask[valid_mask]) + 1)
-    mean_iou, iou_per_class = compute_miou(gt_mask, gt_mask, num_classes)
+    mean_iou, iou_per_class, intersections, unions = compute_miou(gt_mask, gt_mask, num_classes)
     print(f"mean iou = {mean_iou}")
     print(f"iou per class= {iou_per_class}")
-
+    print("Intersections:", intersections)
+    print("Unions:", unions)
     '''
+
     # Definition of the parameters
     # Search on the pdf!! REVIEWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
     num_epochs = 50 # Number of epochs
@@ -185,4 +199,4 @@ if __name__ == "__main__":
 
         # PRINT all the metrics!
         print_metrics("Validation", metrics_val)
-    '''
+
