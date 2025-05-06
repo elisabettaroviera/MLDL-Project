@@ -19,11 +19,10 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer): # criterion
     # 1. Obtain the pretrained model
     model = old_model 
 
-    # 2. Set the hyperparameters of the model i.e. learning rate, optimizer, etc.
+    # 2. Initialize the metrics variables and hyperparameters(?)
     running_loss = 0.0 
-    correct = 0
-    total = 0
-    iou_per_class = {}
+    total_intersections = np.zeros(num_classes)
+    total_unions = np.zeros(num_classes)
 
     # 3. Start the training of the model
     model.train() 
@@ -32,7 +31,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer): # criterion
     for batch_idx, (inputs, targets) in enumerate(dataloader_train): #(X,y)
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
 
-        # Compute outout of the train
+        # Compute output of the train
         outputs = model(inputs) 
         
         # Compute the loss
@@ -43,24 +42,40 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer): # criterion
         loss.backward()
         optimizer.step()
 
-        # Compute the accuracy metrics, i.e. mIoU 
+        # Update the running loss
         running_loss += loss.item() # Update of the loss = contain the total loss of the epoch
-        for target, output in zip(targets, outputs):
-            iou_per_class = compute_miou(target, output, num_classes) 
 
-
+        ## Chat gpt dice: ##
+        # Convert model outputs to predicted class labels
+        preds = outputs.argmax(dim=1).detach().cpu().numpy()
+        gts = targets.detach().cpu().numpy()
         
+        # Accumulate intersections and unions per class
+        _, _, inters, unions = compute_miou(gts, preds, num_classes)
+        total_intersections += inters
+        total_unions += unions
 
-    train_loss = running_loss / len(dataloader_train) # Mean loss of the all dataset
-    
-    # 5. Compute the computation metrics, i.e. FLOPs
-    compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
-    compute_flops(model, height=512, width=1024)
-    compute_parameters(model)
+    # 5. Compute the metrics for the training set 
+    # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
+    iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
+    mean_iou = np.nanmean(iou_per_class)
+    mean_loss = running_loss / len(dataloader_train)    
+
+    # 5.b Compute the computation metrics, i.e. FLOPs
+    mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
+    num_flops = compute_flops(model, height=512, width=1024)
+    tot_params, trainable_params = compute_parameters(model)
 
     # 6. SAVE THE PARAMETERS OF THE MODEL 
     # 6. SAVE MODEL!
 
     # 7. Return all the metrics
-    metrics = {}
+    metrics = {
+        'mean_loss': mean_loss,
+        'mean_iou': mean_iou,
+        'iou_per_class': iou_per_class,
+        'mean_latency' : mean_latency,
+        'num_flops' : num_flops,
+        'trainable_params': trainable_params
+    }
     return metrics, new_model
