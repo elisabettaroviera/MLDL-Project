@@ -1,6 +1,6 @@
 # Import necessary libraries
 import os
-from models.deeplabv2.deeplabv2 import get_deeplab_v2, lr_policy
+from models.deeplabv2.deeplabv2 import get_deeplab_v2
 import torch
 from torchvision.datasets import ImageFolder
 from datasets.transform_datasets import *
