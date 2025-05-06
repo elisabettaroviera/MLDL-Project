@@ -18,15 +18,19 @@ import wandb
 
 # TRAIN LOOP
 def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes): # criterion = loss
+    
     # 1. Obtain the pretrained model
     model = old_model 
+    print("Training the model...")
 
     # 2. Initialize the metrics variables and hyperparameters(?)
+    print("Initializing the metrics variables...")
     running_loss = 0.0 
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
 
     # 3. Start the training of the model
+    print("Starting the training of the model...")
     model.train() 
 
     
@@ -55,7 +59,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
 
         ## Chat gpt dice: ##
         # Convert model outputs to predicted class labels
-        preds = outputs.argmax(dim=1).detach().cpu().numpy()
+        preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
         gts = targets.detach().cpu().numpy()
         
         # Accumulate intersections and unions per class
