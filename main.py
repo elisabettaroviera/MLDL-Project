@@ -103,10 +103,10 @@ if __name__ == "__main__":
         print(f"Saved image to {img_path}")
         print(f"Saved mask to {mask_path}")
         
-        print("trying out compute_miou:")
-        mean_iou, iou_per_class = compute_miou(images, images, num_classes)
-        print(f"mean iou = {mean_iou}")
-        print(f"iou per class= "{iou_per_class})
+    print("trying out compute_miou:")
+    mean_iou, iou_per_class = compute_miou(images, images, 19)
+    print(f"mean iou = {mean_iou}")
+    print(f"iou per class= "{iou_per_class})
 
     '''
     # Definition of the parameters
