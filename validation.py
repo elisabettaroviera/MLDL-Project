@@ -15,7 +15,7 @@ from datasets.cityscapes import CityScapes
 from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
 
 # VALIDATION LOOP
-def validate(new_model, val_loader, criterion):
+def validate(new_model, val_loader, criterion, num_classes):
     # 1. Obtain the pretrained model 
     model = new_model
     
@@ -71,4 +71,5 @@ def validate(new_model, val_loader, criterion):
         'num_flops' : num_flops,
         'trainable_params': trainable_params
     }
+
     return metrics
