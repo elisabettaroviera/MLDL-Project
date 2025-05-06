@@ -16,33 +16,59 @@ from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, 
 
 # VALIDATION LOOP
 def validate(new_model, val_loader, criterion):
-    # 1. Obtai the pretrained model 
+    # 1. Obtain the pretrained model 
     model = new_model
+    
+    # 2. Initialize the metrics variables    
+    mean_loss = 0
+    total_intersections = np.zeros(num_classes)
+    total_unions = np.zeros(num_classes)
 
+    # 3. Start the validation of the model
     model.eval()
-    val_loss = 0
 
-    correct, total = 0, 0
-
+    # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
         for batch_idx, (inputs, targets) in enumerate(val_loader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
+            # Compute output of the model
             outputs = model(inputs) # Predicted
             
-            # Compute the accuracy metrics, i.e. mIoU 
-            loss = criterion(outputs, targets) # Computation of the loss
+            # Compute the loss
+            loss = criterion(outputs, targets)
 
-            # As computed in the train part
-            val_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
+            # Update the running loss
+            running_loss += loss.item() 
 
-    # 2. Compute the computation metrics, i.e. FLOPs
-    val_loss = val_loss / len(val_loader)
-    val_accuracy = 100. * correct / total
+            ## Chat gpt dice: ##
+            # Convert model outputs to predicted class labels
+            preds = outputs.argmax(dim=1).detach().cpu().numpy()
+            gts = targets.detach().cpu().numpy()
+            
+            # Accumulate intersections and unions per class
+            _, _, inters, unions = compute_miou(gts, preds, num_classes)
+            total_intersections += inters
+            total_unions += unions
 
-    # 3. Return all the metrics
-    metrics = {}
+    # 5. Compute the metrics for the validation set 
+    # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
+    iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
+    mean_iou = np.nanmean(iou_per_class)
+    mean_loss = mean_loss / len(val_loader)
+
+    # 5.b Compute the computation metrics, i.e. FLOPs
+    mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
+    num_flops = compute_flops(model, height=512, width=1024)
+    tot_params, trainable_params = compute_parameters(model)
+   
+    # 6. Return all the metrics
+    metrics = {
+        'mean_loss': mean_loss,
+        'mean_iou': mean_iou,
+        'iou_per_class': iou_per_class,
+        'mean_latency' : mean_latency,
+        'num_flops' : num_flops,
+        'trainable_params': trainable_params
+    }
     return metrics
