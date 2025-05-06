@@ -123,7 +123,8 @@ if __name__ == "__main__":
     print("_________try with saved masks________")
     gt_mask = np.array(Image.open("outputs/hanover_000000_006922_.png_mask.png").convert("L"))
     print("GT labels:", np.unique(gt_mask))
-    num_classes = np.max(gt_mask) + 1
+    valid_mask = gt_mask != 255
+    num_classes = int(np.max(gt_mask[valid_mask]) + 1)
     mean_iou, iou_per_class = compute_miou(gt_mask, gt_mask, num_classes)
     print(f"mean iou = {mean_iou}")
     print(f"iou per class= {iou_per_class}")
