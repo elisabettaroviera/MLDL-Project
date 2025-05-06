@@ -37,7 +37,7 @@ class CityScapes(Dataset):
 
         # Iterate over cities
         for city in os.listdir(image_dir):
-            print(f"City: {city}")  # Debugging line
+            #print(f"City: {city}")  # Debugging line
             img_city_path = os.path.join(image_dir, city)
             mask_city_path = os.path.join(mask_dir, city)
 
