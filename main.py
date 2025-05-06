@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     ############################################################################################################
     ################################################# STEP 2.a #################################################
-
+    
     # Define transformations
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
@@ -97,7 +97,8 @@ if __name__ == "__main__":
     pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
     if not os.path.exists(pretrain_model_path):
         os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
-        url = "https://drive.google.com/uc?id=1ZX0UCXvJwqd2uBGCX7LI2n-DfMg3t74v"
+        print("Scarico i pesi pre-addestrati da Google Drive...")
+        url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
         gdown.download(url, pretrain_model_path, quiet=False)
 
     model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
