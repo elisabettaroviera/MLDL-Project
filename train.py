@@ -37,19 +37,10 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
 
         # Compute output of the train
-        outputs = model(inputs)
-
-        print(f"outputs shape: {outputs.shape}") # Check the shape of the output
-        print(f"targets shape: {targets.shape}") # Check the shape of the target
-        print(f"inputs shape: {inputs.shape}") # Check the shape of the input
-
-        print(f"outputs[0]: {outputs[0]}") # Check the output of the model
-        print(f"outputs[1]: {outputs[1]}")
-    
-        
+        outputs = model(inputs)        
 
         # Compute the loss
-        loss = criterion(outputs, targets)
+        loss = criterion(outputs[0], targets)
 
         # Backpropagation
         optimizer.zero_grad()
