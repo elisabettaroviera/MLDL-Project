@@ -31,7 +31,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
 
     
     # 4. Loop on the batches of the dataset
-    for batch_idx, (inputs, targets) in enumerate(dataloader_train): #(X,y)
+    for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): #(X,y)
         iter += 1 # Increment the iteration counter
 
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
