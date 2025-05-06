@@ -50,7 +50,7 @@ def compute_miou(gt_images, pred_images, num_classes):
         else:
             iou_per_class[class_id] = np.nan  # If the class is not present in the image, set to NaN
 
-    mean_iou = np.nanmean(iou_per_class) * 100  # Convert to percentage
+    mean_iou = np.nanmean(iou_per_class)
     return mean_iou, iou_per_class
 
 
