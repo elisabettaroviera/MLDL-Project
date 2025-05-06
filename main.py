@@ -135,7 +135,7 @@ if __name__ == "__main__":
     print("IoU per class:", iou_per_class_dummy)
 
     print("_________try with saved masks________")
-    gt_mask = np.array(Image.open("outputs/monchengladbach_000000_019500_.png_mask.png")).convert("L")
+    gt_mask = np.array(Image.open("outputs/monchengladbach_000000_019500_.png_mask.png").convert("L"))
     #gt_mask = np.array(Image.open("outputs/hanover_000000_006922_.png_mask.png").convert("L"))
     print("GT labels:", np.unique(gt_mask))
     valid_mask = gt_mask != 255
