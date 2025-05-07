@@ -90,8 +90,11 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     # 5.b Compute the computation metrics, i.e. FLOPs
     print("Computing the computation metrics...")
     mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
+    print(f"Latency: {mean_latency:.2f} ± {std_latency:.2f} ms | FPS: {mean_fps:.2f} ± {std_fps:.2f}")
     num_flops = compute_flops(model, height=512, width=1024)
+    print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
     tot_params, trainable_params = compute_parameters(model)
+    print(f"Total Params: {total}, Trainable: {trainable}")
 
     # 6. SAVE THE PARAMETERS OF THE MODEL 
     print("Saving the model")
@@ -125,6 +128,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         'iou_per_class': iou_per_class,
         'mean_latency' : mean_latency,
         'num_flops' : num_flops,
-        'trainable_params': trainable_params
+        'trainable_params': trainable_params,
+        'iter': iter
     }
-    return metrics, iter
+    return metrics
