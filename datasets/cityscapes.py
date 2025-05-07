@@ -1,7 +1,6 @@
 from torch.utils.data import Dataset
 import os
 from PIL import Image
-import torchvision.transforms as transforms
 
 # TODO: implement here your custom dataset class for Cityscapes
 
@@ -16,12 +15,14 @@ __getitem__  | Returns the image and corresponding mask at a given index  | Ever
 __len__      | Returns the total number of samples in the dataset         | At the beginning and during epoch creation
 
 """
+
 class CityScapes(Dataset):
     def __init__(self, root_dir, split='train', transform=None, target_transform=None):
         super(CityScapes, self).__init__()
 
         self.images = []
         self.masks = []
+        self.color_masks = []  # Aggiungi la lista per le maschere colorate
         self.transform = transform
         self.target_transform = target_transform
 
@@ -37,21 +38,21 @@ class CityScapes(Dataset):
 
         # Iterate over cities
         for city in os.listdir(image_dir):
-            #print(f"City: {city}")  # Debugging line
             img_city_path = os.path.join(image_dir, city)
             mask_city_path = os.path.join(mask_dir, city)
 
             # Iterate over image files
             for img_name in os.listdir(img_city_path):
-                #print(f"  Image: {img_name}")  # Debugging line
                 if img_name.endswith('_leftImg8bit.png'):
                     img_path = os.path.join(img_city_path, img_name)
 
-                    # Generate corresponding mask name
+                    # Generate corresponding mask name (ground truth mask and color mask)
                     base_name = img_name.replace('_leftImg8bit.png', '')
-                    mask_name = base_name + '_gtFine_labelTrainIds.png'
-                    #_gtFine_color the one with colors
+                    mask_name = base_name + '_gtFine_labelTrainIds.png'  # Ground truth mask (IDs)
+                    color_mask_name = base_name + '_gtFine_color.png'   # Color mask
+
                     mask_path = os.path.join(mask_city_path, mask_name)
+                    color_mask_path = os.path.join(mask_city_path, color_mask_name)
 
                     # Check if the mask exists
                     if not os.path.exists(mask_path):
@@ -60,6 +61,13 @@ class CityScapes(Dataset):
 
                     self.images.append(img_path)
                     self.masks.append(mask_path)
+
+                    # Check if color mask exists and append it to the list
+                    if os.path.exists(color_mask_path):
+                        self.color_masks.append(color_mask_path)
+                    else:
+                        print(f"Warning: color mask not found for image {img_name}")
+                        self.color_masks.append(None)  # If no color mask, append None
 
         print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
 
@@ -70,6 +78,12 @@ class CityScapes(Dataset):
         image = Image.open(self.images[idx]).convert('RGB')
         mask = Image.open(self.masks[idx])
 
+        # Load the color mask if it exists
+        if self.color_masks[idx]:
+            color_mask = Image.open(self.color_masks[idx])
+        else:
+            color_mask = None
+
         # Apply transformations if provided
         if self.transform:
             image = self.transform(image)
@@ -77,8 +91,6 @@ class CityScapes(Dataset):
             mask = self.target_transform(mask)
 
         filename = os.path.basename(self.images[idx])
-        # es 'berlin_000000_000019_leftImg8bit.png'
-        return image, mask, filename
 
-
-
+        # Return the image, mask, color mask (if available), and filename
+        return image, mask, color_mask, filename
