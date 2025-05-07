@@ -18,9 +18,6 @@ import wandb
 
 # TRAIN LOOP
 def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion = loss
-    
-    wandb.init(project="DeepLabV2_ALBG_23", name=f"epoch_{epoch}", reinit=True)
-
     # 1. Obtain the pretrained model
     model = old_model 
     print("Training the model...")
