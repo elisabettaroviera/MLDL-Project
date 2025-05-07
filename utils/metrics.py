@@ -97,7 +97,7 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000):
 
     return mean_latency, std_latency, mean_fps, std_fps 
 
-"""
+
 
 def compute_latency_and_fps(model, height=512, width=1024, iterations=1000):
     image = np.random.rand(3, height, width).astype(np.float32)
@@ -128,6 +128,47 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000):
     std_fps = np.std(fps_values)
 
     return mean_latency, std_latency, mean_fps, std_fps
+"""
+
+def compute_latency_and_fps(model, height=512, width=1024, iterations=1000, warmup_runs=10):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    # Generates a random image with shape (1, 3, height, width) directly as a PyTorch tensor
+    image = torch.randn(1, 3, height, width, device=device)
+
+    model.eval()
+    model.to(device)
+
+    # Iteration of warm-up
+    with torch.no_grad():
+        for _ in range(warmup_runs):
+            _ = model(image)
+
+    latencies = []
+    fps_values = []
+
+    with torch.no_grad():
+        for _ in range(iterations):
+            if device.type == 'cuda':
+                torch.cuda.synchronize()
+            start = time.time()
+            _ = model(image)
+            if device.type == 'cuda':
+                torch.cuda.synchronize()
+            end = time.time()
+
+            latency = end - start
+            latencies.append(latency)
+            fps_values.append(1.0 / latency if latency > 0 else 0)
+
+    # Conversion of latency in milliseconds
+    mean_latency = np.mean(latencies) * 1000 
+    std_latency = np.std(latencies) * 1000
+    mean_fps = np.mean(fps_values)
+    std_fps = np.std(fps_values)
+
+    return mean_latency, std_latency, mean_fps, std_fps
+
 
 
 # 3. FLOPs
