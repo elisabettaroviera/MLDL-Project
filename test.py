@@ -156,7 +156,7 @@ try:
 
     print("\nTesting compute_flops...")
     flops = compute_flops(model)
-    print(flops)
+    print(f"Total numer of FLOPS: {flops} GigaFLOPs")
 
     print("\nTesting compute_parameters...")
     total, trainable = compute_parameters(model)
