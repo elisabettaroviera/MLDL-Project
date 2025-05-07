@@ -14,6 +14,7 @@ from datasets.cityscapes import CityScapes
 from datasets.transform_datasets import transform_cityscapes, transform_cityscapes_mask
 from models.deeplabv2.deeplabv2 import get_deeplab_v2
 from utils.metrics import compute_flops, compute_latency_and_fps, compute_parameters
+from utils.utils import save_metrics_on_file
 
 """
 
@@ -99,68 +100,169 @@ print("Intersections:", intersections)
 print("Unions:", unions)
 """
 
-print("************STEP 2.a: TRAINING DEEPLABV2 ON CITYSCAPES***************")
-# Define transformations
-print("Define transformations")
-transform = transform_cityscapes()
-target_transform = transform_cityscapes_mask()
+# print("************STEP 2.a: TRAINING DEEPLABV2 ON CITYSCAPES***************")
+# # Define transformations
+# print("Define transformations")
+# transform = transform_cityscapes()
+# target_transform = transform_cityscapes_mask()
 
-# Load the datasets (Cityspaces)
-print("Load the datasets")
-cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
-cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
+# # Load the datasets (Cityspaces)
+# print("Load the datasets")
+# cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
+# cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
-# DataLoader
-# also saving filenames for the images, when doing train i should not need them
-# each batch is a nuple: images, masks, filenames 
-# I modify the value of the batch size because it has to match with the one of the model
-batch_size = 2 # 3 or the number the we will use in the model
-print("Create the dataloaders")
-dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+# # DataLoader
+# # also saving filenames for the images, when doing train i should not need them
+# # each batch is a nuple: images, masks, filenames 
+# # I modify the value of the batch size because it has to match with the one of the model
+# batch_size = 2 # 3 or the number the we will use in the model
+# print("Create the dataloaders")
+# dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
-# Definition of the parameters for CITYSCAPES
-# Search on the pdf!! 
-print("Define the parameters")
-num_epochs = 50 # Number of epochs
+# # Definition of the parameters for CITYSCAPES
+# # Search on the pdf!! 
+# print("Define the parameters")
+# num_epochs = 50 # Number of epochs
 
-# The void label is not considered for evaluation (paper 2)
-# Hence the class are 0-18 (19 classes in total) without the void label
-num_classes = 19 # Number of classes in the dataset (Cityscapes)
-ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
-learning_rate = 0.001 # Learning rate for the optimizer
-momentum = 0.9 # Momentum for the optimizer
-weight_decay = 0.0005 # Weight decay for the optimizer
-batch_size = 2 # Batch size for the DataLoader
-iter = 0 # Initialize the iteration counter
-max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
+# # The void label is not considered for evaluation (paper 2)
+# # Hence the class are 0-18 (19 classes in total) without the void label
+# num_classes = 19 # Number of classes in the dataset (Cityscapes)
+# ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
+# learning_rate = 0.001 # Learning rate for the optimizer
+# momentum = 0.9 # Momentum for the optimizer
+# weight_decay = 0.0005 # Weight decay for the optimizer
+# batch_size = 2 # Batch size for the DataLoader
+# iter = 0 # Initialize the iteration counter
+# max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
-# Pretrained model path 
-print("Pretrained model path")
-pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
-if not os.path.exists(pretrain_model_path):
-    os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
-    print("Scarico i pesi pre-addestrati da Google Drive...")
-    url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
-    gdown.download(url, pretrain_model_path, quiet=False)
+# # Pretrained model path 
+# print("Pretrained model path")
+# pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
+# if not os.path.exists(pretrain_model_path):
+#     os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
+#     print("Scarico i pesi pre-addestrati da Google Drive...")
+#     url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
+#     gdown.download(url, pretrain_model_path, quiet=False)
 
-print("Load the model")
-model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = model.to(device)
+# print("Load the model")
+# model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# model = model.to(device)
 
-# === TEST ===
-try:
-    print("Testing compute_latency_and_fps...")
-    latency, std_latency, fps, std_fps = compute_latency_and_fps(model)
-    print(f"Latency: {latency:.2f} ± {std_latency:.2f} ms | FPS: {fps:.2f} ± {std_fps:.2f}")
+# # === TEST ===
+# try:
+#     print("Testing compute_latency_and_fps...")
+#     latency, std_latency, fps, std_fps = compute_latency_and_fps(model)
+#     print(f"Latency: {latency:.2f} ± {std_latency:.2f} ms | FPS: {fps:.2f} ± {std_fps:.2f}")
 
-    print("\nTesting compute_flops...")
-    flops = compute_flops(model)
-    print(f"Total numer of FLOPS: {flops} GigaFLOPs")
+#     print("\nTesting compute_flops...")
+#     flops = compute_flops(model)
+#     print(f"Total numer of FLOPS: {flops} GigaFLOPs")
 
-    print("\nTesting compute_parameters...")
-    total, trainable = compute_parameters(model)
-    print(f"Total Params: {total}, Trainable: {trainable}")
+#     print("\nTesting compute_parameters...")
+#     total, trainable = compute_parameters(model)
+#     print(f"Total Params: {total}, Trainable: {trainable}")
 
-except Exception as e:
-    print(f"Errore durante il test: {e}")
+# except Exception as e:
+#     print(f"Errore durante il test: {e}")
+
+""""
+# === TEST METRICS FILE OUTPUT ===
+epoch = 1
+metrics_train = {
+    'mean_loss': 3,
+    'mean_iou': 3,
+    'iou_per_class': 3,
+    'mean_latency' : 3,
+    'std_latency' : 3,
+    'mean_fps' : 3,
+    'std_fps' : 3,
+    'num_flops' : 3,
+    'trainable_params': 3
+}
+
+metrics_val = {
+    'mean_loss': 3,
+    'mean_iou': 3,
+    'iou_per_class': 3,
+    'mean_latency' : 3,
+    'std_latency' : 3,
+    'mean_fps' : 3,
+    'std_fps' : 3,
+    'num_flops' : 3,
+    'trainable_params': 3
+}
+
+save_metrics_on_file(1, metrics_train, metrics_val)
+save_metrics_on_file(50, metrics_train, metrics_val)"""
+
+import torch
+import numpy as np
+from PIL import Image
+import os
+
+# Funzione di test
+def test_save_images():
+    # Crea un directory temporanea per il salvataggio delle immagini
+    save_dir = './test_outputs'
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Dati di esempio per il test
+    file_name_1 = "frankfurt_000001_054640_leftImg8bit.png"
+    file_name_2 = "frankfurt_000001_062016_leftImg8bit.png"
+
+    # Simula un batch di dati
+    inputs = torch.randn(2, 3, 256, 256)  # 2 immagini, 3 canali, 256x256
+    file_names = [file_name_1, file_name_2]
+    preds = np.random.randint(0, 19, (2, 256, 256))  # 2 immagini, ogni pixel è una classe predetta (tra 0 e 18)
+    color_targets = np.random.randint(0, 256, (2, 256, 256, 3), dtype=np.uint8)  # 2 immagini con maschere colorate
+
+    # Chiamata alla funzione che salverà le immagini
+    flag_save = 0
+    save_images(flag_save, save_dir, inputs, file_names, preds, color_targets, file_name_1, file_name_2)
+
+    # Verifica che le immagini siano state salvate correttamente
+    saved_files = os.listdir(save_dir)
+    assert f"{file_name_1}_original.png" in saved_files, f"Immagine originale {file_name_1} non salvata!"
+    assert f"{file_name_1}_pred_color.png" in saved_files, f"Maschera predetta {file_name_1} non salvata!"
+    assert f"{file_name_1}_color_target.png" in saved_files, f"Maschera target {file_name_1} non salvata!"
+    
+    assert f"{file_name_2}_original.png" in saved_files, f"Immagine originale {file_name_2} non salvata!"
+    assert f"{file_name_2}_pred_color.png" in saved_files, f"Maschera predetta {file_name_2} non salvata!"
+    assert f"{file_name_2}_color_target.png" in saved_files, f"Maschera target {file_name_2} non salvata!"
+
+    # Aggiungi un messaggio di successo
+    print("Test passed! Immagini salvate correttamente.")
+
+# Funzione di test per salvare le immagini (già fornita)
+def save_images(flag_save, save_dir, inputs, file_names, preds, color_targets, file_name_1, file_name_2):
+    # color map       
+    CITYSCAPES_COLORMAP = np.array([
+        [128, 64,128], [244, 35,232], [ 70, 70, 70], [102,102,156], [190,153,153],
+        [153,153,153], [250,170, 30], [220,220,  0], [107,142, 35], [152,251,152],
+        [ 70,130,180], [220, 20, 60], [255,  0,  0], [  0,  0,142], [  0,  0, 70],
+        [  0, 60,100], [  0, 80,100], [  0,  0,230], [119, 11, 32]
+    ], dtype=np.uint8)
+    
+    for input, file_name, pred, color_target in zip(inputs, file_names, preds, color_targets):
+        if file_name in [file_name_1, file_name_2]:
+            flag_save += 1
+
+            # Salva l'immagine originale da 'inputs' (tensore)
+            original_img = input.cpu().numpy().transpose(1, 2, 0)  # Converte (C, H, W) in (H, W, C)
+            original_img = np.clip(original_img * 255, 0, 255).astype(np.uint8)  # Normalizza tra 0-255
+            original_img_pil = Image.fromarray(original_img)
+            original_img_pil.save(f"{save_dir}/{file_name}_original.png")
+
+            # Salva la maschera predetta colorata
+            color_mask = CITYSCAPES_COLORMAP[pred]
+            color_mask_img = Image.fromarray(color_mask)
+            color_mask_img.save(f"{save_dir}/{file_name}_pred_color.png")
+
+            # Salva la maschera target colorata
+            if color_target is not None:
+                color_target_img = Image.fromarray(color_target)
+                color_target_img.save(f"{save_dir}/{file_name}_color_target.png")
+
+# Esegui il test
+test_save_images()
