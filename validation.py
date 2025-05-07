@@ -83,6 +83,13 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     file_name_2 = "frankfurt_000001_062016_leftImg8bit.png"
     #frankfurt_000001_062016_gtFine_color.png
 
+    CITYSCAPES_COLORMAP = np.array([
+        [128, 64,128], [244, 35,232], [ 70, 70, 70], [102,102,156], [190,153,153],
+        [153,153,153], [250,170, 30], [220,220,  0], [107,142, 35], [152,251,152],
+        [ 70,130,180], [220, 20, 60], [255,  0,  0], [  0,  0,142], [  0,  0, 70],
+        [  0, 60,100], [  0, 80,100], [  0,  0,230], [119, 11, 32]
+    ], dtype=np.uint8)
+    
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
         for batch_idx, (inputs, targets, file_names) in enumerate(val_loader):
@@ -103,6 +110,10 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             # Convert model outputs to predicted class labels
             preds = outputs.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
+
+            # Convert targets to color masks
+            color_targets = CITYSCAPES_COLORMAP[targets.cpu().numpy()]
+
             
             # Accumulate intersections and unions per class
             _, _, inters, unions = compute_miou(gts, preds, num_classes)
