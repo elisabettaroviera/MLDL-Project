@@ -50,6 +50,7 @@ class CityScapes(Dataset):
                     # Generate corresponding mask name
                     base_name = img_name.replace('_leftImg8bit.png', '')
                     mask_name = base_name + '_gtFine_labelTrainIds.png'
+                    #_gtFine_color the one with colors
                     mask_path = os.path.join(mask_city_path, mask_name)
 
                     # Check if the mask exists
@@ -76,6 +77,7 @@ class CityScapes(Dataset):
             mask = self.target_transform(mask)
 
         filename = os.path.basename(self.images[idx])
+        # es 'berlin_000000_000019_leftImg8bit.png'
         return image, mask, filename
 
 
