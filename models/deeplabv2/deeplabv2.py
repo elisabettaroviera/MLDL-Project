@@ -202,9 +202,11 @@ class ResNetMulti(nn.Module):
         # here we do the bilinear interpolation to get the same size as the input
         x = torch.nn.functional.interpolate(x, size=(H, W), mode='bilinear')
 
+        # returns mask + 2 Nones for training
         if self.training == True:
             return x, None, None
-
+        
+        # returns only mask for evaluation
         return x
 
     # **ResNetMulti.get_1x_lr_params_no_scale**. This is a generator method intended to yield parameters 
