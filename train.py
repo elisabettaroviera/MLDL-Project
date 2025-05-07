@@ -33,7 +33,8 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     print("Starting the training of the model...")
     model.train() 
 
-    
+    print(f"Training on {len(dataloader_train)} batches")
+
     # 4. Loop on the batches of the dataset
     for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): #(X,y)
         if batch_idx % 100 == 0: # Print every 100 batches
