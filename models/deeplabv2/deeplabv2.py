@@ -199,7 +199,7 @@ class ResNetMulti(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
         x = self.layer6(x)
-
+        # here we do the bilinear interpolation to get the same size as the input
         x = torch.nn.functional.interpolate(x, size=(H, W), mode='bilinear')
 
         if self.training == True:
