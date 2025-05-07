@@ -15,7 +15,7 @@ from datasets.cityscapes import CityScapes
 from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
 
 # VALIDATION LOOP
-def validate(new_model, val_loader, criterion, num_classes):
+def validate(epoch, new_model, val_loader, criterion, num_classes):
     # 1. Obtain the pretrained model 
     model = new_model
     print("Validating the model...")
@@ -65,15 +65,22 @@ def validate(new_model, val_loader, criterion, num_classes):
     iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     mean_iou = np.nanmean(iou_per_class)
     mean_loss = mean_loss / len(val_loader)
+    
+    # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
+    if epoch == 50:
+        print("Computing the computation metrics...")
+        mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
+        print(f"Latency: {mean_latency:.2f} ± {std_latency:.2f} ms | FPS: {mean_fps:.2f} ± {std_fps:.2f}")
+        num_flops = compute_flops(model, height=512, width=1024)
+        print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
+        tot_params, trainable_params = compute_parameters(model)
+        print(f"Total Params: {tot_params}, Trainable: {trainable_params}")
+    else:
+        # NB: metric = -1 means we have not computed it (we compute only at the last epoch)
+        mean_latency = -1
+        num_flops = -1
+        trainable_params = -1
 
-    # 5.b Compute the computation metrics, i.e. FLOPs
-    print("Computing the computation metrics...")
-    mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
-    print(f"Latency: {mean_latency:.2f} ± {std_latency:.2f} ms | FPS: {mean_fps:.2f} ± {std_fps:.2f}")
-    num_flops = compute_flops(model, height=512, width=1024)
-    print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
-    tot_params, trainable_params = compute_parameters(model)
-    print(f"Total Params: {tot_params}, Trainable: {trainable_params}")
    
     # 6. Return all the metrics
     metrics = {
