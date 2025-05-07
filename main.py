@@ -93,7 +93,7 @@ if __name__ == "__main__":
     # Hence the class are 0-18 (19 classes in total) without the void label
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
-    learning_rate = 0.001 # Learning rate for the optimizer
+    learning_rate = 0.0001 # Learning rate for the optimizer - 1e-4
     momentum = 0.9 # Momentum for the optimizer
     weight_decay = 0.0005 # Weight decay for the optimizer
     batch_size = 2 # Batch size for the DataLoader
