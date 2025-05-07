@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler
+from utils.utils import poly_lr_scheduler, save_metrics_on_file
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -199,3 +199,5 @@ if __name__ == "__main__":
             # value FPS
             # value FLOPs
             # value parameters
+        
+        save_metrics_on_file(epoch, metrics_train, metrics_val)
