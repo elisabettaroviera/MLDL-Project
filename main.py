@@ -98,6 +98,7 @@ if __name__ == "__main__":
     weight_decay = 0.0005 # Weight decay for the optimizer
     batch_size = 2 # Batch size for the DataLoader
     iter = 0 # Initialize the iteration counter
+    max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
     # Pretrained model path 
     print("Pretrained model path")
