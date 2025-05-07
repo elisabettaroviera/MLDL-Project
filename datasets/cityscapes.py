@@ -22,7 +22,6 @@ class CityScapes(Dataset):
 
         self.images = []
         self.masks = []
-        self.color_masks = []  # Aggiungi la lista per le maschere colorate
         self.transform = transform
         self.target_transform = target_transform
 
@@ -49,10 +48,8 @@ class CityScapes(Dataset):
                     # Generate corresponding mask name (ground truth mask and color mask)
                     base_name = img_name.replace('_leftImg8bit.png', '')
                     mask_name = base_name + '_gtFine_labelTrainIds.png'  # Ground truth mask (IDs)
-                    color_mask_name = base_name + '_gtFine_color.png'   # Color mask
 
                     mask_path = os.path.join(mask_city_path, mask_name)
-                    color_mask_path = os.path.join(mask_city_path, color_mask_name)
 
                     # Check if the mask exists
                     if not os.path.exists(mask_path):
@@ -62,12 +59,6 @@ class CityScapes(Dataset):
                     self.images.append(img_path)
                     self.masks.append(mask_path)
 
-                    # Check if color mask exists and append it to the list
-                    if os.path.exists(color_mask_path):
-                        self.color_masks.append(color_mask_path)
-                    else:
-                        print(f"Warning: color mask not found for image {img_name}")
-                        self.color_masks.append(None)  # If no color mask, append None
 
         print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
 
@@ -77,12 +68,6 @@ class CityScapes(Dataset):
     def __getitem__(self, idx):
         image = Image.open(self.images[idx]).convert('RGB')
         mask = Image.open(self.masks[idx])
-
-        # Load the color mask if it exists
-        if self.color_masks[idx]:
-            color_mask = Image.open(self.color_masks[idx])
-        else:
-            color_mask = None
 
         # Apply transformations if provided
         if self.transform:
