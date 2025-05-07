@@ -17,7 +17,7 @@ from utils.utils import poly_lr_scheduler
 import wandb
 
 # TRAIN LOOP
-def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes): # criterion = loss
+def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion = loss
     
     # 1. Obtain the pretrained model
     model = old_model 
@@ -56,7 +56,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         optimizer.step()
 
         # Compute the learning rate
-        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=300, power=0.9)
+        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
 
         # Update the running loss
         running_loss += loss.item() # Update of the loss = contain the total loss of the epoch
