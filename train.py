@@ -19,6 +19,8 @@ import wandb
 # TRAIN LOOP
 def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion = loss
     
+    wandb.init(project="DeepLabV2_ALBG_23", name=f"epoch_{epoch}", reinit=True)
+
     # 1. Obtain the pretrained model
     model = old_model 
     print("Training the model...")
@@ -100,8 +102,11 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     else:
         # NB: metric = -1 means we have not computed it (we compute only at the last epoch)
         mean_latency = -1
+        std_latency = -1
         num_flops = -1
         trainable_params = -1
+        mean_fps = -1
+        std_fps = -1
 
 
 
@@ -136,6 +141,9 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         'mean_iou': mean_iou,
         'iou_per_class': iou_per_class,
         'mean_latency' : mean_latency,
+        'std_latency' : std_latency,
+        'mean_fps' : mean_fps,
+        'std_fps' : std_fps,
         'num_flops' : num_flops,
         'trainable_params': trainable_params
     }
