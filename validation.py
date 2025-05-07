@@ -85,7 +85,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
 
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
-        for batch_idx, (inputs, targets, color_targets, file_names) in enumerate(val_loader):
+        for batch_idx, (inputs, targets, file_names) in enumerate(val_loader):
             if batch_idx % 100 == 0: # Print every 100 batches
                 print(f"Batch {batch_idx}/{len(val_loader)}")
             inputs, targets = inputs.cuda(), targets.cuda()
