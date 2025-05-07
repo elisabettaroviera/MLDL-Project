@@ -144,6 +144,7 @@ if __name__ == "__main__":
     
         # 2. Training step
         print("Training step")
+        # 24 min circa
         metrics_train = train(epoch, model, dataloader_cs_train, loss, optimizer, iter, learning_rate, num_classes, max_iter)
         print("Training step done")
 
