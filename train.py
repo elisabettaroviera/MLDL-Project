@@ -34,6 +34,15 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     model.train() 
 
     print(f"Training on {len(dataloader_train)} batches")
+    
+    # IMPORTANT TO DISCUSS:
+    # Problem to fix: decay of learning rate
+    # In the paper we can see that the learning rate decays with each batch.
+    # Starting from 0.001 and updating for all 20K iterations (number of batches * epochs).
+    # We can use the poly_lr_scheduler function to update the learning rate.
+    # But this way we have max_iter = 39K (number of batches * epochs) (39300 = 50 * 786)
+    # So I think we can try to update the learning rate one iteration yes and one iteration no on the batches.
+
 
     # 4. Loop on the batches of the dataset
     for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): #(X,y)
