@@ -35,3 +35,57 @@ def fast_hist(a, b, n):
 def per_class_iou(hist):
     epsilon = 1e-5
     return (np.diag(hist)) / (hist.sum(1) + hist.sum(0) - np.diag(hist) + epsilon)
+
+def save_metrics_on_file(epoch, metrics_train, metrics_val):
+    open_mode = "w" if epoch == 1 else "a"
+
+    with open("IMoU.txt", open_mode) as imou_file:
+        imou_file.write(f"""Epoch - {epoch}
+    ---------------
+    Training Phase
+    mIoU: {metrics_train['mean_iou']}
+    mIoU per Class: {metrics_train['iou_per_class']}
+    ---------------
+    Validation Phase
+    mIoU: {metrics_val['mean_iou']}
+    mIoU per Class: {metrics_val['iou_per_class']}
+    ===============
+
+    """)
+
+    with open("Loss.txt", open_mode) as loss_file:
+        loss_file.write(f"""Epoch - {epoch}
+    ---------------
+    Training Phase
+    Value Loss: {metrics_train['mean_loss']}
+    ---------------
+    Validation Phase
+    Value Loss: {metrics_val['mean_loss']}
+    ===============
+
+    """)
+
+    if epoch == 50:
+        with open("Final_Metrics.txt", "w") as metrics_file:
+            metrics_file.write(f"""Epoch - {epoch}
+    ---------------
+    Training Phase
+    mIoU: {metrics_train['mean_iou']}
+    mIoU per Class: {metrics_train['iou_per_class']}
+    Loss: {metrics_train['mean_loss']}
+    Latency: {metrics_train['mean_latency']} ± {metrics_train['std_latency']}
+    FPS: {metrics_train['mean_fps']} ± {metrics_train['std_fps']}
+    FLOPs: {metrics_train['num_flops']}
+    Trainable Params: {metrics_train['trainable_params']}
+    ---------------
+    Validation Phase
+    mIoU: {metrics_val['mean_iou']}
+    mIoU per Class: {metrics_val['iou_per_class']}
+    Loss: {metrics_val['mean_loss']}
+    Latency: {metrics_val['mean_latency']} ± {metrics_val['std_latency']}
+    FPS: {metrics_val['mean_fps']} ± {metrics_val['std_fps']}
+    FLOPs: {metrics_val['num_flops']}
+    Trainable Params: {metrics_val['trainable_params']}
+    ===============
+
+    """)
