@@ -121,13 +121,14 @@ if __name__ == "__main__":
     loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     print("loss loaded")
 
-    # To save the model we need to initialize of wanddb 
-    # Change the name of the project before the finale run of 50 epochs
-    wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino") # Replace with your wandb entity name
-    print("Wandb initialized")
-
+    
     # FOR LOOP ON THE EPOCHS
     for epoch in range(1, num_epochs + 1):
+        # To save the model we need to initialize of wanddb 
+        # Change the name of the project before the finale run of 50 epochs
+        wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        print("Wandb initialized")
+        
         print(f"Epoch {epoch}")
 
         print("Load the model")
