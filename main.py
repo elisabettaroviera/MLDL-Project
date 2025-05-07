@@ -96,7 +96,7 @@ if __name__ == "__main__":
     learning_rate = 0.0001 # Learning rate for the optimizer - 1e-4
     momentum = 0.9 # Momentum for the optimizer
     weight_decay = 0.0005 # Weight decay for the optimizer
-    batch_size = 2 # Batch size for the DataLoader
+    batch_size = 3 # Batch size for the DataLoader
     iter = 0 # Initialize the iteration counter
     max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
