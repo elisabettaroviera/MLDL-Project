@@ -139,11 +139,6 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000, warm
     model.eval()
     model.to(device)
 
-    # Iteration of warm-up
-    with torch.no_grad():
-        for _ in range(warmup_runs):
-            _ = model(image)
-
     latencies = []
     fps_values = []
 
