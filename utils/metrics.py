@@ -107,12 +107,6 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000, warm
 # height := the height of the input image
 # width := the width of the input image
 # iterations := number of iterations to compute the FLOPs
-"""def compute_flops(model, height=512, width=1024):
-    image = torch.zeros((3, height, width)) # Generesate a random image with shape (3, height, width) with all zeros
-
-    flops = FlopCountAnalysis(model, image) # Compute the FLOPs of the model on the image
-
-    return flop_count_table(flops)"""
 
 def compute_flops(model, height=512, width=1024):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -124,9 +118,6 @@ def compute_flops(model, height=512, width=1024):
     total_flops = flops.total()  # Totat FLOPs
 
     return total_flops / 1e9  # Number of FLOPS in GigaFLOPs
-
-
-
 
 # 4. Parameters
 def compute_parameters(model):
