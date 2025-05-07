@@ -151,8 +151,8 @@ model = model.to(device)
 # === TEST ===
 try:
     print("Testing compute_latency_and_fps...")
-    latency, std_latency, fps, std_fps = compute_latency_and_fps(model)
-    print(f"Latency: {latency:.2f} ± {std_latency:.2f} ms | FPS: {fps:.2f} ± {std_fps:.2f}")
+    #latency, std_latency, fps, std_fps = compute_latency_and_fps(model)
+    #print(f"Latency: {latency:.2f} ± {std_latency:.2f} ms | FPS: {fps:.2f} ± {std_fps:.2f}")
 
     print("\nTesting compute_flops...")
     flops = compute_flops(model)
