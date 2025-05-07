@@ -26,6 +26,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     # 2. Initialize the metrics variables and hyperparameters(?)
     print("Initializing the metrics variables...")
     running_loss = 0.0 
+    mean_loss = 0.0
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
 
