@@ -143,12 +143,16 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000):
 
     return flop_count_table(flops)"""
 def compute_flops(model, height=512, width=1024):
-    image = torch.zeros((2, 3, height, width))  # Aggiunta dimensione batch
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    image = torch.zeros((1, 3, height, width), device=device)  # immagine sulla stessa device
+    model = model.to(device)  # modello sulla stessa device
 
     model.eval()
     flops = FlopCountAnalysis(model, image)
     
     return flop_count_table(flops)
+
 
 
 # 4. Parameters
