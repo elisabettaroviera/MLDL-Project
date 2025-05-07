@@ -23,6 +23,7 @@ def validate(new_model, val_loader, criterion, num_classes):
     # 2. Initialize the metrics variables    
     print("Initializing the metrics variables...")
     mean_loss = 0
+    running_loss = 0.0
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
 
