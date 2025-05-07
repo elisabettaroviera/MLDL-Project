@@ -46,9 +46,14 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     # But this way we have max_iter = 39K (number of batches * epochs) (39300 = 50 * 786)
     # So I think we can try to update the learning rate one iteration yes and one iteration no on the batches.
 
+    # SOLUTION:
+    # We decide to use the poly_lr_scheduler function to update the learning rate
+    # The initial learning rate is _0.0001_ and the maximum number of iterations is 39K (number of batches * epochs).
+    # The learning rate is updated every iterations (batches)
+
 
     # 4. Loop on the batches of the dataset
-    for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): #(X,y)
+    for batch_idx, (inputs, targets, color_targets, file_names) in enumerate(dataloader_train): #(X,y)
         if batch_idx % 100 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_train)}")
 
