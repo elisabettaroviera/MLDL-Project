@@ -30,10 +30,14 @@ def save_images(flag_save, save_dir,inputs, file_names, preds, color_targets,fil
             flag_save += 1
 
             # Salva l'immagine originale da 'inputs' (tensore)
+            original_img_path = os.path.join("./datasets/Cityscapes/Cityspaces/images/val/frankfurt", file_name)
+            original_img = Image.open(original_img_path).convert('RGB')
+            original_img.save(f"{save_dir}/{file_name}_original.png")
+            """
             original_img = input.cpu().numpy().transpose(1, 2, 0)  # Converte (C, H, W) in (H, W, C)
             original_img = np.clip(original_img * 255, 0, 255).astype(np.uint8)  # Normalizza tra 0-255
             original_img_pil = Image.fromarray(original_img)
-            original_img_pil.save(f"{save_dir}/{file_name}_original.png")
+            original_img_pil.save(f"{save_dir}/{file_name}_original.png")"""
 
             # Salva la maschera predetta colorata
             color_mask = CITYSCAPES_COLORMAP[pred]
@@ -41,9 +45,10 @@ def save_images(flag_save, save_dir,inputs, file_names, preds, color_targets,fil
             color_mask_img.save(f"{save_dir}/{file_name}_pred_color.png")
 
             # Salva la maschera target colorata
-            if color_target is not None:
-                color_target_img = Image.fromarray(color_target)
-                color_target_img.save(f"{save_dir}/{file_name}_color_target.png")
+            gt_file_name = file_name.replace("leftImg8bit", "gtFine_color")
+            gt_path = os.path.join("./datasets/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name)
+            color_target_img = Image.open(gt_path).convert('RGB')
+            color_target_img.save(f"{save_dir}/{file_name}_color_target.png")
 
 # VALIDATION LOOP
 def validate(epoch, new_model, val_loader, criterion, num_classes):
@@ -106,7 +111,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
 
         #only enter the loop if we haven't saved both images    
         if flag_save < 2:
-            save_images(flag_save, save_dir,inputs, file_names, preds, color_targets,file_name_1, file_name_2)
+            save_images(flag_save,save_dir,inputs, file_names, preds, color_targets,file_name_1, file_name_2)
 
 
     # print the two images i want to save
