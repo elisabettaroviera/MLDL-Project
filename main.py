@@ -53,7 +53,7 @@ def print_metrics(title, metrics):
     print("\nClass-wise IoU (%):")
     print(f"{'Class':<20} {'IoU':>6}")
     print("-" * 28)
-    for cls, val in metrics['iou_per_class'].items():
+    for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
 
