@@ -44,14 +44,14 @@ def validate(new_model, val_loader, criterion, num_classes):
             outputs = model(inputs) # Predicted
             
             # Compute the loss
-            loss = criterion(outputs[0], targets)
+            loss = criterion(outputs, targets)
 
             # Update the running loss
             running_loss += loss.item() 
 
             ## Chat gpt dice: ##
             # Convert model outputs to predicted class labels
-            preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
+            preds = outputs.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
             
             # Accumulate intersections and unions per class
