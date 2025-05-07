@@ -94,7 +94,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     num_flops = compute_flops(model, height=512, width=1024)
     print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
     tot_params, trainable_params = compute_parameters(model)
-    print(f"Total Params: {total}, Trainable: {trainable}")
+    print(f"Total Params: {tot_params}, Trainable: {trainable_params}")
 
     # 6. SAVE THE PARAMETERS OF THE MODEL 
     print("Saving the model")
