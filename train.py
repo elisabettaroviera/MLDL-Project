@@ -128,7 +128,6 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         'iou_per_class': iou_per_class,
         'mean_latency' : mean_latency,
         'num_flops' : num_flops,
-        'trainable_params': trainable_params,
-        'iter': iter
+        'trainable_params': trainable_params
     }
-    return metrics
+    return metrics, iter
