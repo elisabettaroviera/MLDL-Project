@@ -122,6 +122,7 @@ if __name__ == "__main__":
     print("loss loaded")
 
     # To save the model we need to initialize of wanddb 
+    # Change the name of the project before the finale run of 50 epochs
     wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino") # Replace with your wandb entity name
     print("Wandb initialized")
 
@@ -144,7 +145,6 @@ if __name__ == "__main__":
     
         # 2. Training step
         print("Training step")
-        # 24 min circa
         metrics_train, iter = train(epoch, model, dataloader_cs_train, loss, optimizer, iter, learning_rate, num_classes, max_iter)
         print("Training step done")
 
@@ -152,9 +152,50 @@ if __name__ == "__main__":
         print_metrics("Training", metrics_train)
 
         # 3. Validation step
+
         print("Validation step")
-        metrics_val = validate(model, dataloader_cs_val, loss, num_classes) # Compute the accuracy on the validation set
+        metrics_val = validate(epoch, model, dataloader_cs_val, loss, num_classes) # Compute the accuracy on the validation set
         print("Validation step done")
 
         # PRINT all the metrics!
         print_metrics("Validation", metrics_val)
+
+        # File for the mIoU for each epoch
+            # Training phase
+            # Epoch - 1
+            # value mIoU
+            # value mIoU per class
+            # Validation phase
+            # Epoch - 1 
+            # value mIoU
+            # value mIoU per class
+
+        # File for the Loss for each epoch
+            # Training phase
+            # Epoch - 1
+            # value loss
+            # Validation phase
+            # Epoch - 1
+            # value loss
+
+
+        # File for all the final metrics (only the 50th epoch)
+            # Training phase
+            # Epoch - 50
+            # value mIoU
+            # value mIoU per class
+            # value loss
+            # value latency
+            # value FPS
+            # value FLOPs
+            # value parameters
+
+            # Validation phase
+            # Epoch - 50
+            # value mIoU
+            # value mIoU per class
+            # value loss
+            # value latency
+            # value FPS
+            # value FLOPs
+            # value parameters
