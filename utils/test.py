@@ -6,6 +6,17 @@
 
 # 1- To check if the download of the image works
 # Create output dir if needed
+import os
+import gdown
+import torch
+from data.dataloader import dataloader
+from datasets.cityscapes import CityScapes
+from datasets.transform_datasets import transform_cityscapes, transform_cityscapes_mask
+from models.deeplabv2.deeplabv2 import get_deeplab_v2
+from utils.metrics import compute_flops, compute_latency_and_fps, compute_parameters
+
+"""
+
 os.makedirs('./outputs', exist_ok=True)
 
 # Get first batch
@@ -86,3 +97,70 @@ print(f"mean iou = {mean_iou}")
 print(f"iou per class= {iou_per_class}")
 print("Intersections:", intersections)
 print("Unions:", unions)
+"""
+
+print("************STEP 2.a: TRAINING DEEPLABV2 ON CITYSCAPES***************")
+# Define transformations
+print("Define transformations")
+transform = transform_cityscapes()
+target_transform = transform_cityscapes_mask()
+
+# Load the datasets (Cityspaces)
+print("Load the datasets")
+cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
+cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
+
+# DataLoader
+# also saving filenames for the images, when doing train i should not need them
+# each batch is a nuple: images, masks, filenames 
+# I modify the value of the batch size because it has to match with the one of the model
+batch_size = 2 # 3 or the number the we will use in the model
+print("Create the dataloaders")
+dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+
+# Definition of the parameters for CITYSCAPES
+# Search on the pdf!! 
+print("Define the parameters")
+num_epochs = 50 # Number of epochs
+
+# The void label is not considered for evaluation (paper 2)
+# Hence the class are 0-18 (19 classes in total) without the void label
+num_classes = 19 # Number of classes in the dataset (Cityscapes)
+ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
+learning_rate = 0.001 # Learning rate for the optimizer
+momentum = 0.9 # Momentum for the optimizer
+weight_decay = 0.0005 # Weight decay for the optimizer
+batch_size = 2 # Batch size for the DataLoader
+iter = 0 # Initialize the iteration counter
+max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
+
+# Pretrained model path 
+print("Pretrained model path")
+pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
+if not os.path.exists(pretrain_model_path):
+    os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
+    print("Scarico i pesi pre-addestrati da Google Drive...")
+    url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
+    gdown.download(url, pretrain_model_path, quiet=False)
+
+print("Load the model")
+model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+
+# === TEST ===
+try:
+    print("Testing compute_latency_and_fps...")
+    latency, std_latency, fps, std_fps = compute_latency_and_fps(model)
+    print(f"Latency: {latency:.2f} ± {std_latency:.2f} ms | FPS: {fps:.2f} ± {std_fps:.2f}")
+
+    print("\nTesting compute_flops...")
+    flops = compute_flops(model)
+    print(flops)
+
+    print("\nTesting compute_parameters...")
+    total, trainable = compute_parameters(model)
+    print(f"Total Params: {total}, Trainable: {trainable}")
+
+except Exception as e:
+    print(f"Errore durante il test: {e}")
