@@ -133,12 +133,21 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         'loss': mean_loss,
     }, model_save_path)
 
+    # Crea un nuovo artifact per il modello della epoca corrente
+    artifact = wandb.Artifact(f"model_epoch_{epoch}", type="model")
+    artifact.add_file(model_save_path)  # Aggiungi il file del modello all'artifact
+
+    # Registra l'artifact su W&B
+    wandb.log_artifact(artifact)
+    print(f"Model saved for epoch {epoch}")
+    wandb.finish()
+    """
     # Salva il modello su wandb
     wandb.save(model_save_path)
 
     # Alla fine del ciclo, termina il run di wandb
     wandb.finish()
-    print("Model saved")
+    print("Model saved")"""
 
     # 7. Return all the metrics
     metrics = {

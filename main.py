@@ -123,7 +123,7 @@ if __name__ == "__main__":
     
     # FOR LOOP ON THE EPOCHS
     # number of epoch that we want to start from
-    start_epoch = 2
+    start_epoch = 1
     
     for epoch in range(start_epoch, num_epochs + 1):
 
