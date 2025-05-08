@@ -269,12 +269,26 @@ def save_images(flag_save, save_dir, inputs, file_names, preds, color_targets, f
 test_save_images()
 '''
 
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
-from PIL import Image
 import os
+from models.deeplabv2.deeplabv2 import get_deeplab_v2
+import torch
+from torchvision.datasets import ImageFolder
+from datasets.transform_datasets import *
+from data.dataloader import dataloader
+import numpy as np
+import time
+import matplotlib.pyplot as plt
+from fvcore.nn import FlopCountAnalysis, flop_count_table
+import torchvision.transforms.functional as TF
+from datasets.cityscapes import CityScapes
+import random
+from train import train
+from utils.utils import poly_lr_scheduler, save_metrics_on_file
+from validation import validate
+from utils.metrics import compute_miou
+from torch import nn
+import wandb
+import gdown
 from validation import validate, save_images
 
 # Dummy dataset per test
@@ -336,8 +350,20 @@ metrics.compute_latency_and_fps = compute_latency_and_fps
 metrics.compute_flops = compute_flops
 metrics.compute_parameters = compute_parameters
 
+# Pretrained model path 
+print("Pretrained model path")
+pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
+if not os.path.exists(pretrain_model_path):
+    os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
+    print("Scarico i pesi pre-addestrati da Google Drive...")
+    url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
+    gdown.download(url, pretrain_model_path, quiet=False)
+
+print("Load the model")
+model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
+model = model.to(device)
 # Run validation
-metrics_output = validate(epoch=50, new_model=dummy_model, val_loader=val_loader, criterion=criterion, num_classes=num_classes)
+metrics_output = validate(epoch=50, new_model=model, val_loader=val_loader, criterion=criterion, num_classes=num_classes)
 
 # Stampa i risultati
 print("Metrics output:")
