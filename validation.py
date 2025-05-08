@@ -27,6 +27,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
     
     for input, file_name, pred in zip(inputs, file_names, preds):
         if file_name in [file_name_1, file_name_2]:
+            print(f'the file_name is {file_name}')
             print(f' image  {file_name} encountered')
             flag_save += 1
 
@@ -111,7 +112,6 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             _, _, inters, unions = compute_miou(gts, preds, num_classes)
             total_intersections += inters
             total_unions += unions
-            print(f'nome a caso di una foto_{file_names[0]}_')
 
         #only enter the loop if we haven't saved both images    
         if flag_save < 2:
