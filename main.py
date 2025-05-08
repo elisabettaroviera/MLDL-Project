@@ -128,7 +128,7 @@ if __name__ == "__main__":
     for epoch in range(start_epoch, num_epochs + 1):
         # To save the model we need to initialize of wanddb 
         # Change the name of the project before the finale run of 50 epochs
-        wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", finish_previous=True) # Replace with your wandb entity name
         print("Wandb initialized")
         
         print(f"Epoch {epoch}")
