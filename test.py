@@ -268,7 +268,7 @@ def save_images(flag_save, save_dir, inputs, file_names, preds, color_targets, f
 # Esegui il test
 test_save_images()
 '''
-
+'''
 import os
 from models.deeplabv2.deeplabv2 import get_deeplab_v2
 import torch
@@ -359,3 +359,4 @@ print("Metrics output:")
 for k, v in metrics_val.items():
     print(f"{k}: {v}")
 
+'''
