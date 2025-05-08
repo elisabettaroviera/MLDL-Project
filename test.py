@@ -291,7 +291,6 @@ import wandb
 import gdown
 from validation import validate, save_images
 
-set_seed(23)  # Set a seed for reproducibility
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ############################################################################################################
