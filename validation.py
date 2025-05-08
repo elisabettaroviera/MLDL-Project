@@ -26,9 +26,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
     ], dtype=np.uint8)
     
     for input, file_name, pred in zip(inputs, file_names, preds):
-        print(f'the file_name is {file_name}')
         if file_name in [file_name_1, file_name_2]:
-            print(f' image  {file_name} encountered')
             flag_save += 1
 
             # Salva l'immagine originale da 'inputs' (tensore)
@@ -122,8 +120,14 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     # 5. Compute the metrics for the validation set 
     # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
     print("Computing the metrics for the training set...")
-    iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
-    mean_iou = np.nanmean(iou_per_class)
+    # Calcola IoU per classe, ma imposta a NaN i valori con union == 0
+    iou_per_class = np.where(total_unions > 0,
+                         (total_intersections / (total_unions + 1e-10)) * 100,
+                         np.nan)
+    # Calcola la media ignorando i NaN
+    mean_iou = np.nanmean(iou_per_class)         
+    #iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
+    #mean_iou = np.nanmean(iou_per_class)
     mean_loss = mean_loss / len(val_loader)
     
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
