@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # also saving filenames for the images, when doing train i should not need them
     # each batch is a nuple: images, masks, filenames 
     # I modify the value of the batch size because it has to match with the one of the model
-    batch_size = 2 # 3 or the number the we will use in the model
+    batch_size = 3 # 3 or the number the we will use in the model
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
@@ -96,7 +96,6 @@ if __name__ == "__main__":
     learning_rate = 0.0001 # Learning rate for the optimizer - 1e-4
     momentum = 0.9 # Momentum for the optimizer
     weight_decay = 0.0005 # Weight decay for the optimizer
-    batch_size = 3 # Batch size for the DataLoader
     iter = 0 # Initialize the iteration counter
     max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
