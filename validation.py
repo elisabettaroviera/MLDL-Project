@@ -16,7 +16,7 @@ from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, 
 from PIL import Image
 
 #Function to save sample images,ground truth color masks, prediction color masks
-def save_images(flag_save, save_dir,inputs, file_names, preds, color_targets,file_name_1, file_name_2):
+def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_name_2):
     # color map       
     CITYSCAPES_COLORMAP = np.array([
         [128, 64,128], [244, 35,232], [ 70, 70, 70], [102,102,156], [190,153,153],
@@ -25,7 +25,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds, color_targets,fil
         [  0, 60,100], [  0, 80,100], [  0,  0,230], [119, 11, 32]
     ], dtype=np.uint8)
     
-    for input, file_name, pred, color_target in zip(inputs, file_names, preds, color_targets):
+    for input, file_name, pred in zip(inputs, file_names, preds):
         if file_name in [file_name_1, file_name_2]:
             flag_save += 1
 
@@ -82,13 +82,6 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     #frankfurt_000001_054640_gtFine_color.png
     file_name_2 = "frankfurt_000001_062016_leftImg8bit.png"
     #frankfurt_000001_062016_gtFine_color.png
-
-    CITYSCAPES_COLORMAP = np.array([
-        [128, 64,128], [244, 35,232], [ 70, 70, 70], [102,102,156], [190,153,153],
-        [153,153,153], [250,170, 30], [220,220,  0], [107,142, 35], [152,251,152],
-        [ 70,130,180], [220, 20, 60], [255,  0,  0], [  0,  0,142], [  0,  0, 70],
-        [  0, 60,100], [  0, 80,100], [  0,  0,230], [119, 11, 32]
-    ], dtype=np.uint8)
     
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
@@ -111,9 +104,6 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             preds = outputs.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
 
-            # Convert targets to color masks
-            color_targets = CITYSCAPES_COLORMAP[targets.cpu().numpy()]
-
             
             # Accumulate intersections and unions per class
             _, _, inters, unions = compute_miou(gts, preds, num_classes)
@@ -122,7 +112,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
 
         #only enter the loop if we haven't saved both images    
         if flag_save < 2:
-            save_images(flag_save,save_dir,inputs, file_names, preds, color_targets,file_name_1, file_name_2)
+            save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
 
 
     # print the two images i want to save

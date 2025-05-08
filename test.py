@@ -195,6 +195,7 @@ metrics_val = {
 
 save_metrics_on_file(1, metrics_train, metrics_val)
 save_metrics_on_file(50, metrics_train, metrics_val)"""
+'''''''''
 
 import torch
 import numpy as np
@@ -266,3 +267,81 @@ def save_images(flag_save, save_dir, inputs, file_names, preds, color_targets, f
 
 # Esegui il test
 test_save_images()
+'''
+
+import torch
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
+from PIL import Image
+import os
+from validation import validate, save_images
+
+# Dummy dataset per test
+class DummyCityscapesDataset(Dataset):
+    def __init__(self, num_samples=10, height=512, width=1024, num_classes=19):
+        self.num_samples = num_samples
+        self.height = height
+        self.width = width
+        self.num_classes = num_classes
+        self.file_names = [f"frankfurt_000001_054640_leftImg8bit.png" if i == 0 else 
+                           f"frankfurt_000001_062016_leftImg8bit.png" if i == 1 else 
+                           f"dummy_{i}.png" for i in range(num_samples)]
+
+    def __len__(self):
+        return self.num_samples
+
+    def __getitem__(self, idx):
+        image = torch.randn(3, self.height, self.width)  # input image
+        label = torch.randint(0, self.num_classes, (self.height, self.width))  # segmentation mask
+        return image, label, self.file_names[idx]
+
+# Dummy model
+class DummySegmentationModel(nn.Module):
+    def __init__(self, num_classes):
+        super(DummySegmentationModel, self).__init__()
+        self.conv = nn.Conv2d(3, num_classes, kernel_size=1)
+
+    def forward(self, x):
+        return self.conv(x)
+
+# Dummy mIoU function
+def compute_miou(gts, preds, num_classes):
+    inters = np.zeros(num_classes)
+    unions = np.ones(num_classes)
+    return None, None, inters, unions
+
+# Dummy compute metrics
+def compute_latency_and_fps(model, height, width, iterations):
+    return 10.0, 1.0, 100.0, 5.0
+
+def compute_flops(model, height, width):
+    return 12.3  # GigaFLOPs
+
+def compute_parameters(model):
+    return sum(p.numel() for p in model.parameters()), sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+# Setup
+num_classes = 19
+dummy_model = DummySegmentationModel(num_classes).cuda()
+dummy_dataset = DummyCityscapesDataset()
+val_loader = DataLoader(dummy_dataset, batch_size=2)
+criterion = nn.CrossEntropyLoss(ignore_index=255)
+
+# Patch compute functions
+import types
+from utils import metrics
+metrics.compute_miou = compute_miou
+metrics.compute_latency_and_fps = compute_latency_and_fps
+metrics.compute_flops = compute_flops
+metrics.compute_parameters = compute_parameters
+
+# Run validation
+from validate_module import validate  # importa la tua funzione se è in un file esterno
+metrics_output = validate(epoch=50, new_model=dummy_model, val_loader=val_loader, criterion=criterion, num_classes=num_classes)
+
+# Stampa i risultati
+print("Metrics output:")
+for k, v in metrics_output.items():
+    print(f"{k}: {v}")
+
