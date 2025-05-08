@@ -356,6 +356,6 @@ metrics_val = validate(1, model, dataloader_cs_val, loss, num_classes) # Compute
 print("Validation step done")
 # Stampa i risultati
 print("Metrics output:")
-for k, v in metrics_output.items():
+for k, v in metrics_val.items():
     print(f"{k}: {v}")
 
