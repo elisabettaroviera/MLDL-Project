@@ -135,7 +135,7 @@ if __name__ == "__main__":
         if epoch != 1:
             # Load the model from the previous epoch by wandb
             # Carica il checkpoint del modello (ad esempio dalla terza epoca)
-            checkpoint_path = wandb.restore(f"model_epoch_{epoch-1}.pt")  # Nome del file salvato su wandb
+            checkpoint_path = wandb.restore(f"epoch_{epoch-1}.pt")  # Nome del file salvato su wandb
             checkpoint = torch.load(checkpoint_path.name)  # Carica il checkpoint
 
             # Carica il modello e lo stato dell'ottimizzatore
