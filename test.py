@@ -291,64 +291,45 @@ import wandb
 import gdown
 from validation import validate, save_images
 
-# Dummy dataset per test
-class DummyCityscapesDataset(Dataset):
-    def __init__(self, num_samples=10, height=512, width=1024, num_classes=19):
-        self.num_samples = num_samples
-        self.height = height
-        self.width = width
-        self.num_classes = num_classes
-        self.file_names = [f"frankfurt_000001_054640_leftImg8bit.png" if i == 0 else 
-                           f"frankfurt_000001_062016_leftImg8bit.png" if i == 1 else 
-                           f"dummy_{i}.png" for i in range(num_samples)]
+set_seed(23)  # Set a seed for reproducibility
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    def __len__(self):
-        return self.num_samples
+############################################################################################################
+################################################# STEP 2.a #################################################
 
-    def __getitem__(self, idx):
-        image = torch.randn(3, self.height, self.width)  # input image
-        label = torch.randint(0, self.num_classes, (self.height, self.width))  # segmentation mask
-        return image, label, self.file_names[idx]
+print("************STEP 2.a: TRAINING DEEPLABV2 ON CITYSCAPES***************")
+# Define transformations
+print("Define transformations")
+transform = transform_cityscapes()
+target_transform = transform_cityscapes_mask()
 
-# Dummy model
-class DummySegmentationModel(nn.Module):
-    def __init__(self, num_classes):
-        super(DummySegmentationModel, self).__init__()
-        self.conv = nn.Conv2d(3, num_classes, kernel_size=1)
+# Load the datasets (Cityspaces)
+print("Load the datasets")
+cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
+cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
-    def forward(self, x):
-        return self.conv(x)
+# DataLoader
+# also saving filenames for the images, when doing train i should not need them
+# each batch is a nuple: images, masks, filenames 
+# I modify the value of the batch size because it has to match with the one of the model
+batch_size = 3 # 3 or the number the we will use in the model
+print("Create the dataloaders")
+dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
-# Dummy mIoU function
-def compute_miou(gts, preds, num_classes):
-    inters = np.zeros(num_classes)
-    unions = np.ones(num_classes)
-    return None, None, inters, unions
+# Definition of the parameters for CITYSCAPES
+# Search on the pdf!! 
+print("Define the parameters")
+num_epochs = 50 # Number of epochs
 
-# Dummy compute metrics
-def compute_latency_and_fps(model, height, width, iterations):
-    return 10.0, 1.0, 100.0, 5.0
-
-def compute_flops(model, height, width):
-    return 12.3  # GigaFLOPs
-
-def compute_parameters(model):
-    return sum(p.numel() for p in model.parameters()), sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-# Setup
-num_classes = 19
-dummy_model = DummySegmentationModel(num_classes).cuda()
-dummy_dataset = DummyCityscapesDataset()
-val_loader = DataLoader(dummy_dataset, batch_size=2)
-criterion = nn.CrossEntropyLoss(ignore_index=255)
-
-# Patch compute functions
-import types
-from utils import metrics
-metrics.compute_miou = compute_miou
-metrics.compute_latency_and_fps = compute_latency_and_fps
-metrics.compute_flops = compute_flops
-metrics.compute_parameters = compute_parameters
+# The void label is not considered for evaluation (paper 2)
+# Hence the class are 0-18 (19 classes in total) without the void label
+num_classes = 19 # Number of classes in the dataset (Cityscapes)
+ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
+learning_rate = 0.0001 # Learning rate for the optimizer - 1e-4
+momentum = 0.9 # Momentum for the optimizer
+weight_decay = 0.0005 # Weight decay for the optimizer
+iter = 0 # Initialize the iteration counter
+max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
 # Pretrained model path 
 print("Pretrained model path")
@@ -362,9 +343,18 @@ if not os.path.exists(pretrain_model_path):
 print("Load the model")
 model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
 model = model.to(device)
-# Run validation
-metrics_output = validate(epoch=50, new_model=model, val_loader=val_loader, criterion=criterion, num_classes=num_classes)
 
+# Definition of the optimizer for the first epoch
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
+print("Optimizer loaded")
+
+# Defintion of the loss function
+loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+print("loss loaded")
+
+print("Validation step")
+metrics_val = validate(1, model, dataloader_cs_val, loss, num_classes) # Compute the accuracy on the validation set
+print("Validation step done")
 # Stampa i risultati
 print("Metrics output:")
 for k, v in metrics_output.items():
