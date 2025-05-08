@@ -26,8 +26,8 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
     ], dtype=np.uint8)
     
     for input, file_name, pred in zip(inputs, file_names, preds):
+        print(f'the file_name is {file_name}')
         if file_name in [file_name_1, file_name_2]:
-            print(f'the file_name is {file_name}')
             print(f' image  {file_name} encountered')
             flag_save += 1
 
