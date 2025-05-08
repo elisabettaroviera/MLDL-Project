@@ -95,7 +95,9 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             outputs = model(inputs) # Predicted
             
             # Compute the loss
-            loss = criterion(outputs, targets)
+            loss = criterion(outputs[0], targets)
+            print(f'loss is {loss}')
+            print(f'loss item is {loss.item()}')
 
             # Update the running loss
             running_loss += loss.item() 
@@ -124,8 +126,10 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     iou_per_class = np.where(total_unions > 0,
                          (total_intersections / (total_unions + 1e-10)) * 100,
                          np.nan)
+    iou_non_zero = np.array(iou_per_class)
+    iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
     # Calcola la media ignorando i NaN
-    mean_iou = np.nanmean(iou_per_class)         
+    mean_iou = np.nanmean(iou_non_zero)         
     #iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     #mean_iou = np.nanmean(iou_per_class)
     mean_loss = mean_loss / len(val_loader)
