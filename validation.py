@@ -95,7 +95,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             outputs = model(inputs) # Predicted
             
             # Compute the loss
-            loss = criterion(outputs[0], targets)
+            loss = criterion(outputs, targets)
             print(f'loss is {loss}')
             print(f'loss item is {loss.item()}')
 
