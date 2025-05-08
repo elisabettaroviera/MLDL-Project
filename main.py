@@ -126,6 +126,32 @@ if __name__ == "__main__":
     start_epoch = 2
     
     for epoch in range(start_epoch, num_epochs + 1):
+
+        # To save the model we need to initialize wandb 
+        # Change the name of the project before the final run of 50 epochs
+        wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        print("Wandb initialized")
+
+        print(f"Epoch {epoch}")
+
+        print("Load the model")
+        # 1. Obtain the pretrained model
+        if epoch != 1:
+            # Load the model from the previous epoch using wandb artifact
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/DeepLabV2_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
+            
+            # Get the local path where the artifact is saved
+            artifact_dir = artifact.download()
+
+            # Load the model checkpoint from the artifact
+            checkpoint_path = os.path.join(artifact_dir, f"model_epoch_{epoch-1}.pt")
+            checkpoint = torch.load(checkpoint_path)  # Carica il checkpoint
+
+            # Carica il modello e lo stato dell'ottimizzatore
+            model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        """
         # To save the model we need to initialize of wanddb 
         # Change the name of the project before the finale run of 50 epochs
         wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
@@ -143,7 +169,7 @@ if __name__ == "__main__":
 
             # Carica il modello e lo stato dell'ottimizzatore
             model.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])"""
         
     
         # 2. Training step
