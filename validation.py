@@ -111,7 +111,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             _, _, inters, unions = compute_miou(gts, preds, num_classes)
             total_intersections += inters
             total_unions += unions
-            print('nome a caso di una foto ',file_names[0])
+            print(f'nome a caso di una foto_{file_names[0]}_')
 
         #only enter the loop if we haven't saved both images    
         if flag_save < 2:
