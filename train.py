@@ -89,7 +89,10 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
     print("Computing the metrics for the training set...")
     iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
-    mean_iou = np.nanmean(iou_per_class)
+    iou_non_zero = np.array(iou_per_class)
+    iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
+    # Calcola la media ignorando i NaN
+    mean_iou = np.nanmean(iou_non_zero) 
     mean_loss = running_loss / len(dataloader_train)    
 
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
