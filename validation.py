@@ -27,6 +27,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
     
     for input, file_name, pred in zip(inputs, file_names, preds):
         if file_name in [file_name_1, file_name_2]:
+            print(f' image  {file_name} encountered')
             flag_save += 1
 
             # Salva l'immagine originale da 'inputs' (tensore)
@@ -49,6 +50,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
             gt_path = os.path.join("./datasets/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name)
             color_target_img = Image.open(gt_path).convert('RGB')
             color_target_img.save(f"{save_dir}/{file_name}_color_target.png")
+    return flag_save
 
 # VALIDATION LOOP
 def validate(epoch, new_model, val_loader, criterion, num_classes):
@@ -109,10 +111,11 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             _, _, inters, unions = compute_miou(gts, preds, num_classes)
             total_intersections += inters
             total_unions += unions
+            print('nome a caso di una foto ',file_names[0])
 
         #only enter the loop if we haven't saved both images    
         if flag_save < 2:
-            save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
+            flag_save = save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
 
 
     # print the two images i want to save
