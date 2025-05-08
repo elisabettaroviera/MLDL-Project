@@ -337,7 +337,6 @@ metrics.compute_flops = compute_flops
 metrics.compute_parameters = compute_parameters
 
 # Run validation
-from validate_module import validate  # importa la tua funzione se è in un file esterno
 metrics_output = validate(epoch=50, new_model=dummy_model, val_loader=val_loader, criterion=criterion, num_classes=num_classes)
 
 # Stampa i risultati
