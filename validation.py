@@ -96,8 +96,6 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             
             # Compute the loss
             loss = criterion(outputs, targets)
-            print(f'loss is {loss}')
-            print(f'loss item is {loss.item()}')
 
             # Update the running loss
             running_loss += loss.item() 
@@ -123,16 +121,13 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
     print("Computing the metrics for the training set...")
     # Calcola IoU per classe, ma imposta a NaN i valori con union == 0
-    iou_per_class = np.where(total_unions > 0,
-                         (total_intersections / (total_unions + 1e-10)) * 100,
-                         np.nan)
+    iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     iou_non_zero = np.array(iou_per_class)
     iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
     # Calcola la media ignorando i NaN
     mean_iou = np.nanmean(iou_non_zero)         
-    #iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     #mean_iou = np.nanmean(iou_per_class)
-    mean_loss = mean_loss / len(val_loader)
+    mean_loss = running_loss / len(val_loader)
     
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
