@@ -69,7 +69,7 @@ if __name__ == "__main__":
     ############################################################################################################
     ################################################# STEP 2.a #################################################
 
-    print("************STEP 2.a: TRAINING DEEPLABV2 ON CITYSCAPES***************")
+    print(f"************STEP 2 : TRAINING {var_model} ON CITYSCAPES***************")
     # Define transformations
     print("Define transformations")
     transform = transform_cityscapes()
