@@ -1,4 +1,4 @@
-# TODO: Define here your training and validation loops.
+# TODO: Define here your validation
 
 # Import necessary libraries
 import os
@@ -69,7 +69,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     print("Starting the validation of the model...")
     model.eval()
 
-    print(f"Training on {len(val_loader)} batches")
+    print(f"Validating on {len(val_loader)} batches")
             # Color map Cityscapes to visualize the mask with colors
 
     # Make sure the cartella outputs exists
@@ -120,7 +120,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     # print the two images i want to save
     # 5. Compute the metrics for the validation set 
     # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
-    print("Computing the metrics for the training set...")
+    print("Computing the metrics for the validation set...")
     # Calcola IoU per classe, ma imposta a NaN i valori con union == 0
     iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     iou_non_zero = np.array(iou_per_class)
