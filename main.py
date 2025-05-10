@@ -133,7 +133,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 1
+        start_epoch = 6
 
     # Load the model on the device    
     model = model.to(device)
@@ -263,3 +263,4 @@ if __name__ == "__main__":
             # value parameters
         
         save_metrics_on_file(epoch, metrics_train, metrics_val)
+        wandb.finish()
