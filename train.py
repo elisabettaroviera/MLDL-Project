@@ -18,6 +18,7 @@ import wandb
 
 # TRAIN LOOP
 def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion = loss
+    var_model = os.environ['MODEL'] 
     # 1. Obtain the pretrained model
     model = old_model 
     print("Training the model...")
@@ -62,7 +63,13 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         outputs = model(inputs)        
 
         # Compute the loss
+        # DeepLabV2 returns for training the output, None, None
+        # BiseNet returns the output, aux1, aux2 (aux are predictions from contextpath)
         loss = criterion(outputs[0], targets)
+        if var_model == "BiSeNet":
+            alpha = 1 # in the paper they use 1
+            loss +=  alpha * criterion(outputs[1], targets) + alpha *  criterion(outputs[2], targets)
+             
 
         # Backpropagation
         optimizer.zero_grad()

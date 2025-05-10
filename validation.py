@@ -53,6 +53,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
 
 # VALIDATION LOOP
 def validate(epoch, new_model, val_loader, criterion, num_classes):
+    var_model = os.environ['MODEL']
     # 1. Obtain the pretrained model 
     model = new_model
     print("Validating the model...")
@@ -72,7 +73,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             # Color map Cityscapes to visualize the mask with colors
 
     # Make sure the cartella outputs exists
-    save_dir = './outputs'
+    save_dir = f'./outputs/{var_model}_outputs'
     os.makedirs(save_dir, exist_ok=True)
     # flag used to say whether we have saved the two pictures
     # if flag = 1, we still need to save another picture

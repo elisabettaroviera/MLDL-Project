@@ -19,6 +19,7 @@ from utils.metrics import compute_miou
 from torch import nn
 import wandb
 import gdown
+from models.bisenet.build_bisenet import BiSeNet
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
@@ -57,7 +58,10 @@ def print_metrics(title, metrics):
         print(f"{cls:<20} {val:>6.2f}")
 
 
+
 if __name__ == "__main__":
+    # ambient variable
+    var_model = os.environ['MODEL'] #'DeepLabV2' #BiSeNet # Choose the model to train
 
     set_seed(23)  # Set a seed for reproducibility
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -76,11 +80,25 @@ if __name__ == "__main__":
     cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
-    # DataLoader
-    # also saving filenames for the images, when doing train i should not need them
-    # each batch is a nuple: images, masks, filenames 
-    # I modify the value of the batch size because it has to match with the one of the model
-    batch_size = 3 # 3 or the number the we will use in the model
+
+    # Choose the model's parameters
+    if var_model == 'DeepLabV2':
+        print("MODEL DEEPLABV2")
+        # I modify the value of the batch size because it has to match with the one of the model
+        batch_size = 3 # 3 or the number the we will use in the model
+        learning_rate = 0.0001 # Learning rate for the optimizer - 1e-4
+        momentum = 0.9 # Momentum for the optimizer
+        weight_decay = 0.0005 # Weight decay for the optimizer
+        
+    elif var_model == 'BiSeNet':
+        print("MODEL BISENET")
+        """SCEGLI I PARAMETRIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"""
+        batch_size = 16
+        learning_rate = 0.025 # Learning rate for the optimizer - 1e-4
+        momentum = 0.9 # Momentum for the optimizer
+        weight_decay = 1e-4 # Weight decay for the optimizer
+
+    # Define the dataloaders
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
@@ -93,25 +111,33 @@ if __name__ == "__main__":
     # Hence the class are 0-18 (19 classes in total) without the void label
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
-    learning_rate = 0.0001 # Learning rate for the optimizer - 1e-4
-    momentum = 0.9 # Momentum for the optimizer
-    weight_decay = 0.0005 # Weight decay for the optimizer
     iter = 0 # Initialize the iteration counter
     max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
-    # Pretrained model path 
-    print("Pretrained model path")
-    pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
-    if not os.path.exists(pretrain_model_path):
-        os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
-        print("Scarico i pesi pre-addestrati da Google Drive...")
-        url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
-        gdown.download(url, pretrain_model_path, quiet=False)
+    if var_model == 'DeepLabV2':
+        # Pretrained model path 
+        print("Pretrained model path")
+        pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
+        if not os.path.exists(pretrain_model_path):
+            os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
+            print("Scarico i pesi pre-addestrati da Google Drive...")
+            url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
+            gdown.download(url, pretrain_model_path, quiet=False)
 
-    print("Load the model")
-    model = get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path=pretrain_model_path)
+        print("Load the model")
+        model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
+        # number of epoch that we want to start from
+        start_epoch = 27
+        
+
+    elif var_model == 'BiSeNet':
+        model = BiSeNet(num_classes=num_classes, context_path='resnet18')
+        # number of epoch that we want to start from
+        start_epoch = 1
+
+    # Load the model on the device    
     model = model.to(device)
-    
+
     # Definition of the optimizer for the first epoch
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # Optimizer (Stochastic Gradient Descent)
     print("Optimizer loaded")
@@ -120,16 +146,12 @@ if __name__ == "__main__":
     loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     print("loss loaded")
 
-    
-    # FOR LOOP ON THE EPOCHS
-    # number of epoch that we want to start from
-    start_epoch = 27
+
     
     for epoch in range(start_epoch, num_epochs + 1):
-
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -138,7 +160,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/DeepLabV2_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
