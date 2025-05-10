@@ -93,7 +93,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
         """SCEGLI I PARAMETRIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"""
-        batch_size = 16
+        batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
         learning_rate = 0.025 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
