@@ -196,7 +196,10 @@ if __name__ == "__main__":
     
         # 2. Training step
         print("Training step")
+        start_train = time.time()
         metrics_train, iter = train(epoch, model, dataloader_cs_train, loss, optimizer, iter, learning_rate, num_classes, max_iter)
+        end_train = time.time()
+        print(f"Time taken for training step: {end_train - start_train:.2f} seconds")
         print("Training step done")
 
         # PRINT all the metrics!
@@ -205,11 +208,19 @@ if __name__ == "__main__":
         # 3. Validation step
 
         print("Validation step")
+        start_val = time.time()
         metrics_val = validate(epoch, model, dataloader_cs_val, loss, num_classes) # Compute the accuracy on the validation set
+        end_val = time.time()
+        print(f"Time taken for validation step: {end_val - start_val:.2f} seconds")
         print("Validation step done")
+
 
         # PRINT all the metrics!
         print_metrics("Validation", metrics_val)
+        # Compute the total time taken for the epoch
+        # (training + validation)
+        tot_time = end_val - start_train
+        print(f"Total time taken for epoch {epoch}: {tot_time:.2f} seconds")
 
         # File for the mIoU for each epoch
             # Training phase
