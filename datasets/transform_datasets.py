@@ -32,3 +32,23 @@ def transform_cityscapes_mask():
     # You DON'T need to normalize masks because  the contain class labels not pixel value
 
     return transform
+
+"""
+## TODO: def transform_gta(): 
+    # NOTE: The training resolution and the val resolution are equal in Cityscapes
+    # Hence, we can use the same transform for both train and test
+    transform = transforms.Compose([
+        transforms.Resize((512, 1024)),  # Resize to 1024x512 (note: H, W)
+        transforms.ToTensor(),           # Convert to [0,1] float tensor
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])  # Normalize using ImageNet stats
+    ])
+    return transform
+
+    def transform_gta_mask():
+    # Compose the transformations: Resize + Convert to tensor
+    transform = transforms.Compose([
+        transforms.Resize((512, 1024), interpolation=Image.NEAREST),  # Resize with nearest neighbor to preserve label IDs
+        transforms.Lambda(lambda mask: to_tensor_no_normalization(mask))  # Apply the custom tensor conversion
+    ])
+"""
