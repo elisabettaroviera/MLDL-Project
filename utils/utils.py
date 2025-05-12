@@ -4,6 +4,8 @@ import wandb
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from monai.losses import DiceLoss
+
 
 
 def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
@@ -153,3 +155,35 @@ class CombinedLoss_Lovasz(nn.Module):
         lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
         return self.alpha * ce + self.beta * lovasz
 """  
+
+# To avoid void class in dice loss
+def masked_monai_dice_loss(pred, target, num_classes, ignore_index=255):
+    """
+    pred: torch.Tensor, shape (N, C, H, W), logits
+    target: torch.Tensor, shape (N, H, W), long
+    num_classes: int, number of classes (e.g., 19)
+    """
+
+    # Create mask: 1 for valid pixels, 0 for ignore_index
+    mask = (target != ignore_index).float()  # shape: (N, H, W)
+
+    # Clamp target to valid range to avoid indexing errors
+    target_clamped = target.clone()
+    target_clamped[target == ignore_index] = 0  # temporarily set to class 0
+
+    # One-hot encode target: (N, H, W) -> (N, C, H, W)
+    target_one_hot = F.one_hot(target_clamped, num_classes=num_classes).permute(0, 3, 1, 2).float()
+
+    # Apply mask to both prediction and target
+    mask = mask.unsqueeze(1)  # shape: (N, 1, H, W)
+    pred_masked = pred * mask
+    target_masked = target_one_hot * mask
+
+    # Define MONAI DiceLoss (no softmax needed here because it's inside the loss)
+    dice = DiceLoss(
+        include_background=False,
+        softmax=True,
+        reduction="mean",
+    )
+
+    return dice(pred_masked, target_masked)
