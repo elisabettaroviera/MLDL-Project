@@ -109,7 +109,7 @@ if __name__ == "__main__":
     random.shuffle(indices)
 
     # Take only 1/4 of the samples
-    subset_len = total_len // 4
+    subset_len = (total_len // 4) -1
     subset_indices = indices[:subset_len]
 
     # Subset of the dataset
