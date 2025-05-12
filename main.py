@@ -111,7 +111,7 @@ if __name__ == "__main__":
     # Hence the class are 0-18 (19 classes in total) without the void label
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
-    iter = 0 # Initialize the iteration counter
+    iter_curr = 0 # Initialize the iteration counter
     max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
     if var_model == 'DeepLabV2':
@@ -173,32 +173,12 @@ if __name__ == "__main__":
             # Carica il modello e lo stato dell'ottimizzatore
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-
-        """
-        # To save the model we need to initialize of wanddb 
-        # Change the name of the project before the finale run of 50 epochs
-        wandb.init(project="DeepLabV2_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
-        print("Wandb initialized")
-        
-        print(f"Epoch {epoch}")
-
-        print("Load the model")
-        # 1. Obtain the pretrained model
-        if epoch != 1:
-            # Load the model from the previous epoch by wandb
-            # Carica il checkpoint del modello (ad esempio dalla terza epoca)
-            checkpoint_path = wandb.restore(f"model_epoch_{epoch-1}.pt")  # Nome del file salvato su wandb
-            checkpoint = torch.load(checkpoint_path.name)  # Carica il checkpoint
-
-            # Carica il modello e lo stato dell'ottimizzatore
-            model.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])"""
         
     
         # 2. Training step
         print("Training step")
         start_train = time.time()
-        metrics_train, iter = train(epoch, model, dataloader_cs_train, loss, optimizer, iter, learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
         end_train = time.time()
         print(f"Time taken for training step: {end_train - start_train:.2f} seconds")
         print("Training step done")
