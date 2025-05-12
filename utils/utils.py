@@ -1,5 +1,8 @@
 import numpy as np
 import wandb
+from lovasz_losses import lovasz_softmax  # file taken from github
+import torch
+import torch.nn as nn
 
 
 def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
@@ -120,3 +123,18 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
             "val_flops": metrics_val['num_flops'],
             "val_params": metrics_val['trainable_params']
         })
+
+    # Class to compute the combined loss: alpha*cross entropy + beta*lovasz
+    class CombinedLoss_Lovasz(nn.Module):
+        def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
+            super(CombinedLoss_Lovasz, self).__init__()
+            self.alpha = alpha
+            self.beta = beta
+            self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+            self.ignore_index = ignore_index
+
+        def forward(self, outputs, targets):
+            ce = self.ce_loss(outputs, targets)
+            probs = torch.softmax(outputs, dim=1)
+            lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
+            return self.alpha * ce + self.beta * lovasz
