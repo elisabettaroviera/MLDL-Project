@@ -114,11 +114,9 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
     for index, iou in enumerate(metrics_val['iou_per_class']):
         to_serialize[f"class_{index}_val"] = iou
 
-    print(to_serialize)
-
     # Log delle metriche di training e validazione su WandB
-    #if epoch != 50:
-    #    wandb.log(to_serialize)
+    if epoch != 50:
+        wandb.log(to_serialize)
 
     # Salvataggio delle metriche finali al 50esimo epoch
     if epoch == 50:
