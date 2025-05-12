@@ -17,6 +17,7 @@ from PIL import Image
 
 #Function to save sample images,ground truth color masks, prediction color masks
 def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_name_2):
+    resize_transform = transforms.Resize((512, 1024))  # Resize da applicare
     # color map       
     CITYSCAPES_COLORMAP = np.array([
         [128, 64,128], [244, 35,232], [ 70, 70, 70], [102,102,156], [190,153,153],
@@ -32,14 +33,10 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
             # Salva l'immagine originale da 'inputs' (tensore)
             original_img_path = os.path.join("./datasets/Cityscapes/Cityspaces/images/val/frankfurt", file_name)
             original_img = Image.open(original_img_path).convert('RGB')
-            original_img.save(f"{save_dir}/{file_name}_original.png")
-            """
-            original_img = input.cpu().numpy().transpose(1, 2, 0)  # Converte (C, H, W) in (H, W, C)
-            original_img = np.clip(original_img * 255, 0, 255).astype(np.uint8)  # Normalizza tra 0-255
-            original_img_pil = Image.fromarray(original_img)
-            original_img_pil.save(f"{save_dir}/{file_name}_original.png")"""
-
-            # Salva la maschera predetta colorata
+            # resize image
+            resized_img = resize_transform(original_img)
+            resized_img.save(f"{save_dir}/{file_name}_image_original.png")
+            # Salva la maschera predetta colorata (ovviamente ha le dimensioni giuste)
             color_mask = CITYSCAPES_COLORMAP[pred]
             color_mask_img = Image.fromarray(color_mask)
             color_mask_img.save(f"{save_dir}/{file_name}_pred_color.png")
@@ -48,7 +45,8 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
             gt_file_name = file_name.replace("leftImg8bit", "gtFine_color")
             gt_path = os.path.join("./datasets/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name)
             color_target_img = Image.open(gt_path).convert('RGB')
-            color_target_img.save(f"{save_dir}/{file_name}_color_target.png")
+            resized_target = resize_transform(color_target_img)
+            resized_target.save(f"{save_dir}/{file_name}_color_target.png")
     return flag_save
 
 # VALIDATION LOOP
