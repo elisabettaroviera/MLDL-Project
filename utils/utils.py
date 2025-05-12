@@ -96,16 +96,27 @@ def save_metrics_on_file(epoch, metrics_train, metrics_val):
 
  #Function to save the metrics on WandB           
 def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
-    # Log delle metriche di training e validazione su WandB
-    wandb.log({
+
+    to_serialize = {
         "epoch": epoch,
         "train_mIoU": metrics_train['mean_iou'],
-        "train_mIoU_per_class": metrics_train['iou_per_class'],
         "train_loss": metrics_train['mean_loss'],
         "val_mIoU": metrics_val['mean_iou'],
         "val_mIoU_per_class": metrics_val['iou_per_class'],
         "val_loss": metrics_val['mean_loss']
-    })
+    }
+
+    print(metrics_train['iou_per_class'])
+
+    for index, iou in enumerate(metrics_train['iou_per_class']):
+        to_serialize[f"class_{index}_train"] = iou
+
+    for index, iou in enumerate(metrics_val['iou_per_class']):
+        to_serialize[f"class_{index}_val"] = iou
+
+    # Log delle metriche di training e validazione su WandB
+    if epoch != 50:
+        wandb.log(to_serialize)
 
     # Salvataggio delle metriche finali al 50esimo epoch
     if epoch == 50:
@@ -124,17 +135,18 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
             "val_params": metrics_val['trainable_params']
         })
 
-    # Class to compute the combined loss: alpha*cross entropy + beta*lovasz
-    class CombinedLoss_Lovasz(nn.Module):
-        def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
-            super(CombinedLoss_Lovasz, self).__init__()
-            self.alpha = alpha
-            self.beta = beta
-            self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
-            self.ignore_index = ignore_index
+# Class to compute the combined loss: alpha*cross entropy + beta*lovasz
+#https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
+class CombinedLoss_Lovasz(nn.Module):
+    def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
+        super(CombinedLoss_Lovasz, self).__init__()
+        self.alpha = alpha
+        self.beta = beta
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.ignore_index = ignore_index
 
-        def forward(self, outputs, targets):
-            ce = self.ce_loss(outputs, targets)
-            probs = torch.softmax(outputs, dim=1)
-            lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
-            return self.alpha * ce + self.beta * lovasz
+    def forward(self, outputs, targets):
+        ce = self.ce_loss(outputs, targets)
+        probs = torch.softmax(outputs, dim=1)
+        lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
+        return self.alpha * ce + self.beta * lovasz
