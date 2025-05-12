@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler, save_metrics_on_file
+from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         start_train = time.time()
         metrics_train, iter_curr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
         end_train = time.time()
-        print(f"Time taken for training step: {end_train - start_train:.2f} seconds")
+        print(f"Time taken for training step: {(end_train - start_train)/60:.2f} minutes")
         print("Training step done")
 
         # PRINT all the metrics!
@@ -192,7 +192,7 @@ if __name__ == "__main__":
         start_val = time.time()
         metrics_val = validate(epoch, model, dataloader_cs_val, loss, num_classes) # Compute the accuracy on the validation set
         end_val = time.time()
-        print(f"Time taken for validation step: {end_val - start_val:.2f} seconds")
+        print(f"Time taken for validation step: {(end_val - start_val)/60:.2f} minutes")
         print("Validation step done")
 
 
@@ -201,7 +201,7 @@ if __name__ == "__main__":
         # Compute the total time taken for the epoch
         # (training + validation)
         tot_time = end_val - start_train
-        print(f"Total time taken for epoch {epoch}: {tot_time:.2f} seconds")
+        print(f"Total time taken for epoch {epoch}: {(tot_time)/60:.2f} minutes")
 
         # File for the mIoU for each epoch
             # Training phase
@@ -242,6 +242,6 @@ if __name__ == "__main__":
             # value FPS
             # value FLOPs
             # value parameters
-        
+        save_metrics_on_wandb(epoch, metrics_train, metrics_val)
         save_metrics_on_file(epoch, metrics_train, metrics_val)
         wandb.finish()
