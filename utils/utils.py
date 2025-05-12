@@ -96,16 +96,27 @@ def save_metrics_on_file(epoch, metrics_train, metrics_val):
 
  #Function to save the metrics on WandB           
 def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
-    # Log delle metriche di training e validazione su WandB
-    wandb.log({
+
+    to_serialize = {
         "epoch": epoch,
         "train_mIoU": metrics_train['mean_iou'],
-        "train_mIoU_per_class": metrics_train['iou_per_class'],
         "train_loss": metrics_train['mean_loss'],
         "val_mIoU": metrics_val['mean_iou'],
         "val_mIoU_per_class": metrics_val['iou_per_class'],
         "val_loss": metrics_val['mean_loss']
-    })
+    }
+
+    print(metrics_train['iou_per_class'])
+
+    for index, iou in enumerate(metrics_train['iou_per_class']):
+        to_serialize[f"class_{index}_train"] = iou
+
+    for index, iou in enumerate(metrics_val['iou_per_class']):
+        to_serialize[f"class_{index}_val"] = iou
+
+    # Log delle metriche di training e validazione su WandB
+    if epoch != 50:
+        wandb.log(to_serialize)
 
     # Salvataggio delle metriche finali al 50esimo epoch
     if epoch == 50:
