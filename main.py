@@ -127,7 +127,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
         # number of epoch that we want to start from
-        start_epoch = 27
+        start_epoch = 37 
         
 
     elif var_model == 'BiSeNet':
