@@ -20,6 +20,8 @@ from torch import nn
 import wandb
 import gdown
 from models.bisenet.build_bisenet import BiSeNet
+from torch.utils.data import Subset
+
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
@@ -94,13 +96,27 @@ if __name__ == "__main__":
         print("MODEL BISENET")
         """SCEGLI I PARAMETRIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"""
         batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
-        learning_rate = 0.0025 # Learning rate for the optimizer - 1e-4
+        learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
+    # TO SPEED UP THE TRAINING WE CAN USE A SUBSET OF THE DATASET
     # Define the dataloaders
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    # Number of totale samples
+    total_len = len(cs_train)
+    indices = list(range(total_len))
+    random.shuffle(indices)
+
+    # Take only 1/4 of the samples
+    subset_len = total_len // 4
+    subset_indices = indices[:subset_len]
+
+    # Subset of the dataset
+    train_subset = Subset(cs_train, subset_indices)
+
+    dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, cs_val, batch_size, True, True)
+
 
     # Definition of the parameters for CITYSCAPES
     # Search on the pdf!! 
@@ -133,7 +149,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 45
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -152,7 +168,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
