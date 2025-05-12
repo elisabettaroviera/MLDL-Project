@@ -77,5 +77,5 @@ class CityScapes(Dataset):
 
         filename = os.path.basename(self.images[idx])
 
-        # Return the image, mask, color mask (if available), and filename
+        # Return the image, mask and filename
         return image, mask, filename
