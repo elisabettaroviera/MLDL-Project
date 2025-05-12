@@ -246,7 +246,10 @@ if __name__ == "__main__":
         save_metrics_on_file(epoch, metrics_train, metrics_val)
         wandb.finish()
 
-        """from lovasz_losses import lovasz_softmax  # assicurati di avere questo file o installato da GitHub
+        """
+        ROBE DI AURO 
+        
+        from lovasz_losses import lovasz_softmax  # assicurati di avere questo file o installato da GitHub
 
         class CombinedLoss(nn.Module):
             def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
