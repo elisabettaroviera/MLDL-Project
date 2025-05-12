@@ -125,6 +125,7 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
         })
 
 # Class to compute the combined loss: alpha*cross entropy + beta*lovasz
+#https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
 class CombinedLoss_Lovasz(nn.Module):
     def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
         super(CombinedLoss_Lovasz, self).__init__()
