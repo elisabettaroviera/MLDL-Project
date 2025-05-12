@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, CombinedLoss_Lovasz
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -143,7 +143,8 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    loss = CombinedLoss_Lovasz(alpha=0.5, beta=0.5, ignore_index=255)
     print("loss loaded")
 
 
@@ -152,7 +153,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_combined_lovasz_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
