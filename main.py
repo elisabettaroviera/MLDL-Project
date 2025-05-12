@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import MaskedDiceLoss, poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -21,6 +21,7 @@ import wandb
 import gdown
 from models.bisenet.build_bisenet import BiSeNet
 from torch.utils.data import Subset
+from monai.losses import DiceLoss
 
 
 # Function to set the seed for reproducibility
@@ -160,7 +161,8 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    # loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    loss = MaskedDiceLoss(num_classes=num_classes)
     print("loss loaded")
 
 
