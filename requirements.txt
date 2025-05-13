@@ -6,3 +6,4 @@ numpy
 wandb
 gdown
 fvcore
+monai
