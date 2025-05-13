@@ -174,6 +174,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
+        ##### NB WHEN STARTIMG A NEW 50 EPOCH RUN CHANGE PROJECT NAME HERE 
         wandb.init(project=f"{var_model}_lr_0.00625_Tversky", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
@@ -184,6 +185,7 @@ if __name__ == "__main__":
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
             # artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
+            ############## CHANGE PROJECT NAME ALSO HERE!!!!!
             artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_Tversky/model_epoch_{epoch-1}:latest", type="model")
 
             # Get the local path where the artifact is saved
