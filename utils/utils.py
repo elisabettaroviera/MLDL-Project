@@ -3,7 +3,8 @@ import wandb
 #from lovasz_losses import lovasz_softmax  # file taken from github
 import torch
 import torch.nn as nn
-
+import monai
+from monai.losses import TverskyLoss
 
 def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
                       max_iter=300, power=0.9):
@@ -150,3 +151,27 @@ class CombinedLoss_Lovasz(nn.Module):
         probs = torch.softmax(outputs, dim=1)
         lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
         return self.alpha * ce + self.beta * lovasz
+    
+# To avoid void class in dice loss
+class MaskedTverskyLoss(nn.Module):
+    def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
+        super().__init__()
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.tversky = TverskyLoss(alpha, beta)
+
+    def forward(self, pred, target):
+        # Mask void pixels
+        mask = (target != self.ignore_index).float()
+        target_clamped = target.clone()
+        target_clamped[target == self.ignore_index] = 0
+
+        # One-hot encode
+        target_one_hot = F.one_hot(target_clamped, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+
+        # Apply mask
+        mask = mask.unsqueeze(1)
+        pred_masked = pred * mask
+        target_masked = target_one_hot * mask
+
+        return self.dice(pred_masked, target_masked)
