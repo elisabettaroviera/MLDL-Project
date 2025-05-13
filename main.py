@@ -167,7 +167,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    loss = nn.MaskedTverskyLoss(num_classes, alpha=0.5, beta=0.5, ignore_index=255)
+    loss = MaskedTverskyLoss(num_classes, alpha=0.5, beta=0.5, ignore_index=255)
     print("loss loaded")
 
 
