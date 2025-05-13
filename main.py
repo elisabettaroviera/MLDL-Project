@@ -172,7 +172,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_lr_0.00625_DiceLoss", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
