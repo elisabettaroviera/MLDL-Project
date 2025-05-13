@@ -162,7 +162,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}lovasz_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_combined_lovasz_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
