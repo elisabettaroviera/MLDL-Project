@@ -108,7 +108,7 @@ if __name__ == "__main__":
     total_len_train = len(cs_train)
     indices_train = list(range(total_len_train))
     random.shuffle(indices_train)
-    subset_len_train = total_len_train // 4  # Non serve -1
+    subset_len_train = (total_len_train // 4) -1 
     subset_indices_train = indices_train[:subset_len_train]
     train_subset = Subset(cs_train, subset_indices_train)
 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     total_len_val = len(cs_val)
     indices_val = list(range(total_len_val))
     random.shuffle(indices_val)
-    subset_len_val = total_len_val // 4
+    subset_len_val = (total_len_val // 4) +1 
     subset_indices_val = indices_val[:subset_len_val]
     val_subset = Subset(cs_val, subset_indices_val)
 
