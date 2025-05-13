@@ -166,11 +166,11 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    # loss = MaskedDiceLoss(num_classes=num_classes)
+    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    loss = MaskedDiceLoss(num_classes=num_classes)
     #loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=255) # alpha = cross entropy, beta = lovasz
 
-    print(loss.__class__.__name__)
+    #print(loss.__class__.__name__)
     print("loss loaded")
 
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_lr_0.00625_CrossEntropy", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625_Dice", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_CrossEntropy/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_Dice/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
