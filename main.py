@@ -151,7 +151,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 30
+        start_epoch = 26
 
     # Load the model on the device    
     model = model.to(device)
@@ -161,8 +161,9 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    # loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    loss = MaskedDiceLoss(num_classes=num_classes)
+    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    # loss = MaskedDiceLoss(num_classes=num_classes)
+    print(loss.__class__.__name__)
     print("loss loaded")
 
 
