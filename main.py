@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import MaskedDiceLoss, poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import MaskedDiceLoss, poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, CombinedLoss_Lovasz
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 26
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -161,8 +161,10 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    # loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     # loss = MaskedDiceLoss(num_classes=num_classes)
+    loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=255) # alpha = cross entropy, beta = lovasz
+
     print(loss.__class__.__name__)
     print("loss loaded")
 
@@ -172,7 +174,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_lr_0.00625", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625_Lovasz", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
