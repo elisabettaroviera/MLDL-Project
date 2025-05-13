@@ -116,7 +116,7 @@ if __name__ == "__main__":
     train_subset = Subset(cs_train, subset_indices)
     val_subset = Subset(cs_val, subset_indices)
 
-    dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, cs_val, batch_size, True, True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, val_subset, batch_size, True, True)
     ##########################
     # INSTED TO TRAIN ON THE WHOLE DATASET UNCOMMENT:
     # Define the dataloaders
