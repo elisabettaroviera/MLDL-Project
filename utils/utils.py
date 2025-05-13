@@ -1,4 +1,5 @@
 import numpy as np
+from utils.lovasz_losses import lovasz_softmax
 import wandb
 #from lovasz_losses import lovasz_softmax  # file taken from github
 import torch
@@ -140,7 +141,8 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
 
 # Class to compute the combined loss: alpha*cross entropy + beta*lovasz
 #https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
-"""
+# Class to compute the combined loss: alpha*cross entropy + beta*lovasz
+#https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
 class CombinedLoss_Lovasz(nn.Module):
     def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
         super(CombinedLoss_Lovasz, self).__init__()
@@ -153,8 +155,10 @@ class CombinedLoss_Lovasz(nn.Module):
         ce = self.ce_loss(outputs, targets)
         probs = torch.softmax(outputs, dim=1)
         lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
-        return self.alpha * ce + self.beta * lovasz
-"""  
+        return self.alpha * ce + self.beta * lovasz # alpha = cross entropy, beta = lovasz
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__}(num_classes={self.num_classes})"
 
 # To avoid void class in dice loss
 class MaskedDiceLoss(nn.Module):
