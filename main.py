@@ -13,11 +13,12 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, MaskedTverskyLoss
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
 import wandb
+from torch.utils.data import Subset
 import gdown
 from models.bisenet.build_bisenet import BiSeNet
 
@@ -98,9 +99,29 @@ if __name__ == "__main__":
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
+    #####################
+    # TO SPEED UP THE TRAINING WE CAN USE A SUBSET OF THE DATASET
     # Define the dataloaders
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    # Number of totale samples
+    total_len = len(cs_train)
+    indices = list(range(total_len))
+    random.shuffle(indices)
+
+    # Take only 1/4 of the samples
+    subset_len = (total_len // 4) -1
+    subset_indices = indices[:subset_len]
+
+    # Subset of the dataset
+    train_subset = Subset(cs_train, subset_indices)
+    val_subset = Subset(cs_val, subset_indices)
+
+    dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, cs_val, batch_size, True, True)
+    ##########################
+    # INSTED TO TRAIN ON THE WHOLE DATASET UNCOMMENT:
+    # Define the dataloaders
+    # print("Create the dataloaders")
+    # dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
     # Definition of the parameters for CITYSCAPES
     # Search on the pdf!! 
@@ -133,7 +154,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 40
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -143,7 +164,8 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    loss = nn.MaskedTverskyLoss(num_classes, alpha=0.5, beta=0.5, ignore_index=255)
     print("loss loaded")
 
 
@@ -152,7 +174,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625_Tversky", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -161,8 +183,9 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
-            
+            # artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_Tversky/model_epoch_{epoch-1}:latest", type="model")
+
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
 
