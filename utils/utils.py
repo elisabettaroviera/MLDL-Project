@@ -167,12 +167,9 @@ class MaskedTverskyLoss(nn.Module):
         target_clamped = target.clone()
         target_clamped[target == self.ignore_index] = 0
 
-        # One-hot encode
-        target_one_hot = F.one_hot(target_clamped, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
-
-        # Apply mask
+       # Apply mask
         mask = mask.unsqueeze(1)
         pred_masked = pred * mask
-        target_masked = target_one_hot * mask
+        target_masked = target_clamped.unsqueeze(1)  # shape: [B, 1, H, W]
 
         return self.tversky(pred_masked, target_masked)
