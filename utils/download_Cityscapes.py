@@ -10,10 +10,10 @@ cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct t
 #https://drive.google.com/file/d/10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI/view?usp=drive_link
 
 #Personal Google Drive links for the datasets:
-#cityscapes_id = '11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb'  # Google Drive file ID
+cityscapes_id = '11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb'  # Google Drive file ID
 #cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
 #new id and url using another drive (mldlss325951@gmail.com)
-cityscapes_id ='10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI'
+#cityscapes_id ='10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI'
 cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
 
 cityscapes_output = 'cityscapes.zip' # Name of the output file
