@@ -169,7 +169,7 @@ if __name__ == "__main__":
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     #loss = MaskedDiceLoss(num_classes=num_classes)
     #loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255) # alpha = cross entropy, beta = lovasz
-    loss = CombinedLoss_Tversky(alpha=0.7, beta=0.3, ignore_index=255) 
+    loss = CombinedLoss_Tversky(num_classes=num_classes, alpha=0.7, beta=0.3, ignore_index=255) 
     # alpha = 0.7  # CrossEntropy
     # gamma = 0.3  # Tversky
 
