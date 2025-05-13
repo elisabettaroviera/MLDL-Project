@@ -155,28 +155,32 @@ class CombinedLoss_Lovasz(nn.Module):
     
 # to avoid ignore_index in Tversky Loss   
 class MaskedTverskyLoss(nn.Module):
-    def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
+    def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
         super().__init__()
+        self.num_classes = num_classes
         self.ignore_index = ignore_index
-        self.tversky = TverskyLoss(alpha=alpha, beta=beta, softmax=True)  # softmax=True expects logits
+        self.tversky = TverskyLoss(alpha=alpha, beta=beta, softmax=True)
 
     def forward(self, pred, target):
         """
-        pred:   [B, C, H, W] — raw logits for each class
-        target: [B, H, W]    — integer labels, with ignore_index for void pixels
+        pred:   [B, C, H, W] — raw logits
+        target: [B, H, W]    — class indices (0 to C-1), with ignore_index for void
         """
 
-        # Create mask for valid (non-ignored) pixels
-        valid_mask = (target != self.ignore_index).unsqueeze(1)  # [B, 1, H, W]
+        # Create mask for valid pixels
+        valid_mask = (target != self.ignore_index)  # [B, H, W]
 
-        # Expand target to shape [B, 1, H, W] as expected by monai.losses
-        target = target.unsqueeze(1)  # [B, 1, H, W]
+        # Replace ignore_index with 0 temporarily (it will be masked out)
+        target_clean = target.clone()
+        target_clean[~valid_mask] = 0
 
-        # Convert mask to float for multiplication
-        valid_mask = valid_mask.float()
+        # One-hot encode target: [B, H, W] → [B, H, W, C] → [B, C, H, W]
+        target_onehot = F.one_hot(target_clean, num_classes=self.num_classes)  # [B, H, W, C]
+        target_onehot = target_onehot.permute(0, 3, 1, 2).float()  # [B, C, H, W]
 
-        # Apply mask to predictions and targets
-        pred_masked = pred * valid_mask  # [B, C, H, W]
-        target_masked = target * valid_mask  # [B, 1, H, W]
+        # Apply valid pixel mask
+        valid_mask = valid_mask.unsqueeze(1).float()  # [B, 1, H, W]
+        pred = pred * valid_mask
+        target_onehot = target_onehot * valid_mask
 
-        return self.tversky(pred_masked, target_masked)
+        return self.tversky(pred, target_onehot)
