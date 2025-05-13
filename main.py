@@ -104,20 +104,25 @@ if __name__ == "__main__":
     # TO SPEED UP THE TRAINING WE CAN USE A SUBSET OF THE DATASET
     # Define the dataloaders
     print("Create the dataloaders")
-    # Number of totale samples
-    total_len = len(cs_train)
-    indices = list(range(total_len))
-    random.shuffle(indices)
+    # -- Subset TRAIN --
+    total_len_train = len(cs_train)
+    indices_train = list(range(total_len_train))
+    random.shuffle(indices_train)
+    subset_len_train = total_len_train // 4  # Non serve -1
+    subset_indices_train = indices_train[:subset_len_train]
+    train_subset = Subset(cs_train, subset_indices_train)
 
-    # Take only 1/4 of the samples
-    subset_len = (total_len // 4) -1
-    subset_indices = indices[:subset_len]
+    # -- Subset VAL --
+    total_len_val = len(cs_val)
+    indices_val = list(range(total_len_val))
+    random.shuffle(indices_val)
+    subset_len_val = total_len_val // 4
+    subset_indices_val = indices_val[:subset_len_val]
+    val_subset = Subset(cs_val, subset_indices_val)
 
-    # Subset of the dataset
-    train_subset = Subset(cs_train, subset_indices)
-    val_subset = Subset(cs_val, subset_indices)
-
+    # -- DataLoader --
     dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, val_subset, batch_size, True, True)
+
 
 
     # Definition of the parameters for CITYSCAPES
