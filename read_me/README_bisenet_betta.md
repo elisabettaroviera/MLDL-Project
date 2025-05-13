@@ -175,3 +175,85 @@ def combined_ce_lovasz_loss(pred, target, lambda_lovasz=0.5, ignore_index=255):
     lv = lovasz_loss(pred, target, ignore_index)
     return ce + lambda_lovasz * lv
 ```
+
+---
+### We now combine the Losses after running the following combinations
+
+1- Run on bisenet with lr = 0.00625 + CrossEntropy 
+2- Run on bisenet with lr = 0.00625 + DiceLoss 
+3- Run on bisenet with lr = 0.00625 + Lovász-Softmax
+4- Run on bisenet with lr = 0.00625 + Tversky 
+
+
+* **CrossEntropy**: **\~38.89%** ✅ better
+* **Tversky**: **\~34.90%** 🔸 better than Lovász
+* **Lovász-Softmax**: **\~33.39%**
+
+* The **CrossEntropy** is clearly the most stable and performing.
+* The **Tversky Loss** outperforms the Lovász, and is useful in contexts of class imbalance, improving segmentation of smaller classes.
+* The **Lovász** remains interesting because it directly optimises the IoU, but in your case it had the lowest performance.
+
+Let us start with the values
+```
+α = 0.7 (CrossEntropy)
+β = 0.3 (Lovász-Softmax)
+```
+
+This takes into account the fact that CrossEntropy has shown superior performance, but includes Lovász to further improve segmentation in terms of IoU, especially in smaller classes or edges.
+
+---
+**🔹 Best 2-component combination**:
+
+_CrossEntropy + Tversky_, with:
+
+``python
+alpha = 0.7 # CrossEntropy
+gamma = 0.3 # Tversky
+```
+
+This combination exploits the stability of CrossEntropy and the adaptability of Tversky to unbalanced class problems, while maintaining the focus on overall segmentation quality.
+
+**🔸 If you want to try all 3**:
+
+_CrossEntropy + Tversky + Lovász_, with:
+
+```python
+alpha = 0.6 # CrossEntropy
+beta = 0.2 # Lovász
+gamma = 0.2 # Tversky
+```
+But this one has more risk of overfitting or instability, and needs to be validated carefully.
+
+---
+
+To combine losses and maximise mIoU without overfitting, we can define a weighted composite **loss**:
+
+$$
+\mathcal{L}_{text{total}} = \alpha \cdot \mathcal{L}_{text{CE}} + \beta \cdot \mathcal{L}_{text{Lovász}} + \gamma \cdot \mathcal{L}_{text{Tversky}} + \theta \cdot \mathcal{L}_{text{Dice}}
+$$
+
+**Empirical analysis from the results:**
+
+* **CrossEntropy** → good stability and consistent performance.
+* ** **Lovász-Softmax** → more sensitive to fluctuations, but useful for directly optimising mIoU.
+* **Tversky** → very good progression, reaches highest mIoU.
+* **Dice** → useful for class imbalance, but shows more fluctuations and slightly lower performance.
+
+**Recommended values:**
+
+$$
+\boxed{
+\alpha = 0.4,\quad \beta = 0.1,\quad \gamma = 0.4,\quad \theta = 0.1
+}
+$$
+
+---
+ ✅ Expected benefits:
+
+* **Improved overall mIoU**, taking advantage of EC stability and Tversky accuracy.
+* **Noise control and overfitting**, thanks to the limited but strategic contribution of the other two losses.
+* **Compatibility with current training**, without requiring substantial changes to the optimisation.
+
+
+
+Translated with DeepL.com (free version)
