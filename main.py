@@ -94,7 +94,7 @@ if __name__ == "__main__":
         print("MODEL BISENET")
         """SCEGLI I PARAMETRIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"""
         batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
-        learning_rate = 0.0025 # Learning rate for the optimizer - 1e-4
+        learning_rate = 0.00025 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 45
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
