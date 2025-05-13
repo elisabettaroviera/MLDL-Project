@@ -186,7 +186,6 @@ if __name__ == "__main__":
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
             # artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
-            ############## CHANGE PROJECT NAME ALSO HERE!!!!!
             path_last_model = f"{project_name}/model_epoch_{epoch-1}:latest"
             artifact = wandb.use_artifact(path_last_model, type="model")
 
