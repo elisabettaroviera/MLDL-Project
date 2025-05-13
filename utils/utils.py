@@ -1,9 +1,10 @@
 import numpy as np
 import wandb
-from lovasz_losses import lovasz_softmax  # file taken from github
 import torch
 import torch.nn as nn
 import monai
+import lovasz_losses
+from utils.lovasz_losses import lovasz_softmax
 import torch.nn.functional as F
 from monai.losses import TverskyLoss
 
