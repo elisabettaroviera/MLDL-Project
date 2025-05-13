@@ -153,23 +153,30 @@ class CombinedLoss_Lovasz(nn.Module):
         lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
         return self.alpha * ce + self.beta * lovasz
     
-# To avoid void class in tversky loss
+# to avoid ignore_index in Tversky Loss   
 class MaskedTverskyLoss(nn.Module):
-    def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
+    def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
         super().__init__()
-        self.num_classes = num_classes
         self.ignore_index = ignore_index
-        self.tversky = TverskyLoss(alpha, beta)
+        self.tversky = TverskyLoss(alpha=alpha, beta=beta, softmax=True)  # softmax=True expects logits
 
     def forward(self, pred, target):
-        # Mask void pixels
-        mask = (target != self.ignore_index).float()
-        target_clamped = target.clone()
-        target_clamped[target == self.ignore_index] = 0
+        """
+        pred:   [B, C, H, W] — raw logits for each class
+        target: [B, H, W]    — integer labels, with ignore_index for void pixels
+        """
 
-       # Apply mask
-        mask = mask.unsqueeze(1)
-        pred_masked = pred * mask
-        target_masked = target_clamped.unsqueeze(1)  # shape: [B, 1, H, W]
+        # Create mask for valid (non-ignored) pixels
+        valid_mask = (target != self.ignore_index).unsqueeze(1)  # [B, 1, H, W]
+
+        # Expand target to shape [B, 1, H, W] as expected by monai.losses
+        target = target.unsqueeze(1)  # [B, 1, H, W]
+
+        # Convert mask to float for multiplication
+        valid_mask = valid_mask.float()
+
+        # Apply mask to predictions and targets
+        pred_masked = pred * valid_mask  # [B, C, H, W]
+        target_masked = target * valid_mask  # [B, 1, H, W]
 
         return self.tversky(pred_masked, target_masked)
