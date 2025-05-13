@@ -153,7 +153,7 @@ class CombinedLoss_Lovasz(nn.Module):
         lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
         return self.alpha * ce + self.beta * lovasz
     
-# To avoid void class in dice loss
+# To avoid void class in tversky loss
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
         super().__init__()
@@ -175,4 +175,4 @@ class MaskedTverskyLoss(nn.Module):
         pred_masked = pred * mask
         target_masked = target_one_hot * mask
 
-        return self.dice(pred_masked, target_masked)
+        return self.tversky(pred_masked, target_masked)
