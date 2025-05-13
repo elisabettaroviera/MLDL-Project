@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, MaskedTverskyLoss
+from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, MaskedTverskyLoss, CombinedLoss_Lovasz
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 44
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -167,7 +167,8 @@ if __name__ == "__main__":
     
     # Defintion of the loss function
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    loss = MaskedTverskyLoss(num_classes, alpha=0.5, beta=0.5, ignore_index=255)
+    #loss = MaskedTverskyLoss(num_classes, alpha=0.5, beta=0.5, ignore_index=255)
+    loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255)
     print("loss loaded")
 
 
@@ -177,7 +178,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
         ##### NB WHEN STARTIMG A NEW 50 EPOCH RUN CHANGE PROJECT NAME HERE 
-        project_name = f"{var_model}_lr_0.00625_Tversky"
+        project_name = f"{var_model}_lr_0.00625_0.7ce_0.3ls"
         wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
