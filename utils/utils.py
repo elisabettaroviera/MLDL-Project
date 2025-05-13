@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from monai.losses import DiceLoss
-
+from monai.losses import TverskyLoss
 
 
 def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
@@ -160,6 +160,50 @@ class CombinedLoss_Lovasz(nn.Module):
     def __repr__(self):
         return f"{self.__class__.__name__}(num_classes={self.num_classes})"
 
+
+
+class MaskedTverskyLoss(nn.Module):
+    def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
+        super().__init__()
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.tversky = TverskyLoss(alpha=alpha, beta=beta, softmax=True)
+
+    def forward(self, pred, target):
+        valid_mask = (target != self.ignore_index)
+        target_clean = target.clone()
+        target_clean[~valid_mask] = 0
+
+        target_onehot = F.one_hot(target_clean, num_classes=self.num_classes)
+        target_onehot = target_onehot.permute(0, 3, 1, 2).float()
+
+        valid_mask = valid_mask.unsqueeze(1).float()
+        pred = pred * valid_mask
+        target_onehot = target_onehot * valid_mask
+
+        return self.tversky(pred, target_onehot)
+
+
+class CombinedLoss_Tversky(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.6, ignore_index=255):
+        super(CombinedLoss_Tversky, self).__init__()
+        self.alpha = alpha  # Peso CrossEntropy
+        self.beta = beta    # Peso Tversky
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+
+    def forward(self, outputs, targets):
+        ce = self.ce_loss(outputs, targets)
+        tversky = self.tversky_loss(outputs, targets)
+        return self.alpha * ce + self.beta * tversky
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(num_classes={self.num_classes}, alpha={self.alpha}, beta={self.beta})"
+
+
+
 # To avoid void class in dice loss
 class MaskedDiceLoss(nn.Module):
     def __init__(self, num_classes, ignore_index=255):
@@ -183,3 +227,5 @@ class MaskedDiceLoss(nn.Module):
         target_masked = target_one_hot * mask
 
         return self.dice(pred_masked, target_masked)
+    
+
