@@ -117,7 +117,7 @@ if __name__ == "__main__":
     train_subset = Subset(cs_train, subset_indices)
     val_subset = Subset(cs_val, subset_indices)
 
-    dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, cs_val, batch_size, True, True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, val_subset, batch_size, True, True)
 
 
     # Definition of the parameters for CITYSCAPES
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_Lovasz/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
