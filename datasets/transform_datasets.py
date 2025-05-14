@@ -44,7 +44,8 @@ def transform_gta_to_cityscapes_label(mask):
     
     # Create a new mask initialized to 255 (ignore value)
     mapped = torch.full_like(mask, fill_value=255)
-
+    #se una certa regione dell'immagine ha un ID che non è presente nel dizionario
+    #id_to_trainid, viene impostato su 255 per segnalarlo come "non valido" o "da ignorare".
     for gta_id, train_id in id_to_trainid.items():
         mapped[mask == gta_id] = train_id
 
