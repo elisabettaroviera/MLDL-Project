@@ -229,3 +229,39 @@ class MaskedDiceLoss(nn.Module):
         return self.dice(pred_masked, target_masked)
     
 
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, 
+                 alpha=0.4,   # CrossEntropy
+                 beta=0.1,    # Lovász
+                 gamma=0.4,   # Tversky
+                 theta=0.1,   # Dice
+                 ignore_index=255):
+        super(CombinedLoss_All, self).__init__()
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.theta = theta
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
+        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
+        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
+
+    def forward(self, outputs, targets):
+        ce = self.ce_loss(outputs, targets)
+        lovasz = self.lovasz_loss(outputs, targets)
+        tversky = self.tversky_loss(outputs, targets)
+        dice = self.dice_loss(outputs, targets)
+
+        total_loss = (self.alpha * ce +
+                      self.beta * lovasz +
+                      self.gamma * tversky +
+                      self.theta * dice)
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, "
+                f"gamma={self.gamma}, theta={self.theta})")
