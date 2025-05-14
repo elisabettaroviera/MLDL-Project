@@ -5,7 +5,7 @@ import torch.nn as nn
 import monai
 from utils.lovasz_losses import lovasz_softmax
 import torch.nn.functional as F
-from monai.losses import TverskyLoss
+from monai.losses import TverskyLoss, DiceLoss
 
 def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
                       max_iter=300, power=0.9):
@@ -153,6 +153,31 @@ class CombinedLoss_Lovasz(nn.Module):
         lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
         return self.alpha * ce + self.beta * lovasz
     
+# To avoid void class in dice loss
+class MaskedDiceLoss(nn.Module):
+    def __init__(self, num_classes, ignore_index=255):
+        super().__init__()
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.dice = DiceLoss(include_background=False, softmax=True, reduction="mean")
+
+    def forward(self, pred, target):
+        # Mask void pixels
+        mask = (target != self.ignore_index).float()
+        target_clamped = target.clone()
+        target_clamped[target == self.ignore_index] = 0
+
+        # One-hot encode
+        target_one_hot = F.one_hot(target_clamped, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+
+        # Apply mask
+        mask = mask.unsqueeze(1)
+        pred_masked = pred * mask
+        target_masked = target_one_hot * mask
+
+        return self.dice(pred_masked, target_masked)
+    
+    
 # to avoid ignore_index in Tversky Loss   
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
@@ -184,3 +209,39 @@ class MaskedTverskyLoss(nn.Module):
         target_onehot = target_onehot * valid_mask
 
         return self.tversky(pred, target_onehot)
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, 
+                 alpha=0.4,   # CrossEntropy
+                 beta=0.1,    # Lovász
+                 gamma=0.4,   # Tversky
+                 theta=0.1,   # Dice
+                 ignore_index=255):
+        super(CombinedLoss_All, self).__init__()
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.theta = theta
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
+        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
+        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
+
+    def forward(self, outputs, targets):
+        ce = self.ce_loss(outputs, targets)
+        lovasz = self.lovasz_loss(outputs, targets)
+        tversky = self.tversky_loss(outputs, targets)
+        dice = self.dice_loss(outputs, targets)
+
+        total_loss = (self.alpha * ce +
+                      self.beta * lovasz +
+                      self.gamma * tversky +
+                      self.theta * dice)
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, "
+                f"gamma={self.gamma}, theta={self.theta})")
