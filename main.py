@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import CombinedLoss_Tversky, MaskedDiceLoss, poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, CombinedLoss_Lovasz
+from utils.utils import CombinedLoss_All, CombinedLoss_Tversky, MaskedDiceLoss, poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, CombinedLoss_Lovasz
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -169,9 +169,10 @@ if __name__ == "__main__":
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     #loss = MaskedDiceLoss(num_classes=num_classes)
     #loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255) # alpha = cross entropy, beta = lovasz
-    loss = CombinedLoss_Tversky(num_classes=num_classes, alpha=0.7, beta=0.3, ignore_index=255) 
+    #loss = CombinedLoss_Tversky(num_classes=num_classes, alpha=0.7, beta=0.3, ignore_index=255) 
     # alpha = 0.7  # CrossEntropy
     # gamma = 0.3  # Tversky
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255)
 
     print(loss.__class__.__name__)
     print("loss loaded")
@@ -182,7 +183,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_lr_0.00625_Tversky_CrossEntropy", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625_all", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -191,7 +192,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_Tversky_CrossEntropy/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_all/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
