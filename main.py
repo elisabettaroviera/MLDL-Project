@@ -202,67 +202,8 @@ if __name__ == "__main__":
         # (training + validation)
         tot_time = end_val - start_train
         print(f"Total time taken for epoch {epoch}: {(tot_time)/60:.2f} minutes")
-
-        # File for the mIoU for each epoch
-            # Training phase
-            # Epoch - 1
-            # value mIoU
-            # value mIoU per class
-            # Validation phase
-            # Epoch - 1 
-            # value mIoU
-            # value mIoU per class
-
-        # File for the Loss for each epoch
-            # Training phase
-            # Epoch - 1
-            # value loss
-            # Validation phase
-            # Epoch - 1
-            # value loss
-
-
-        # File for all the final metrics (only the 50th epoch)
-            # Training phase
-            # Epoch - 50
-            # value mIoU
-            # value mIoU per class
-            # value loss
-            # value latency
-            # value FPS
-            # value FLOPs
-            # value parameters
-
-            # Validation phase
-            # Epoch - 50
-            # value mIoU
-            # value mIoU per class
-            # value loss
-            # value latency
-            # value FPS
-            # value FLOPs
-            # value parameters
         save_metrics_on_wandb(epoch, metrics_train, metrics_val)
         save_metrics_on_file(epoch, metrics_train, metrics_val)
         wandb.finish()
 
-        """
-        ROBE DI AURO 
         
-        from lovasz_losses import lovasz_softmax  # assicurati di avere questo file o installato da GitHub
-
-        class CombinedLoss(nn.Module):
-            def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
-                super(CombinedLoss, self).__init__()
-                self.alpha = alpha
-                self.beta = beta
-                self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
-                self.ignore_index = ignore_index
-
-            def forward(self, outputs, targets):
-                ce = self.ce_loss(outputs, targets)
-                probs = torch.softmax(outputs, dim=1)
-                lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
-                return self.alpha * ce + self.beta * lovasz
-                
-        criterion = CombinedLoss(alpha=0.5, beta=0.5, ignore_index=255)"""
