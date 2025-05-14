@@ -254,6 +254,3 @@ $$
 * **Noise control and overfitting**, thanks to the limited but strategic contribution of the other two losses.
 * **Compatibility with current training**, without requiring substantial changes to the optimisation.
 
-
-
-Translated with DeepL.com (free version)
