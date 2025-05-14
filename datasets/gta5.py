@@ -45,7 +45,7 @@ class GTA5(Dataset):
                 self.images.append(img_path)
                 self.masks.append(label_path)
 
-        print(f"Loaded {len(self.images)} image-label pairs from GTA5 dataset.")
+        print(f"Loaded {len(self.images)} images and {len(self.masks)} masks.")
 
     def __getitem__(self, idx):
         # Load image and label

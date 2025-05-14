@@ -38,7 +38,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
             resized_img.save(f"{save_dir}/{file_name}_image_original.png")
             # Salva la maschera predetta colorata (ovviamente ha le dimensioni giuste)
             color_mask = CITYSCAPES_COLORMAP[pred]
-            color_mask_img = Image.fromarray(color_mask)
+            color_mask_img = Image.fromarray(color_mask)  
             color_mask_img.save(f"{save_dir}/{file_name}_pred_color.png")
 
             # Salva la maschera target colorata

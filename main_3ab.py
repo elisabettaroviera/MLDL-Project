@@ -1,5 +1,6 @@
 # Import necessary libraries
 import os
+from datasets.gta5 import GTA5
 from models.deeplabv2.deeplabv2 import get_deeplab_v2
 import torch
 from torchvision.datasets import ImageFolder
@@ -60,80 +61,53 @@ def print_metrics(title, metrics):
 
 
 if __name__ == "__main__":
-    # ambient variable
-    var_model = os.environ['MODEL'] #'DeepLabV2' #BiSeNet # Choose the model to train
-
+    var_model = os.environ['MODEL'] 
     set_seed(23)  # Set a seed for reproducibility
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     ############################################################################################################
-    ################################################# STEP 2.a #################################################
+    ################################################# STEP 3.ab #################################################
 
-    print(f"************STEP 2 : TRAINING {var_model} ON CITYSCAPES***************")
+    print(f"************STEP 3 : TRAINING BISENET ON GTA5***************")
     # Define transformations
     print("Define transformations")
-    transform = transform_cityscapes()
-    target_transform = transform_cityscapes_mask()
+    transform_gta_dataset = transform_gta()
+    transform_cityscapes_dataset = transform_cityscapes()
+    target_transform_cityscapes = transform_cityscapes_mask()
+    target_transform_gta = transform_gta_mask()
 
     # Load the datasets (Cityspaces)
-    print("Load the datasets")
-    cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
-    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
+    print("Load the Cityscapes dataset")
+    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    
+    # Load the datasets (GTA5)
+    print("Load the GTA5 dataset")
+    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta)
 
-
-    # Choose the model's parameters
-    if var_model == 'DeepLabV2':
-        print("MODEL DEEPLABV2")
-        # I modify the value of the batch size because it has to match with the one of the model
-        batch_size = 3 # 3 or the number the we will use in the model
-        learning_rate = 0.0001 # Learning rate for the optimizer - 1e-4
-        momentum = 0.9 # Momentum for the optimizer
-        weight_decay = 0.0005 # Weight decay for the optimizer
-        
-    elif var_model == 'BiSeNet':
-        print("MODEL BISENET")
-        """SCEGLI I PARAMETRIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"""
-        batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
-        learning_rate = 0.0025 # Learning rate for the optimizer - 1e-4
-        momentum = 0.9 # Momentum for the optimizer
-        weight_decay = 1e-4 # Weight decay for the optimizer
+    print("MODEL BISENET")
+    batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
+    learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
+    momentum = 0.9 # Momentum for the optimizer
+    weight_decay = 1e-4 # Weight decay for the optimizer
 
     # Define the dataloaders
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    dataloader_gta_train, dataloader_cs_val = dataloader(gta_train, cs_val, batch_size, True, True)
 
-    # Definition of the parameters for CITYSCAPES
+    # Definition of the parameters for GTA5
     # Search on the pdf!! 
     print("Define the parameters")
     num_epochs = 50 # Number of epochs
-
     # The void label is not considered for evaluation (paper 2)
     # Hence the class are 0-18 (19 classes in total) without the void label
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
     iter_curr = 0 # Initialize the iteration counter
-    max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
+    max_iter = num_epochs * len(dataloader_gta_train) # Maximum number of iterations (epochs * batches per epoch)
 
-    if var_model == 'DeepLabV2':
-        # Pretrained model path 
-        print("Pretrained model path")
-        pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
-        if not os.path.exists(pretrain_model_path):
-            os.makedirs(os.path.dirname(pretrain_model_path), exist_ok=True)
-            print("Scarico i pesi pre-addestrati da Google Drive...")
-            url = "https://drive.google.com/uc?id=1HZV8-OeMZ9vrWL0LR92D9816NSyOO8Nx"
-            gdown.download(url, pretrain_model_path, quiet=False)
-
-        print("Load the model")
-        model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
-        # number of epoch that we want to start from
-        start_epoch = 37 
-        
-
-    elif var_model == 'BiSeNet':
-        model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        # number of epoch that we want to start from
-        start_epoch = 45
+    model = BiSeNet(num_classes=num_classes, context_path='resnet18')
+    # number of epoch that we want to start from
+    start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -143,16 +117,19 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
+    ##########################################################################################
+    # CHANGE THE LOSS FUNCTION WRT THE RESULTS OF 2.B
+    #########################################################################################
     loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     print("loss loaded")
 
 
-    
     for epoch in range(start_epoch, num_epochs + 1):
-        iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
+        iter_curr = len(dataloader_gta_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_ALBG_23", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        project_name = "3a_GTA5_to_CITY_" # Change here!
+        wandb.init(project=f"{project_name}", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -161,7 +138,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{project_name}/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
@@ -178,7 +155,7 @@ if __name__ == "__main__":
         # 2. Training step
         print("Training step")
         start_train = time.time()
-        metrics_train, iter_curr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr = train(epoch, model, dataloader_gta_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
         end_train = time.time()
         print(f"Time taken for training step: {(end_train - start_train)/60:.2f} minutes")
         print("Training step done")
@@ -187,7 +164,6 @@ if __name__ == "__main__":
         print_metrics("Training", metrics_train)
 
         # 3. Validation step
-
         print("Validation step")
         start_val = time.time()
         metrics_val = validate(epoch, model, dataloader_cs_val, loss, num_classes) # Compute the accuracy on the validation set
@@ -205,5 +181,3 @@ if __name__ == "__main__":
         save_metrics_on_wandb(epoch, metrics_train, metrics_val)
         save_metrics_on_file(epoch, metrics_train, metrics_val)
         wandb.finish()
-
-        
