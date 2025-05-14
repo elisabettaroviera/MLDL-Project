@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, MaskedTverskyLoss, CombinedLoss_Lovasz
+from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, MaskedTverskyLoss, CombinedLoss_Lovasz, CombinedLoss_All
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -99,7 +99,8 @@ if __name__ == "__main__":
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
-    #####################
+    ####################
+    '''
     # TO SPEED UP THE TRAINING WE CAN USE A SUBSET OF THE DATASET
     # -- Subset TRAIN --
     total_len_train = len(cs_train)
@@ -119,11 +120,12 @@ if __name__ == "__main__":
 
     # -- DataLoader --
     dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, val_subset, batch_size, True, True)   
+    '''
     ##########################
     # INSTED TO TRAIN ON THE WHOLE DATASET UNCOMMENT:
     # Define the dataloaders
-    # print("Create the dataloaders")
-    # dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    print("Create the dataloaders")
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
     # Definition of the parameters for CITYSCAPES
     # Search on the pdf!! 
@@ -156,7 +158,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 19
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -168,7 +170,12 @@ if __name__ == "__main__":
     # Defintion of the loss function
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     #loss = MaskedTverskyLoss(num_classes, alpha=0.5, beta=0.5, ignore_index=255)
-    loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255)
+    #loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255)
+    loss = CombinedLoss_All(alpha=0.6,   # CrossEntropy
+                 beta=0.2,    # Lovász
+                 gamma=0.2,   # Tversky
+                 theta=0,   # Dice
+                 ignore_index=255)
     print("loss loaded")
 
 
@@ -178,7 +185,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
         ##### NB WHEN STARTIMG A NEW 50 EPOCH RUN CHANGE PROJECT NAME HERE 
-        project_name = f"{var_model}_lr_0.00625_0.7ce_0.3ls"
+        project_name = f"{var_model}_lr_0.00625_0.6ce_0.2ls_0.2tv"
         wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
