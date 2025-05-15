@@ -174,7 +174,12 @@ if __name__ == "__main__":
     # gamma = 0.3  # Tversky
     #loss = CombinedLoss_All(num_classes=num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255)
     #loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
-
+    """
+    total_loss = (self.alpha * ce +
+                      self.beta * lovasz +
+                      self.gamma * tversky +
+                      self.theta * dice)
+    """
     print(loss.__class__.__name__)
     print("loss loaded")
 
