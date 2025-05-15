@@ -135,7 +135,7 @@ if __name__ == "__main__":
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
     iter_curr = 0 # Initialize the iteration counter
-    max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
+    max_iter = num_epochs #* len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
     if var_model == 'DeepLabV2':
         # Pretrained model path 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 30
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -181,12 +181,13 @@ if __name__ == "__main__":
 
     
     for epoch in range(start_epoch, num_epochs + 1):
-        iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
+        #iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
+        iter_curr = epoch-1
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
         # _lr_0.00625_cr1_total_dataset
         # _lr_0.00625_cr07_tv03_total_dataset
-        wandb.init(project=f"{var_model}_lr_0.00625_cr1_total_dataset", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625_cr1_total_dataset_epoch_decrease", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -195,7 +196,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_cr1_total_dataset/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_cr1_total_dataset_epoch_decrease/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
