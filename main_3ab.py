@@ -34,7 +34,7 @@ def set_seed(seed):
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
-    A.set_seed(seed)
+    A.set_seed(seed) # ATTENZIONE serve anche se abbiamo messo come seed gli id delle foto???
 
 # Function to print the metrics
 # This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset

@@ -1,7 +1,10 @@
 from torch.utils.data import Dataset
 import os
 from PIL import Image
-
+import random
+import albumentations as A
+import numpy as np
+from transform_datasets import augmentation_transform
 
 # TODO: implement here your custom dataset class for GTA5
 
@@ -9,7 +12,7 @@ from PIL import Image
 # GTA5 dataset class
 
 class GTA5(Dataset):
-    def __init__(self, root_dir, transform=None, target_transform=None):
+    def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False):
         super(GTA5, self).__init__()
         
         # Initialize lists to store image and label paths
@@ -17,6 +20,7 @@ class GTA5(Dataset):
         self.masks = []
         self.transform = transform
         self.target_transform = target_transform
+        self.augmentation = augmentation
 
         # Define image and label directories
         image_dir = os.path.join(root_dir, 'images')
@@ -48,24 +52,38 @@ class GTA5(Dataset):
         print(f"Loaded {len(self.images)} images and {len(self.masks)} masks.")
 
     def __getitem__(self, idx):
-        # Load image and label
-        image = Image.open(self.images[idx]).convert('RGB')  # convert image to RGB
-        label = Image.open(self.masks[idx])  # do not convert label (keep as is)
-                
-        # If the random number is < 0.5, we apply the augmentation to the photo
-        if np.random.random() < self.augmentation_probability:
-            augmentation = self.augmentation_transforms[np.random.randint(0, len(self.augmentation_transforms)-1)]
-            image = augmentation(image)
-            mask = augmentation(mask)
+        image_path = self.images[idx]
+        image = Image.open(image_path).convert('RGB')
+        label = Image.open(self.masks[idx])
 
-        # Apply transformations if provided
+        # Seed deterministico per coerenza
+        seed = hash(image_path) % (2**32)
+        random.seed(seed)
+        np.random.seed(seed)
+        # A sottolineato?
+        A.set_seed(seed)
+
+        if self.augmentation:
+            # Applichiamo l'augmentazione con OneOf che include NoOp
+            augmented = augmentation_transform(image=np.array(image), mask=np.array(label))
+            image_aug = Image.fromarray(augmented['image'])
+            label_aug = Image.fromarray(augmented['mask'])
+
+            # Verifico se è stata trasformata (NoOp mantiene immagine identica)
+            if np.array_equal(np.array(image), np.array(image_aug)):
+                # NoOp: non trasformata → ritorna None per scartarla
+                return None
+            else:
+                image = image_aug
+                label = label_aug
+
+        # Applico sempre le trasformazioni base
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
 
-        # Return image, label, and the filename
-        filename = os.path.basename(self.images[idx])
+        filename = os.path.basename(image_path)
         return image, label, filename
 
     def __len__(self):

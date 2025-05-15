@@ -75,7 +75,8 @@ def transform_gta_mask():
     return transform
 
 ### DATA AUGMENTATION ###
-def augmentation_transforms(): 
+def augmentation_transform(): 
+    seed = 23
     # HorizontalFlip: ruota orizzontalmente l’immagine e la maschera con probabilità del 50%
     # RGBShift: modifica i canali rosso, verde e blu con uno shift casuale nei valori di pixel
     # RandomBrightnessContrast : cambia casualmente luminosità e contrasto
@@ -83,15 +84,20 @@ def augmentation_transforms():
     # GaussNoise : aggiunge rumore gaussiano (tipo "grana") all’immagine.
     # ShiftScaleRotate : trasla, scala e ruota leggermente l’immagine e la maschera.  
     # NB: le p sono le probabilità con cui quella trasformazione viene applicata
+
+    # Se vuoi che alcune immagini abbiano 1, altre 2 o 3 trasformazioni diverse a caso, usa A.SomeOf:
     aug_transform = A.Compose([
-    A.HorizontalFlip(p=0.5),
-    # Simula imperfezioni e condizioni naturali
-    A.RandomBrightnessContrast(p=0.3),
-    A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3),
-    A.MotionBlur(blur_limit=3, p=0.2),
-    A.GaussNoise(var_limit=(10, 50), p=0.2),
-    A.ShiftScaleRotate(shift_limit=0.03, scale_limit=0.05, rotate_limit=2, p=0.3)
-])
+        A.OneOf([
+            A.NoOp(),
+            A.SomeOf([
+                A.HorizontalFlip(p=1.0),
+                A.RandomBrightnessContrast(p=1.0),
+                A.GaussNoise(p=1.0),
+                A.RGBShift(p=1.0),
+                A.MotionBlur(p=1.0),
+                A.ShiftScaleRotate(p=1.0)
+            ], n=(1, 3), replace=False)  # Da 1 a 3 trasformazioni diverse
+        ], p=1.0)
+    ])
+    aug_transform.set_seed(seed)
     return aug_transform
-
-
