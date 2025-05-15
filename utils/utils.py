@@ -1,9 +1,11 @@
 import numpy as np
 import wandb
-#from lovasz_losses import lovasz_softmax  # file taken from github
 import torch
 import torch.nn as nn
-
+import monai
+from utils.lovasz_losses import lovasz_softmax
+import torch.nn.functional as F
+from monai.losses import TverskyLoss, DiceLoss
 
 def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
                       max_iter=300, power=0.9):
@@ -150,3 +152,96 @@ class CombinedLoss_Lovasz(nn.Module):
         probs = torch.softmax(outputs, dim=1)
         lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
         return self.alpha * ce + self.beta * lovasz
+    
+# To avoid void class in dice loss
+class MaskedDiceLoss(nn.Module):
+    def __init__(self, num_classes, ignore_index=255):
+        super().__init__()
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.dice = DiceLoss(include_background=False, softmax=True, reduction="mean")
+
+    def forward(self, pred, target):
+        # Mask void pixels
+        mask = (target != self.ignore_index).float()
+        target_clamped = target.clone()
+        target_clamped[target == self.ignore_index] = 0
+
+        # One-hot encode
+        target_one_hot = F.one_hot(target_clamped, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+
+        # Apply mask
+        mask = mask.unsqueeze(1)
+        pred_masked = pred * mask
+        target_masked = target_one_hot * mask
+
+        return self.dice(pred_masked, target_masked)
+    
+    
+# to avoid ignore_index in Tversky Loss   
+class MaskedTverskyLoss(nn.Module):
+    def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
+        super().__init__()
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.tversky = TverskyLoss(alpha=alpha, beta=beta, softmax=True)
+
+    def forward(self, pred, target):
+        """
+        pred:   [B, C, H, W] — raw logits
+        target: [B, H, W]    — class indices (0 to C-1), with ignore_index for void
+        """
+
+        # Create mask for valid pixels
+        valid_mask = (target != self.ignore_index)  # [B, H, W]
+
+        # Replace ignore_index with 0 temporarily (it will be masked out)
+        target_clean = target.clone()
+        target_clean[~valid_mask] = 0
+
+        # One-hot encode target: [B, H, W] → [B, H, W, C] → [B, C, H, W]
+        target_onehot = F.one_hot(target_clean, num_classes=self.num_classes)  # [B, H, W, C]
+        target_onehot = target_onehot.permute(0, 3, 1, 2).float()  # [B, C, H, W]
+
+        # Apply valid pixel mask
+        valid_mask = valid_mask.unsqueeze(1).float()  # [B, 1, H, W]
+        pred = pred * valid_mask
+        target_onehot = target_onehot * valid_mask
+
+        return self.tversky(pred, target_onehot)
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, 
+                 alpha=0.4,   # CrossEntropy
+                 beta=0.1,    # Lovász
+                 gamma=0.4,   # Tversky
+                 theta=0.1,   # Dice
+                 ignore_index=255):
+        super(CombinedLoss_All, self).__init__()
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.theta = theta
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
+        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
+        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
+
+    def forward(self, outputs, targets):
+        ce = self.ce_loss(outputs, targets)
+        lovasz = self.lovasz_loss(outputs, targets)
+        tversky = self.tversky_loss(outputs, targets)
+        dice = self.dice_loss(outputs, targets)
+
+        total_loss = (self.alpha * ce +
+                      self.beta * lovasz +
+                      self.gamma * tversky +
+                      self.theta * dice)
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, "
+                f"gamma={self.gamma}, theta={self.theta})")
