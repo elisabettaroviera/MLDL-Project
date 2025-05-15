@@ -121,7 +121,13 @@ if __name__ == "__main__":
     ##########################################################################################
     # CHANGE THE LOSS FUNCTION WRT THE RESULTS OF 2.B
     #########################################################################################
-    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    loss = CombinedLoss_All(num_classes, 
+                 alpha=0.7,   # CrossEntropy
+                 beta=0.0,    # Lovász
+                 gamma=0.3,   # Tversky
+                 theta=0.0,   # Dice
+                 ignore_index=255)
     print("loss loaded")
 
 
@@ -129,7 +135,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_gta_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        project_name = "3a_GTA5_to_CITY_" # Change here!
+        project_name = "3a_GTA5_to_CITY_ce_0.7_tv_0.3_batch_update" # Change here!
         wandb.init(project=f"{project_name}", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
