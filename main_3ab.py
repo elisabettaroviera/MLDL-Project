@@ -135,7 +135,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_gta_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        project_name = "3a_GTA5_to_CITY_ce_0.7_tv_0.3_batch_update" # Change here!
+        project_name = "3a_GTA5_to_CITY_ce_batch_update" # Change here!
         wandb.init(project=f"{project_name}", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
