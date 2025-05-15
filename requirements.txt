@@ -5,4 +5,5 @@ requests
 numpy
 wandb
 gdown
+monai
 fvcore
