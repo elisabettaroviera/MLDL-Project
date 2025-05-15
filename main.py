@@ -156,7 +156,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 44
+        start_epoch = 30
 
     # Load the model on the device    
     model = model.to(device)
@@ -166,14 +166,14 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     #loss = MaskedDiceLoss(num_classes=num_classes)
     #loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255) # alpha = cross entropy, beta = lovasz
     #loss = CombinedLoss_Tversky(num_classes=num_classes, alpha=0.7, beta=0.3, ignore_index=255) 
     # alpha = 0.7  # CrossEntropy
     # gamma = 0.3  # Tversky
     #loss = CombinedLoss_All(num_classes=num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255)
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
+    #loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
 
     print(loss.__class__.__name__)
     print("loss loaded")
@@ -186,7 +186,7 @@ if __name__ == "__main__":
         # Change the name of the project before the final run of 50 epochs
         # _lr_0.00625_cr1_total_dataset
         # _lr_0.00625_cr07_tv03_total_dataset
-        wandb.init(project=f"{var_model}_lr_0.00625_cr07_tv03_total_dataset", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625_cr1_total_dataset", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -195,7 +195,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_cr07_tv03_total_dataset/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_lr_0.00625_cr1_total_dataset/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
