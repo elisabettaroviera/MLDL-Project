@@ -121,13 +121,13 @@ if __name__ == "__main__":
     ##########################################################################################
     # CHANGE THE LOSS FUNCTION WRT THE RESULTS OF 2.B
     #########################################################################################
-    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    loss = CombinedLoss_All(num_classes, 
-                 alpha=0.7,   # CrossEntropy
-                 beta=0.0,    # Lovász
-                 gamma=0.3,   # Tversky
-                 theta=0.0,   # Dice
-                 ignore_index=255)
+    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    #loss = CombinedLoss_All(num_classes, 
+                 #alpha=0.7,   # CrossEntropy
+                 #beta=0.0,    # Lovász
+                 #gamma=0.3,   # Tversky
+                 #theta=0.0,   # Dice
+                 #ignore_index=255)
     print("loss loaded")
 
 
