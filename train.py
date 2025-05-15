@@ -147,6 +147,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     # Registra l'artifact su W&B
     wandb.log_artifact(artifact)
     print(f"Model saved for epoch {epoch}")
+
     """
     # Salva il modello su wandb
     wandb.save(model_save_path)
