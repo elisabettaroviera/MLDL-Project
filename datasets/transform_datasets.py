@@ -71,3 +71,7 @@ def transform_gta_mask():
         transforms.Lambda(transform_gta_to_cityscapes_label)
     ])
     return transform
+
+
+### DATA AUGMENTATION ###
+
