@@ -7,3 +7,4 @@ wandb
 gdown
 fvcore
 monai
+albumentations

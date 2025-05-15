@@ -84,6 +84,8 @@ if __name__ == "__main__":
     # Load the datasets (GTA5)
     print("Load the GTA5 dataset")
     gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta)
+    
+    flag_aug = np.random
 
     print("MODEL BISENET")
     batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)

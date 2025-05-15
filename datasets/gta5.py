@@ -51,6 +51,12 @@ class GTA5(Dataset):
         # Load image and label
         image = Image.open(self.images[idx]).convert('RGB')  # convert image to RGB
         label = Image.open(self.masks[idx])  # do not convert label (keep as is)
+                
+        # If the random number is < 0.5, we apply the augmentation to the photo
+        if np.random.random() < self.augmentation_probability:
+            augmentation = self.augmentation_transforms[np.random.randint(0, len(self.augmentation_transforms)-1)]
+            image = augmentation(image)
+            mask = augmentation(mask)
 
         # Apply transformations if provided
         if self.transform:

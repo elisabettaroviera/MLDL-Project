@@ -1,4 +1,6 @@
 import torchvision.transforms as transforms
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 from PIL import Image
 import numpy as np
 import torch
@@ -72,6 +74,24 @@ def transform_gta_mask():
     ])
     return transform
 
-
 ### DATA AUGMENTATION ###
+def augmentation_transforms(): 
+    # HorizontalFlip: ruota orizzontalmente l’immagine e la maschera con probabilità del 50%
+    # RGBShift: modifica i canali rosso, verde e blu con uno shift casuale nei valori di pixel
+    # RandomBrightnessContrast : cambia casualmente luminosità e contrasto
+    # MotionBlur : applica una leggera sfocatura da movimento
+    # GaussNoise : aggiunge rumore gaussiano (tipo "grana") all’immagine.
+    # ShiftScaleRotate : trasla, scala e ruota leggermente l’immagine e la maschera.  
+    # NB: le p sono le probabilità con cui quella trasformazione viene applicata
+    aug_transform = A.Compose([
+    A.HorizontalFlip(p=0.5),
+    # Simula imperfezioni e condizioni naturali
+    A.RandomBrightnessContrast(p=0.3),
+    A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3),
+    A.MotionBlur(blur_limit=3, p=0.2),
+    A.GaussNoise(var_limit=(10, 50), p=0.2),
+    A.ShiftScaleRotate(shift_limit=0.03, scale_limit=0.05, rotate_limit=2, p=0.3)
+])
+    return aug_transform
+
 

@@ -18,15 +18,13 @@ __len__      | Returns the total number of samples in the dataset         | At t
 """
 
 class CityScapes(Dataset):
-    def __init__(self, root_dir, split='train', transform=None, target_transform=None, augmentation_transform=None, augmentation_probability=0):
+    def __init__(self, root_dir, split='train', transform=None, target_transform=None):
         super(CityScapes, self).__init__()
 
         self.images = []
         self.masks = []
         self.transform = transform
         self.target_transform = target_transform
-        self.augmentation_transform = augmentation_transform
-        self.augmentation_probability = augmentation_probability
 
         # Define image and mask directories
         image_dir = os.path.join(root_dir, 'Cityspaces/images', split)
@@ -69,7 +67,6 @@ class CityScapes(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-        to_augment = np.random.random()
         image = Image.open(self.images[idx]).convert('RGB')
         mask = Image.open(self.masks[idx])
 
