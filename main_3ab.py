@@ -20,17 +20,21 @@ from utils.metrics import compute_miou
 from torch import nn
 import wandb
 import gdown
+import albumentations as A
 from models.bisenet.build_bisenet import BiSeNet
+from torch.utils.data import ConcatDataset
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
     torch.manual_seed(seed) # Set the seed for CPU
+    torch.cuda.manual_seed(seed) # Set the seed for CPU
     torch.cuda.manual_seed_all(seed) # Set the seed for all GPUs
     np.random.seed(seed) # Set the seed for NumPy
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
+    A.set_seed(seed) # ATTENZIONE serve anche se abbiamo messo come seed gli id delle foto???
 
 # Function to print the metrics
 # This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
@@ -65,9 +69,8 @@ if __name__ == "__main__":
     set_seed(23)  # Set a seed for reproducibility
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    #############################################################################################################
+    ############################################################################################################
     ################################################# STEP 3.ab #################################################
-    #############################################################################################################
 
     print(f"************STEP 3 : TRAINING BISENET ON GTA5***************")
     # Define transformations
@@ -83,9 +86,11 @@ if __name__ == "__main__":
     
     # Load the datasets (GTA5)
     print("Load the GTA5 dataset")
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta)
-    
-    flag_aug = np.random
+    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augemntation = False)
+    gta_augmentation = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True)
+
+    # Union of the dataset
+    gta_combined = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
 
     print("MODEL BISENET")
     batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
