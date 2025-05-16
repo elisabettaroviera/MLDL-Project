@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18')
     # number of epoch that we want to start from
-    start_epoch = 19
+    start_epoch = 35
 
     # Load the model on the device    
     model = model.to(device)
