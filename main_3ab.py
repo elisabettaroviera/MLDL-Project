@@ -14,7 +14,7 @@ import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
 from train import train
-from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb, CombinedLoss_All
 from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     ############################################################################################################
-    ################################################# STEP 3.ab #################################################
+    ################################################# STEP 3.ab ################################################
 
     print(f"************STEP 3 : TRAINING BISENET ON GTA5***************")
     # Define transformations
@@ -86,11 +86,17 @@ if __name__ == "__main__":
     
     # Load the datasets (GTA5)
     print("Load the GTA5 dataset")
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augemntation = False)
-    gta_augmentation = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True)
+    #gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = None)
+
+    # augemented dataset: circa 50% has been changed with type_aug augmentation
+    # CHANGE HERE choose type_aug 
+    # Lu - color
+    # Auro - wheather
+    # Betta - geometric
+    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = 'color')
 
     # Union of the dataset
-    gta_combined = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
+    #gta_train = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
 
     print("MODEL BISENET")
     batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
@@ -128,8 +134,17 @@ if __name__ == "__main__":
     ##########################################################################################
     # CHANGE THE LOSS FUNCTION WRT THE RESULTS OF 2.B
     #########################################################################################
-    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    # Defintion of the loss function
+    """
+    alpha   # CrossEntropy
+    beta    # Lovász
+    gamma   # Tversky
+    theta   # Dice
+    """
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
     print("loss loaded")
+
 
 
     for epoch in range(start_epoch, num_epochs + 1):

@@ -75,8 +75,7 @@ def transform_gta_mask():
     return transform
 
 ### DATA AUGMENTATION ###
-def augmentation_transform(): 
-    seed = 23
+def augmentation_transform(type_aug): 
     # HorizontalFlip: ruota orizzontalmente l’immagine e la maschera con probabilità del 50%
     # RGBShift: modifica i canali rosso, verde e blu con uno shift casuale nei valori di pixel
     # RandomBrightnessContrast : cambia casualmente luminosità e contrasto
@@ -85,19 +84,59 @@ def augmentation_transform():
     # ShiftScaleRotate : trasla, scala e ruota leggermente l’immagine e la maschera.  
     # NB: le p sono le probabilità con cui quella trasformazione viene applicata
 
-    # Se vuoi che alcune immagini abbiano 1, altre 2 o 3 trasformazioni diverse a caso, usa A.SomeOf:
-    aug_transform = A.Compose([
+    if type_aug == 'color' :
+        # COLOR TRANSFORMATIONS
+        # HueSaturationValue — per ridurre la saturazione ed avvicinare il tono.
+        # RGBShift — per variare leggermente i canali RGB e ridurre l'effetto "videogioco".
+        # CLAHE — migliora il contrasto in modo realistico.
+        # RandomBrightnessContrast — abbassa il contrasto o la luminosità per simulare condizioni meteo diverse.
+        aug_transform = A.Compose([
+            A.OneOf([
+                A.NoOp(),
+                A.SomeOf([
+                    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
+                    A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
+                    A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0),
+                    A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0),
+                    A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
+                    ], n=(1, 3), replace=False)  # Da 1 a 3 trasformazioni diverse
+            ], p=1.0)
+        ])
+    elif type_aug  == 'wheather':
+        # WHEATHER AND ILLUMINATION 
+        # RandomShadow — per aggiungere ombre stradali o da edifici.
+        # RandomFog o RandomRain — per simulare condizioni meteo.
+        # ISONoise — aggiunge rumore simile a fotocamere reali.
+        # MotionBlur o GaussianBlur — per simulare imperfezioni delle fotocamere in movimento.
+        aug_transform = A.Compose([
         A.OneOf([
             A.NoOp(),
             A.SomeOf([
-                A.HorizontalFlip(p=1.0),
-                A.RandomBrightnessContrast(p=1.0),
-                A.GaussNoise(p=1.0),
-                A.RGBShift(p=1.0),
-                A.MotionBlur(p=1.0),
-                A.ShiftScaleRotate(p=1.0)
-            ], n=(1, 3), replace=False)  # Da 1 a 3 trasformazioni diverse
-        ], p=1.0)
-    ])
-    aug_transform.set_seed(seed)
+                A.RandomShadow(shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=1, num_shadows_upper=2, p=1.0),
+                A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0),
+                A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0),
+                A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0),
+                A.GaussianBlur(blur_limit=(3, 5), sigma_limit=0.5, p=1.0)
+                ], n=(1, 2), replace=False)  # Da 1 a 3 trasformazioni diverse
+            ], p=1.0)
+        ])
+    elif type_aug == 'geometric':
+        # GEOMETRIC TRANSFORMATIONS Geometric Transforms
+        # RandomCrop — per forzare la stessa FOV o porzione visiva.
+        # Affine con leggera rotazione/traslazione.
+        # Resize — per uniformare la risoluzione.
+        # Perspective (con cautela) — per rendere la prospettiva più simile a Cityscapes.
+        aug_transform = A.Compose([
+        A.OneOf([
+            A.NoOp(),
+            A.SomeOf([
+                A.RandomCrop(height=720, width=1280, p=1.0),
+                A.Affine(scale=(0.95, 1.05), translate_percent=(0.02, 0.05), rotate=(-5, 5), shear=(-2, 2), p=1.0),
+                A.Perspective(scale=(0.02, 0.05), keep_size=True, p=1.0)
+                ], n=(1, 2), replace=False)  # Da 1 a 3 trasformazioni diverse
+            ], p=1.0)
+        ])
+
+
+    
     return aug_transform

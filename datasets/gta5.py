@@ -12,7 +12,7 @@ from transform_datasets import augmentation_transform
 # GTA5 dataset class
 
 class GTA5(Dataset):
-    def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False):
+    def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False, type_aug = None):
         super(GTA5, self).__init__()
         
         # Initialize lists to store image and label paths
@@ -21,6 +21,7 @@ class GTA5(Dataset):
         self.transform = transform
         self.target_transform = target_transform
         self.augmentation = augmentation
+        self.type_aug = type_aug
 
         # Define image and label directories
         image_dir = os.path.join(root_dir, 'images')
@@ -56,26 +57,21 @@ class GTA5(Dataset):
         image = Image.open(image_path).convert('RGB')
         label = Image.open(self.masks[idx])
 
-        # Seed deterministico per coerenza
-        seed = hash(image_path) % (2**32)
-        random.seed(seed)
-        np.random.seed(seed)
-        # A sottolineato?
-        A.set_seed(seed)
-
         if self.augmentation:
             # Applichiamo l'augmentazione con OneOf che include NoOp
-            augmented = augmentation_transform(image=np.array(image), mask=np.array(label))
-            image_aug = Image.fromarray(augmented['image'])
-            label_aug = Image.fromarray(augmented['mask'])
+            augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+            image = Image.fromarray(augmented['image'])
+            label = Image.fromarray(augmented['mask'])
+
+            # DA USARE SE DECIDO DI AGGIUNGERE LE FOTO NUOVE INVECE CHE SOSTITUIRLE
 
             # Verifico se è stata trasformata (NoOp mantiene immagine identica)
-            if np.array_equal(np.array(image), np.array(image_aug)):
-                # NoOp: non trasformata → ritorna None per scartarla
-                return None
-            else:
-                image = image_aug
-                label = label_aug
+            #if np.array_equal(np.array(image), np.array(image_aug)):
+            #    # NoOp: non trasformata → ritorna None per scartarla
+            #    return None
+            #else:
+            #    image = image_aug
+            #    label = label_aug
 
         # Applico sempre le trasformazioni base
         if self.transform:
