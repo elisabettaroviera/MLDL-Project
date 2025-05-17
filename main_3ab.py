@@ -93,7 +93,8 @@ if __name__ == "__main__":
     # Lu - color
     # Auro - wheather
     # Betta - geometric
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = 'color')
+    type_aug = 'wheather'
+    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = type_aug)
 
     # Union of the dataset
     #gta_train = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
@@ -151,7 +152,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_gta_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        project_name = "3a_GTA5_to_CITY_" # Change here!
+        project_name = f"3b_GTA5_to_CITY_augmented_{type_aug}" # Change here!
         wandb.init(project=f"{project_name}", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
