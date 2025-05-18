@@ -83,8 +83,9 @@ if __name__ == "__main__":
         artifact_path = artifact.download()
         checkpoint_path = os.path.join(artifact_path, f"model_epoch_{epoch}.pt")
 
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, map_location=device)
         model.load_state_dict(checkpoint['model_state_dict'])
+
 
         print(f"Evaluating model from epoch {epoch}...")
         start_val = time.time()
