@@ -113,7 +113,6 @@ if __name__ == "__main__":
         print_metrics("Training", metrics_train)
 
         save_metrics_on_wandb(epoch, metrics_train, metrics_val=None)
-        save_metrics_on_file(epoch, metrics_train, metrics_val=None)
 
         # Save model checkpoint as wandb artifact
         checkpoint = {
