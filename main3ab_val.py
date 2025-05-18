@@ -13,39 +13,23 @@ from datasets.transform_datasets import transform_cityscapes, transform_cityscap
 from data.dataloader import dataloader
 from validation import validate
 
-# Function to set the seed for reproducibility
-# This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
-    torch.manual_seed(seed) # Set the seed for CPU
-    torch.cuda.manual_seed(seed) # Set the seed for CPU
-    torch.cuda.manual_seed_all(seed) # Set the seed for all GPUs
-    np.random.seed(seed) # Set the seed for NumPy
-    random.seed(seed) # Set the seed for random
-    torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
-    torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
-    #A.set_seed(seed) # ATTENZIONE serve anche se abbiamo messo come seed gli id delle foto???
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.deterministic = False
 
-# Function to print the metrics
-# This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
 def print_metrics(title, metrics):
-    # NB: this is how the metrics dictionary returned in train is defined
-    # metrics = {
-    #    'mean_loss': mean_loss,
-    #    'mean_iou': mean_iou,
-    #    'iou_per_class': iou_per_class,
-    #    'mean_latency' : mean_latency,
-    #    'num_flops' : num_flops,
-    #    'trainable_params': trainable_params}
-    
     print(f"{title} Metrics")
     print(f"Loss: {metrics['mean_loss']:.4f}")
     print(f"Latency: {metrics['mean_latency']:.2f} ms")
-    #print(f"FPS: {metrics['fps']:.2f} frames/sec")
     print(f"FLOPs: {metrics['num_flops']:.2f} GFLOPs")
     print(f"Parameters: {metrics['trainable_params']:.2f} M")
-    print(f"Mean IoU (mIoU): {metrics['mean_iou']:.2f} %")
-
-    print("\nClass-wise IoU (%):")
+    print(f"Mean IoU (mIoU): {metrics['mean_iou']:.2f} %\n")
+    print("Class-wise IoU (%):")
     print(f"{'Class':<20} {'IoU':>6}")
     print("-" * 28)
     for cls, val in enumerate(metrics['iou_per_class']):
@@ -63,9 +47,6 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    learning_rate = 0.00625
-    momentum = 0.9
-    weight_decay = 1e-4
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
@@ -77,9 +58,23 @@ if __name__ == "__main__":
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
     project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03"
-    for epoch in range(start_epoch, num_epochs + 1):
-        run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
 
+    # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
+    run_ids = [
+        "id_run_epoch_1",
+        "id_run_epoch_2",
+        # ... aggiungi tutti gli id delle epoche ...
+        "id_run_epoch_50"
+    ]
+
+    for epoch in range(start_epoch, num_epochs + 1):
+        run = wandb.init(
+            project=project_name,
+            entity="s328422-politecnico-di-torino",
+            name=f"epoch_{epoch}",
+            id=run_ids[epoch],  # id corrispondente all'epoca
+            resume="allow"
+        )
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
         artifact_path = artifact.download()
         checkpoint_path = os.path.join(artifact_path, f"model_epoch_{epoch}.pt")
@@ -97,4 +92,4 @@ if __name__ == "__main__":
         save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
         save_metrics_on_file(epoch, metrics_train=None, metrics_val=metrics_val)
 
-    wandb.finish()
+        wandb.finish()
