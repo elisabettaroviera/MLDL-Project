@@ -61,10 +61,8 @@ if __name__ == "__main__":
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = [
-        "id_run_epoch_1",
-        "id_run_epoch_2",
-        # ... aggiungi tutti gli id delle epoche ...
-        "id_run_epoch_50"
+        "epoch_1",
+        "epoch_2",
     ]
 
     for epoch in range(start_epoch, num_epochs + 1):
@@ -72,7 +70,7 @@ if __name__ == "__main__":
             project=project_name,
             entity="s328422-politecnico-di-torino",
             name=f"epoch_{epoch}",
-            id=run_ids[epoch],  # id corrispondente all'epoca
+            id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
             resume="allow"
         )
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
