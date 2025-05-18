@@ -75,7 +75,7 @@ def transform_gta_mask():
     return transform
 
 ### DATA AUGMENTATION ###
-def augmentation_transform(type_aug): 
+def augmentation_transform(image, mask, type_aug): 
     # HorizontalFlip: ruota orizzontalmente l’immagine e la maschera con probabilità del 50%
     # RGBShift: modifica i canali rosso, verde e blu con uno shift casuale nei valori di pixel
     # RandomBrightnessContrast : cambia casualmente luminosità e contrasto
@@ -137,6 +137,8 @@ def augmentation_transform(type_aug):
             ], p=1.0)
         ])
 
+    augmented = aug_transform(image=image, mask=mask)
+
 
     
-    return aug_transform
+    return augmented
