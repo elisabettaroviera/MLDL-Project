@@ -13,7 +13,45 @@ from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
 from train import train
-from utils.utils import set_seed, print_metrics
+
+# Function to set the seed for reproducibility
+# This function sets the seed for various libraries to ensure that the results are reproducible.
+def set_seed(seed):
+    torch.manual_seed(seed) # Set the seed for CPU
+    torch.cuda.manual_seed(seed) # Set the seed for CPU
+    torch.cuda.manual_seed_all(seed) # Set the seed for all GPUs
+    np.random.seed(seed) # Set the seed for NumPy
+    random.seed(seed) # Set the seed for random
+    torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
+    torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
+    #A.set_seed(seed) # ATTENZIONE serve anche se abbiamo messo come seed gli id delle foto???
+
+# Function to print the metrics
+# This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
+def print_metrics(title, metrics):
+    # NB: this is how the metrics dictionary returned in train is defined
+    # metrics = {
+    #    'mean_loss': mean_loss,
+    #    'mean_iou': mean_iou,
+    #    'iou_per_class': iou_per_class,
+    #    'mean_latency' : mean_latency,
+    #    'num_flops' : num_flops,
+    #    'trainable_params': trainable_params}
+    
+    print(f"{title} Metrics")
+    print(f"Loss: {metrics['mean_loss']:.4f}")
+    print(f"Latency: {metrics['mean_latency']:.2f} ms")
+    #print(f"FPS: {metrics['fps']:.2f} frames/sec")
+    print(f"FLOPs: {metrics['num_flops']:.2f} GFLOPs")
+    print(f"Parameters: {metrics['trainable_params']:.2f} M")
+    print(f"Mean IoU (mIoU): {metrics['mean_iou']:.2f} %")
+
+    print("\nClass-wise IoU (%):")
+    print(f"{'Class':<20} {'IoU':>6}")
+    print("-" * 28)
+    for cls, val in enumerate(metrics['iou_per_class']):
+        print(f"{cls:<20} {val:>6.2f}")
+
 
 if __name__ == "__main__":
     set_seed(23)
