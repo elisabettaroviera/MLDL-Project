@@ -71,6 +71,7 @@ if __name__ == "__main__":
 
     ############################################################################################################
     ################################################# STEP 3.ab ################################################
+    ############################################################################################################
 
     print(f"************STEP 3 : TRAINING BISENET ON GTA5***************")
     # Define transformations
@@ -151,7 +152,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_gta_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        project_name = "3b_GTA5_to_CITY_augmented_geometric" # Change here!
+        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" # Change here!
         wandb.init(project=f"{project_name}", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
