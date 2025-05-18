@@ -22,14 +22,10 @@ if __name__ == "__main__":
     print("************ TRAINING BiSeNet ON GTA5 ***************")
 
     transform_gta_dataset = transform_gta()
-    #transform_cityscapes_dataset = transform_cityscapes()
-    #target_transform_cityscapes = transform_cityscapes_mask()
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
     gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug='geometric')
-    #cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
-    cs_val = None
 
     batch_size = 4
     learning_rate = 0.00625
@@ -40,7 +36,7 @@ if __name__ == "__main__":
     ignore_index = 255
     start_epoch = 1
 
-    dataloader_gta_train, _ = dataloader(gta_train, cs_val, batch_size, True, True)
+    dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
