@@ -72,7 +72,7 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 1
+    start_epoch = 11
 
     dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
 
@@ -112,7 +112,6 @@ if __name__ == "__main__":
                                          learning_rate, num_classes, max_iter)
         end_train = time.time()
         print(f"Time for training: {(end_train - start_train)/60:.2f} min")
-        print_metrics("Training", metrics_train)
 
         save_metrics_on_wandb(epoch, metrics_train, metrics_val=None)
 
