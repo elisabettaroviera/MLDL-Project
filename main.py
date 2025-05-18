@@ -135,7 +135,7 @@ if __name__ == "__main__":
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
     iter_curr = 0 # Initialize the iteration counter
-    max_iter = num_epochs #* len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
+    max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
     if var_model == 'DeepLabV2':
         # Pretrained model path 
