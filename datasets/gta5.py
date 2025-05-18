@@ -4,7 +4,7 @@ from PIL import Image
 import random
 import albumentations as A
 import numpy as np
-from transform_datasets import augmentation_transform
+from datasets.transform_datasets import augmentation_transform
 
 # TODO: implement here your custom dataset class for GTA5
 
