@@ -82,20 +82,22 @@ if __name__ == "__main__":
 
     max_iter = num_epochs * len(dataloader_gta_train)
 
-    project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03"
-    run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name="BiSeNet_GTA5_Training", reinit=True)
-    wandb.config.update({
-        "batch_size": batch_size,
-        "learning_rate": learning_rate,
-        "momentum": momentum,
-        "weight_decay": weight_decay,
-        "num_epochs": num_epochs,
-        "num_classes": num_classes
-    })
+    
 
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
+        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03"
+        run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
+        wandb.config.update({
+            "batch_size": batch_size,
+            "learning_rate": learning_rate,
+            "momentum": momentum,
+            "weight_decay": weight_decay,
+            "num_epochs": num_epochs,
+            "num_classes": num_classes
+        })
+
         if epoch > 1:
             artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch-1}:latest", type="model")
             checkpoint_path = artifact.download()
