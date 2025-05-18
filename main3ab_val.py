@@ -79,13 +79,13 @@ if __name__ == "__main__":
     project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03"
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
+
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
         artifact_path = artifact.download()
         checkpoint_path = os.path.join(artifact_path, f"model_epoch_{epoch}.pt")
 
-        checkpoint = torch.load(checkpoint_path, map_location=device)
+        checkpoint = torch.load(checkpoint_path)
         model.load_state_dict(checkpoint['model_state_dict'])
-
 
         print(f"Evaluating model from epoch {epoch}...")
         start_val = time.time()
