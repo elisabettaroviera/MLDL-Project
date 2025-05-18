@@ -127,7 +127,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
         # number of epoch that we want to start from
-        start_epoch = 16
+        start_epoch = 1
         
 
     elif var_model == 'BiSeNet':
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=255)
     """
     alpha   # CrossEntropy
     beta    # Lovász
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        wandb.init(project=f"{var_model}_cv07_tv03", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_cv07_di03", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -169,7 +169,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_cv07_tv03/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_cv07_di03/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
