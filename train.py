@@ -77,7 +77,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         optimizer.step()
 
         # Compute the learning rate
-        #lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
 
         # Update the running loss
         running_loss += loss.item() # Update of the loss = contain the total loss of the epoch
@@ -121,7 +121,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         std_fps = -1
 
 
-    lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=(epoch-1), lr_decay_iter=1, max_iter=max_iter, power=0.9)
+    #lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=(epoch-1), lr_decay_iter=1, max_iter=max_iter, power=0.9)
 
     # 6. SAVE THE PARAMETERS OF THE MODEL 
     print("Saving the model")
