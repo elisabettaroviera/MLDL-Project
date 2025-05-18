@@ -4,7 +4,7 @@ from zipfile import ZipFile
 from io import BytesIO
 import gdown
 
-gta5_id = '1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO'  # Google Drive file ID
+gta5_id = '1dJ8HS9Z6XQtDwI1RBDQm89orz69npVTM'  # Google Drive file ID
 gta5_url = f'https://drive.google.com/uc?id={gta5_id}' # Construct the download URL
 
 """
@@ -12,6 +12,8 @@ gta5_url = f'https://drive.google.com/uc?id={gta5_id}' # Construct the download 
 Personal Google Drive links for the datasets:
 gta5_id = '1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO'  # Google Drive file ID
 https://drive.google.com/file/d/1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO/view?usp=sharing
+
+https://drive.google.com/file/d/1dJ8HS9Z6XQtDwI1RBDQm89orz69npVTM/view?usp=sharing
 """
 
 gta5_output = 'gta5.zip' # Name of the output file
