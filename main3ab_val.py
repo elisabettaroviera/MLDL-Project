@@ -88,6 +88,5 @@ if __name__ == "__main__":
 
         print_metrics("Validation", metrics_val)
         save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
-        save_metrics_on_file(epoch, metrics_train=None, metrics_val=metrics_val)
-
+        
         wandb.finish()
