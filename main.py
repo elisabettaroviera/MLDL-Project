@@ -186,8 +186,8 @@ if __name__ == "__main__":
 
     
     for epoch in range(start_epoch, num_epochs + 1):
-        #iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
-        iter_curr = epoch-1
+        iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
+        #iter_curr = epoch-1
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
         # _lr_0.00625_cr1_total_dataset
