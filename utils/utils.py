@@ -100,40 +100,50 @@ def save_metrics_on_file(epoch, metrics_train, metrics_val):
 # Function to save the metrics on WandB UPDATED 
 # In this function, we log the metrics for each epoch
 # and also log additional metrics at the end of the training (epoch 50)   
-def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
-    # Metriche base loggate a ogni epoca
-    to_serialize = {
-        "epoch": epoch,
-        "train_mIoU": metrics_train['mean_iou'],
-        "train_loss": metrics_train['mean_loss'],
-        "val_mIoU": metrics_val['mean_iou'],
-        "val_mIoU_per_class": metrics_val['iou_per_class'],
-        "val_loss": metrics_val['mean_loss']
-    }
+def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
+    to_serialize = {"epoch": epoch}
 
-    print(metrics_train['iou_per_class'])
-
-    for index, iou in enumerate(metrics_train['iou_per_class']):
-        to_serialize[f"class_{index}_train"] = iou
-
-    for index, iou in enumerate(metrics_val['iou_per_class']):
-        to_serialize[f"class_{index}_val"] = iou
-
-    # Aggiunta di metriche extra solo all'ultima epoca (es. 50)
-    if epoch == 50:
+    # Log training metrics
+    if metrics_train is not None:
         to_serialize.update({
-            "train_latency": metrics_train['mean_latency'],
-            "train_fps": metrics_train['mean_fps'],
-            "train_flops": metrics_train['num_flops'],
-            "train_params": metrics_train['trainable_params'],
-            "val_latency": metrics_val['mean_latency'],
-            "val_fps": metrics_val['mean_fps'],
-            "val_flops": metrics_val['num_flops'],
-            "val_params": metrics_val['trainable_params']
+            "train_mIoU": metrics_train['mean_iou'],
+            "train_loss": metrics_train['mean_loss']
         })
+
+        for index, iou in enumerate(metrics_train['iou_per_class']):
+            to_serialize[f"class_{index}_train"] = iou
+
+        if epoch == final_epoch:
+            to_serialize.update({
+                "train_latency": metrics_train['mean_latency'],
+                "train_fps": metrics_train['mean_fps'],
+                "train_flops": metrics_train['num_flops'],
+                "train_params": metrics_train['trainable_params']
+            })
+
+    # Log validation metrics
+    if metrics_val is not None:
+        to_serialize.update({
+            "val_mIoU": metrics_val['mean_iou'],
+            "val_mIoU_per_class": metrics_val['iou_per_class'],
+            "val_loss": metrics_val['mean_loss']
+        })
+
+        for index, iou in enumerate(metrics_val['iou_per_class']):
+            to_serialize[f"class_{index}_val"] = iou
+
+        if epoch == final_epoch:
+            to_serialize.update({
+                "val_latency": metrics_val['mean_latency'],
+                "val_fps": metrics_val['mean_fps'],
+                "val_flops": metrics_val['num_flops'],
+                "val_params": metrics_val['trainable_params']
+            })
 
     # Logging finale su wandb
     wandb.log(to_serialize)
+
+
 
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
