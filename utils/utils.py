@@ -229,6 +229,50 @@ class MaskedDiceLoss(nn.Module):
         return self.dice(pred_masked, target_masked)
     
 
+class CombinedLossAll(nn.Module):
+    def __init__(self, num_classes,
+                 alpha=0.4, beta=0.1, gamma=0.4, theta=0.1,
+                 ignore_index=255):
+        super().__init__()
+        self.w = dict(ce=alpha, lovasz=beta, tversky=gamma, dice=theta)
+        self.ignore_index = ignore_index
+
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
+        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
+        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
+
+    @torch.no_grad()
+    def _valid_mask(self, targets):
+        """mask per ignore_index, ri‑usato da tutte le loss"""
+        return targets != self.ignore_index
+
+    def forward(self, outputs, targets):
+        mask = self._valid_mask(targets)          # [B,H,W] boolean
+        probs = torch.softmax(outputs, dim=1)      # 1 sola softmax (Lovász, Dice, Tversky)
+        total = 0.0
+
+        # Cross‑Entropy (usa direttamente logits, niente softmax)
+        if self.w["ce"]:
+            total += self.w["ce"] * self.ce_loss(outputs, targets)
+
+        if self.w["lovasz"]:
+            total += self.w["lovasz"] * self.lovasz_loss(probs, targets, mask)
+
+        if self.w["tversky"]:
+            total += self.w["tversky"] * self.tversky_loss(probs, targets, mask)
+
+        if self.w["dice"]:
+            total += self.w["dice"] * self.dice_loss(probs, targets, mask)
+
+        return total
+
+    def __repr__(self):
+        w = ", ".join(f"{k}={v}" for k, v in self.w.items())
+        return f"{self.__class__.__name__}({w})"
+
+    
+"""
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, 
                  alpha=0.4,   # CrossEntropy
@@ -265,3 +309,4 @@ class CombinedLoss_All(nn.Module):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
                 f"alpha={self.alpha}, beta={self.beta}, "
                 f"gamma={self.gamma}, theta={self.theta})")
+"""
