@@ -229,7 +229,7 @@ class MaskedDiceLoss(nn.Module):
         return self.dice(pred_masked, target_masked)
     
 
-class CombinedLossAll(nn.Module):
+class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes,
                  alpha=0.4, beta=0.1, gamma=0.4, theta=0.1,
                  ignore_index=255):
