@@ -141,8 +141,12 @@ if __name__ == "__main__":
     # -- DataLoader --
     full_dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
     dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 0.5, batch_size=batch_size)
-    print(f'samples in the dataloader train: {print(len( dataloader_cs_train.dataset))}')
-    print(f'samples in the dataloader val: {print(len( dataloader_cs_val.dataset))}')
+    for batch in dataloader_cs_train:
+        inputs, targets, filenames = batch  # o come sono strutturati i dati
+        for i in range(inputs.size(0)):  # inputs.size(0) è il numero di sample nel batch
+            print(f"Sample {i} - filename: {filenames[i]}")
+            print('------------------------------')
+
 
 
 
