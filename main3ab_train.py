@@ -93,7 +93,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03"
+        project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv_03"
         run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,
