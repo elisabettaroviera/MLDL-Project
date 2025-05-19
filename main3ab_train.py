@@ -55,10 +55,10 @@ def print_metrics(title, metrics):
         print(f"{cls:<20} {val:>6.2f}")
 
 
-def select_random_fraction_of_dataset(dataloader, fraction=1.0, batch_size=4):
+def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
     assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
 
-    dataset = dataloader.dataset
+    dataset = full_dataloader.dataset
     total_samples = len(dataset)
     num_samples = int(total_samples * fraction)
 
@@ -94,7 +94,8 @@ if __name__ == "__main__":
     start_epoch = 1 #CHECK BEFORE RUNNING
 
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=4)
+    # CHECK FRACTION BEFORE RUNNING
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=batch_size)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
