@@ -38,7 +38,8 @@ def print_metrics(title, metrics):
 def to_obtain_id():
     # Configurazione del tuo progetto wandb
     entity = "s328422-politecnico-di-torino"
-    project = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03"
+    # CHECK NAME : 
+    project = "3b_GTA5_to_CITY_augmented_color_cv07_tv_03"
 
     api = wandb.Api()
 
@@ -84,13 +85,15 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
+    # CHECK START EPOCH :
     start_epoch = 1
+    # CHECK LOSS :
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
 
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, shuffle_train=False, shuffle_val=False)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
-
+    # CHECK NAME (AGAIN) :
     project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv_03"
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)

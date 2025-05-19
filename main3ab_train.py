@@ -63,7 +63,8 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug='geometric')
+    # CHECK type_aug :
+    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug='color')
 
     batch_size = 4
     learning_rate = 0.00625
@@ -72,12 +73,14 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 35
+    # CHECK START EPOCH :
+    start_epoch = 1
 
     dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+    # CHECK LOSS :
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
     """
     alpha   # CrossEntropy
@@ -85,14 +88,13 @@ if __name__ == "__main__":
     gamma   # Tversky
     theta   # Dice
     """
-
     max_iter = num_epochs * len(dataloader_gta_train)
 
     
-
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
+        # CHECK PROJECT NAME :
         project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv_03"
         run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
