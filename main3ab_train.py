@@ -74,7 +74,7 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 35
+    start_epoch = 1
 
     dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
 
