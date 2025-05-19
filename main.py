@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     # -- DataLoader --
     full_dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
-    dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 1.0, batch_size=batch_size)
+    dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 0.5, batch_size=batch_size)
 
 
 
