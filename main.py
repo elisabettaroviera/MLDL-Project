@@ -139,8 +139,8 @@ if __name__ == "__main__":
     val_subset = Subset(cs_val, subset_indices_val)"""
 
     # -- DataLoader --
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
-    #dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 1.0, batch_size=batch_size)
+    full_dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 1.0, batch_size=batch_size)
 
 
 
@@ -188,14 +188,14 @@ if __name__ == "__main__":
     print("Optimizer loaded")
     
     # Defintion of the loss function
-    #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
+    loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     #loss = MaskedDiceLoss(num_classes=num_classes)
     #loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255) # alpha = cross entropy, beta = lovasz
     #loss = CombinedLoss_Tversky(num_classes=num_classes, alpha=0.7, beta=0.3, ignore_index=255) 
     # alpha = 0.7  # CrossEntropy
     # gamma = 0.3  # Tversky
     #loss = CombinedLoss_All(num_classes=num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255)
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255)
+    #loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255)
     """
     total_loss = (self.alpha * ce +
                       self.beta * lovasz +
