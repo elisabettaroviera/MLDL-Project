@@ -72,13 +72,19 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 11
+    start_epoch = 35
 
     dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
+    """
+    alpha   # CrossEntropy
+    beta    # Lovász
+    gamma   # Tversky
+    theta   # Dice
+    """
 
     max_iter = num_epochs * len(dataloader_gta_train)
 
