@@ -6,6 +6,8 @@ import wandb
 import time
 import random
 import numpy as np
+from torch.utils.data import Subset
+import random
 from datasets.gta5 import GTA5
 from datasets.cityscapes import CityScapes
 from models.bisenet.build_bisenet import BiSeNet
@@ -53,6 +55,23 @@ def print_metrics(title, metrics):
         print(f"{cls:<20} {val:>6.2f}")
 
 
+def select_random_fraction_of_dataset(dataloader, fraction=1.0, batch_size=4):
+    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
+
+    dataset = dataloader.dataset
+    total_samples = len(dataset)
+    num_samples = int(total_samples * fraction)
+
+    # Seleziona indici casuali senza ripetizioni
+    indices = np.random.choice(total_samples, num_samples, replace=False)
+
+    # Crea un subset e un nuovo dataloader
+    subset = Subset(dataset, indices)
+    subset_dataloader = dataloader(subset, None, batch_size, True, True)
+
+    return subset_dataloader
+
+
 if __name__ == "__main__":
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -74,11 +93,12 @@ if __name__ == "__main__":
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
 
-    dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=4)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
     """
     alpha   # CrossEntropy
     beta    # Lovász
