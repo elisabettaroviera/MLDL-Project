@@ -4,7 +4,9 @@ from zipfile import ZipFile
 from io import BytesIO
 import gdown
 
-gta5_id = '1xYxlcMR2WFCpayNrW2-Rb7N-950vvl23'  # Google Drive file ID
+# new link for gta : https://drive.google.com/file/d/1eL0EhtP_TYs8QY0WBRkfC665jYiBW3Fl/view?usp=drive_link
+gta5_id = '1eL0EhtP_TYs8QY0WBRkfC665jYiBW3Fl' #newly created
+#gta5_id = '1xYxlcMR2WFCpayNrW2-Rb7N-950vvl23'  # Google Drive file ID
 #gta5_id = '1U5LpT_jGqTp2wuDvGHewTOnjbCCjVWE2' #link auro
 gta5_url = f'https://drive.google.com/uc?id={gta5_id}' # Construct the download URL
 
