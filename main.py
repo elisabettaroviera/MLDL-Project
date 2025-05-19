@@ -144,7 +144,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=255)
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0, beta=0, gamma=0, theta=1.0, ignore_index=255)
     """
     alpha   # CrossEntropy
     beta    # Lovász
