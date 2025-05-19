@@ -139,8 +139,8 @@ if __name__ == "__main__":
     val_subset = Subset(cs_val, subset_indices_val)"""
 
     # -- DataLoader --
-    full_dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
-    dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 1.0, batch_size=batch_size)
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    #dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 1.0, batch_size=batch_size)
 
 
 
