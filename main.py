@@ -60,10 +60,10 @@ def print_metrics(title, metrics):
     for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
-def select_random_fraction_of_dataset(dataloader, fraction=1.0, batch_size=4):
+def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
     assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
 
-    dataset = dataloader.dataset
+    dataset = full_dataloader.dataset
     total_samples = len(dataset)
     num_samples = int(total_samples * fraction)
 
@@ -72,9 +72,10 @@ def select_random_fraction_of_dataset(dataloader, fraction=1.0, batch_size=4):
 
     # Crea un subset e un nuovo dataloader
     subset = Subset(dataset, indices)
-    subset_dataloader = dataloader(subset, None, batch_size, True, True)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
 
     return subset_dataloader
+
 
 
 
@@ -174,7 +175,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 16
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -191,7 +192,7 @@ if __name__ == "__main__":
     # alpha = 0.7  # CrossEntropy
     # gamma = 0.3  # Tversky
     #loss = CombinedLoss_All(num_classes=num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255)
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=255)
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, ignore_index=255)
     """
     total_loss = (self.alpha * ce +
                       self.beta * lovasz +
