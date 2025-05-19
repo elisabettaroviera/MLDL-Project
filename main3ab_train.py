@@ -63,7 +63,7 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug='geometric')
+    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug='color') #CHECK BEFORE RUNNING
 
     batch_size = 4
     learning_rate = 0.00625
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 35 #CHECK BEFORE RUNNING
+    start_epoch = 1 #CHECK BEFORE RUNNING
 
     dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
+        project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv_03" #CHECK BEFORE RUNNING
         run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,
