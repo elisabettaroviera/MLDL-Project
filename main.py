@@ -195,7 +195,7 @@ if __name__ == "__main__":
     # alpha = 0.7  # CrossEntropy
     # gamma = 0.3  # Tversky
     #loss = CombinedLoss_All(num_classes=num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255)
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, ignore_index=255)
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255)
     """
     total_loss = (self.alpha * ce +
                       self.beta * lovasz +
