@@ -60,6 +60,23 @@ def print_metrics(title, metrics):
     for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
+def select_random_fraction_of_dataset(dataloader, fraction=1.0, batch_size=4):
+    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
+
+    dataset = dataloader.dataset
+    total_samples = len(dataset)
+    num_samples = int(total_samples * fraction)
+
+    # Seleziona indici casuali senza ripetizioni
+    indices = np.random.choice(total_samples, num_samples, replace=False)
+
+    # Crea un subset e un nuovo dataloader
+    subset = Subset(dataset, indices)
+    subset_dataloader = dataloader(subset, None, batch_size, True, True)
+
+    return subset_dataloader
+
+
 
 
 if __name__ == "__main__":
@@ -121,7 +138,8 @@ if __name__ == "__main__":
     val_subset = Subset(cs_val, subset_indices_val)"""
 
     # -- DataLoader --
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    full_dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction= 0.5, batch_size=batch_size)
 
 
 
@@ -192,7 +210,7 @@ if __name__ == "__main__":
         # Change the name of the project before the final run of 50 epochs
         # _lr_0.00625_cr1_total_dataset
         # _lr_0.00625_cr07_tv03_total_dataset
-        wandb.init(project=f"{var_model}_lr_0.00625_ce07_d03_total_dataset_batch_drecrease", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        wandb.init(project=f"{var_model}_lr_0.00625_ce1_50_percent_dataset", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
