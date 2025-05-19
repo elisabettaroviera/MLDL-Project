@@ -6,11 +6,8 @@ import albumentations as A
 import numpy as np
 from datasets.transform_datasets import augmentation_transform
 
-# TODO: implement here your custom dataset class for GTA5
-
 
 # GTA5 dataset class
-
 class GTA5(Dataset):
     def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False, type_aug = None):
         super(GTA5, self).__init__()
@@ -64,7 +61,7 @@ class GTA5(Dataset):
             label = Image.fromarray(augmented['mask'])
 
             # DA USARE SE DECIDO DI AGGIUNGERE LE FOTO NUOVE INVECE CHE SOSTITUIRLE
-
+            # DA ELIMINARE SE VANNO SOLO SOSTITUITE
             # Verifico se è stata trasformata (NoOp mantiene immagine identica)
             #if np.array_equal(np.array(image), np.array(image_aug)):
             #    # NoOp: non trasformata → ritorna None per scartarla
