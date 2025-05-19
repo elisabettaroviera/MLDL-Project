@@ -1,6 +1,7 @@
 import numpy as np
 from utils.lovasz_losses import lovasz_softmax
 import wandb
+#from lovasz_losses import lovasz_softmax  # file taken from github
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -97,51 +98,68 @@ def save_metrics_on_file(epoch, metrics_train, metrics_val):
 
     """)
 
-# Function to save the metrics on WandB UPDATED 
-# In this function, we log the metrics for each epoch
-# and also log additional metrics at the end of the training (epoch 50)   
-def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
-    to_serialize = {"epoch": epoch}
+ #Function to save the metrics on WandB           
+def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
 
-    # Log training metrics
-    if metrics_train is not None:
-        to_serialize.update({
-            "train_mIoU": metrics_train['mean_iou'],
-            "train_loss": metrics_train['mean_loss']
+    to_serialize = {
+        "epoch": epoch,
+        "train_mIoU": metrics_train['mean_iou'],
+        "train_loss": metrics_train['mean_loss'],
+        "val_mIoU": metrics_val['mean_iou'],
+        "val_mIoU_per_class": metrics_val['iou_per_class'],
+        "val_loss": metrics_val['mean_loss']
+    }
+
+    print(metrics_train['iou_per_class'])
+
+    for index, iou in enumerate(metrics_train['iou_per_class']):
+        to_serialize[f"class_{index}_train"] = iou
+
+    for index, iou in enumerate(metrics_val['iou_per_class']):
+        to_serialize[f"class_{index}_val"] = iou
+
+    # Log delle metriche di training e validazione su WandB
+    if epoch != 50:
+        wandb.log(to_serialize)
+
+    # Salvataggio delle metriche finali al 50esimo epoch
+    if epoch == 50:
+        wandb.log({
+            "train_mIoU_final": metrics_train['mean_iou'],
+            "train_loss_final": metrics_train['mean_loss'],
+            "train_latency": metrics_train['mean_latency'],
+            "train_fps": metrics_train['mean_fps'],
+            "train_flops": metrics_train['num_flops'],
+            "train_params": metrics_train['trainable_params'],
+            "val_mIoU_final": metrics_val['mean_iou'],
+            "val_loss_final": metrics_val['mean_loss'],
+            "val_latency": metrics_val['mean_latency'],
+            "val_fps": metrics_val['mean_fps'],
+            "val_flops": metrics_val['num_flops'],
+            "val_params": metrics_val['trainable_params']
         })
 
-        for index, iou in enumerate(metrics_train['iou_per_class']):
-            to_serialize[f"class_{index}_train"] = iou
+# Class to compute the combined loss: alpha*cross entropy + beta*lovasz
+#https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
+# Class to compute the combined loss: alpha*cross entropy + beta*lovasz
+#https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
+class CombinedLoss_Lovasz(nn.Module):
+    def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
+        super(CombinedLoss_Lovasz, self).__init__()
+        self.alpha = alpha
+        self.beta = beta
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.ignore_index = ignore_index
 
-        if epoch == final_epoch:
-            to_serialize.update({
-                "train_latency": metrics_train['mean_latency'],
-                "train_fps": metrics_train['mean_fps'],
-                "train_flops": metrics_train['num_flops'],
-                "train_params": metrics_train['trainable_params']
-            })
+    def forward(self, outputs, targets):
+        ce = self.ce_loss(outputs, targets)
+        probs = torch.softmax(outputs, dim=1)
+        lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
+        return self.alpha * ce + self.beta * lovasz # alpha = cross entropy, beta = lovasz
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__}(num_classes={self.num_classes})"
 
-    # Log validation metrics
-    if metrics_val is not None:
-        to_serialize.update({
-            "val_mIoU": metrics_val['mean_iou'],
-            "val_mIoU_per_class": metrics_val['iou_per_class'],
-            "val_loss": metrics_val['mean_loss']
-        })
-
-        for index, iou in enumerate(metrics_val['iou_per_class']):
-            to_serialize[f"class_{index}_val"] = iou
-
-        if epoch == final_epoch:
-            to_serialize.update({
-                "val_latency": metrics_val['mean_latency'],
-                "val_fps": metrics_val['mean_fps'],
-                "val_flops": metrics_val['num_flops'],
-                "val_params": metrics_val['trainable_params']
-            })
-
-    # Logging finale su wandb
-    wandb.log(to_serialize)
 
 
 class MaskedTverskyLoss(nn.Module):
@@ -164,6 +182,27 @@ class MaskedTverskyLoss(nn.Module):
         target_onehot = target_onehot * valid_mask
 
         return self.tversky(pred, target_onehot)
+
+
+class CombinedLoss_Tversky(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.6, ignore_index=255):
+        super(CombinedLoss_Tversky, self).__init__()
+        self.alpha = alpha  # Peso CrossEntropy
+        self.beta = beta    # Peso Tversky
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+
+    def forward(self, outputs, targets):
+        ce = self.ce_loss(outputs, targets)
+        tversky = self.tversky_loss(outputs, targets)
+        return self.alpha * ce + self.beta * tversky
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(num_classes={self.num_classes}, alpha={self.alpha}, beta={self.beta})"
+
+
 
 # To avoid void class in dice loss
 class MaskedDiceLoss(nn.Module):
@@ -190,6 +229,51 @@ class MaskedDiceLoss(nn.Module):
         return self.dice(pred_masked, target_masked)
     
 
+#new combined loss (faster)
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes,
+                 alpha=0.4, beta=0.1, gamma=0.4, theta=0.1,
+                 ignore_index=255):
+        super().__init__()
+        self.w = dict(ce=alpha, lovasz=beta, tversky=gamma, dice=theta)
+        self.ignore_index = ignore_index
+
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
+        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
+        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
+
+    @torch.no_grad()
+    def _valid_mask(self, targets):
+        """mask per ignore_index, ri‑usato da tutte le loss"""
+        return targets != self.ignore_index
+
+    def forward(self, outputs, targets):
+        mask = self._valid_mask(targets)          # [B,H,W] boolean
+        probs = torch.softmax(outputs, dim=1)      # 1 sola softmax (Lovász, Dice, Tversky)
+        total = 0.0
+
+        # Cross‑Entropy (usa direttamente logits, niente softmax)
+        if self.w["ce"]:
+            total += self.w["ce"] * self.ce_loss(outputs, targets)
+
+        if self.w["lovasz"]:
+            total += self.w["lovasz"] * self.lovasz_loss(probs, targets, mask)
+
+        if self.w["tversky"]:
+            total += self.w["tversky"] * self.tversky_loss(probs, targets, mask)
+
+        if self.w["dice"]:
+            total += self.w["dice"] * self.dice_loss(probs, targets, mask)
+
+        return total
+
+    def __repr__(self):
+        w = ", ".join(f"{k}={v}" for k, v in self.w.items())
+        return f"{self.__class__.__name__}({w})"
+
+    
+"""
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, 
                  alpha=0.4,   # CrossEntropy
@@ -206,15 +290,13 @@ class CombinedLoss_All(nn.Module):
         self.num_classes = num_classes
 
         self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
         self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
         self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
 
     def forward(self, outputs, targets):
         ce = self.ce_loss(outputs, targets)
-
-        probs = torch.softmax(outputs, dim=1)
-        lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
-
+        lovasz = self.lovasz_loss(outputs, targets)
         tversky = self.tversky_loss(outputs, targets)
         dice = self.dice_loss(outputs, targets)
 
@@ -228,3 +310,4 @@ class CombinedLoss_All(nn.Module):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
                 f"alpha={self.alpha}, beta={self.beta}, "
                 f"gamma={self.gamma}, theta={self.theta})")
+"""
