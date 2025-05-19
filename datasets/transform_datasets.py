@@ -102,8 +102,8 @@ def augmentation_transform(image, mask, type_aug):
                 ], n=n_trans, replace=False)
             ], p=1.0)
         ])
-    elif type_aug  == 'wheather':
-        # WHEATHER AND ILLUMINATION 
+    elif type_aug  == 'weather':
+        # WEATHER AND ILLUMINATION 
         # RandomShadow — per aggiungere ombre stradali o da edifici.
         # RandomFog o RandomRain — per simulare condizioni meteo.
         # ISONoise — aggiunge rumore simile a fotocamere reali.
