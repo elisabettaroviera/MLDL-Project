@@ -85,4 +85,3 @@ class GTA5(Dataset):
     def __len__(self):
         # Return total number of samples
         return len(self.images)
-
