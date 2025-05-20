@@ -93,9 +93,10 @@ if __name__ == "__main__":
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
 
-    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    # full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # CHECK FRACTION BEFORE RUNNING
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=batch_size)
+    # dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=batch_size)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
@@ -114,7 +115,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv_03" #CHECK BEFORE RUNNING
+        project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv03" #CHECK BEFORE RUNNING
         run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,
