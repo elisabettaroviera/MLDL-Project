@@ -178,7 +178,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
         ##### NB WHEN STARTIMG A NEW 50 EPOCH RUN CHANGE PROJECT NAME HERE 
-        project_name = f"{var_model}_0.00625_ce_75%"
+        project_name = f"{var_model}_0.00625_ce_75percent"
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
