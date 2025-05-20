@@ -94,7 +94,9 @@ if __name__ == "__main__":
 
     for epoch in range(start_epoch, num_epochs + 1):
         project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
-        run = wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True)
+        # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
+        entity="s328422-politecnico-di-torino"
+        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,
             "learning_rate": learning_rate,
