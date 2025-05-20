@@ -230,7 +230,7 @@ class MaskedDiceLoss(nn.Module):
     
 
 #new version that calls only the losses that you need
-class CombinedLossAll(nn.Module):
+class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255):
         super().__init__()
         self.alpha, self.beta, self.gamma, self.theta = alpha, beta, gamma, theta
