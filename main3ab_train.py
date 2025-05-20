@@ -13,6 +13,23 @@ from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
 from train import train
+from torch.utils.data import Subset
+
+def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
+    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
+
+    dataset = full_dataloader.dataset
+    total_samples = len(dataset)
+    num_samples = int(total_samples * fraction)
+
+    # Seleziona indici casuali senza ripetizioni
+    indices = np.random.choice(total_samples, num_samples, replace=False)
+
+    # Crea un subset e un nuovo dataloader
+    subset = Subset(dataset, indices)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+
+    return subset_dataloader
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
@@ -74,9 +91,12 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 18
+    start_epoch = 36
 
-    dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction= 0.5, batch_size=batch_size)
+
+
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
