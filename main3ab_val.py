@@ -37,6 +37,7 @@ def print_metrics(title, metrics):
 
 def to_obtain_id(project=""):
     # Configurazione del tuo progetto wandb
+    # entity = "s325951-politecnico-di-torino-mldl" nuovo team Lucia
     entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
@@ -104,6 +105,7 @@ if __name__ == "__main__":
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
+            # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
             entity="s328422-politecnico-di-torino",
             name=f"epoch_{epoch}",
             id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
