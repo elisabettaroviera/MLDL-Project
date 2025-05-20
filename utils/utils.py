@@ -144,7 +144,6 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
     wandb.log(to_serialize)
 
 
-
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
         super().__init__()
@@ -189,8 +188,47 @@ class MaskedDiceLoss(nn.Module):
         target_masked = target_one_hot * mask
 
         return self.dice(pred_masked, target_masked)
-    
 
+#new version that calls only lossed that you need
+
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta = alpha, beta, gamma, theta
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+
+        if alpha != 0:
+            self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        if gamma != 0:
+            self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+        if theta != 0:
+            self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
+
+    def forward(self, outputs, targets):
+        total_loss = 0.0
+
+        if self.alpha != 0:
+            total_loss += self.alpha * self.ce_loss(outputs, targets)
+
+        if self.beta != 0:
+            probs = torch.softmax(outputs, dim=1)
+            total_loss += self.beta * lovasz_softmax(probs, targets, ignore=self.ignore_index)
+
+        if self.gamma != 0:
+            total_loss += self.gamma * self.tversky_loss(outputs, targets)
+
+        if self.theta != 0:
+            total_loss += self.theta * self.dice_loss(outputs, targets)
+
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, "
+                f"gamma={self.gamma}, theta={self.theta})")
+  
+"""
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, 
                  alpha=0.4,   # CrossEntropy
@@ -228,4 +266,4 @@ class CombinedLoss_All(nn.Module):
     def __repr__(self):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
                 f"alpha={self.alpha}, beta={self.beta}, "
-                f"gamma={self.gamma}, theta={self.theta})")
+                f"gamma={self.gamma}, theta={self.theta})")"""
