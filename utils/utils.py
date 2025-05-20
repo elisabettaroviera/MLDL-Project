@@ -209,7 +209,7 @@ class MaskedTverskyLoss(nn.Module):
         target_onehot = target_onehot * valid_mask
 
         return self.tversky(pred, target_onehot)
-    # new version
+# new version
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255):
         super().__init__()
