@@ -229,6 +229,47 @@ class MaskedDiceLoss(nn.Module):
         return self.dice(pred_masked, target_masked)
     
 
+#new version that calls only the losses that you need
+class CombinedLossAll(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta = alpha, beta, gamma, theta
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+
+        if alpha != 0:
+            self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        if gamma != 0:
+            self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+        if theta != 0:
+            self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
+
+    def forward(self, outputs, targets):
+        total_loss = 0.0
+
+        if self.alpha != 0:
+            total_loss += self.alpha * self.ce_loss(outputs, targets)
+
+        if self.beta != 0:
+            probs = torch.softmax(outputs, dim=1)
+            total_loss += self.beta * lovasz_softmax(probs, targets, ignore=self.ignore_index)
+
+        if self.gamma != 0:
+            total_loss += self.gamma * self.tversky_loss(outputs, targets)
+
+        if self.theta != 0:
+            total_loss += self.theta * self.dice_loss(outputs, targets)
+
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, "
+                f"gamma={self.gamma}, theta={self.theta})")
+
+
+"""
+#questa usa combined lovasz, nqua funziona nel main no
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes,
                  alpha=0.4, beta=0.1, gamma=0.4, theta=0.1,
@@ -244,7 +285,7 @@ class CombinedLoss_All(nn.Module):
 
     @torch.no_grad()
     def _valid_mask(self, targets):
-        """mask per ignore_index, ri‑usato da tutte le loss"""
+        #mask per ignore_index, ri‑usato da tutte le loss
         return targets != self.ignore_index
 
     def forward(self, outputs, targets):
@@ -272,7 +313,7 @@ class CombinedLoss_All(nn.Module):
         return f"{self.__class__.__name__}({w})"
 
     
-"""
+
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, 
                  alpha=0.4,   # CrossEntropy
