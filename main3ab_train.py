@@ -69,10 +69,10 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 50
+    num_epochs = 2
     num_classes = 19
     ignore_index = 255
-    start_epoch = 35
+    start_epoch = 1
 
     dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
 
