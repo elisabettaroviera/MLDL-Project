@@ -209,36 +209,37 @@ class MaskedTverskyLoss(nn.Module):
         target_onehot = target_onehot * valid_mask
 
         return self.tversky(pred, target_onehot)
+    # new version
 class CombinedLoss_All(nn.Module):
-    def __init__(self, num_classes, 
-                 alpha=0.4,   # CrossEntropy
-                 beta=0.1,    # Lovász
-                 gamma=0.4,   # Tversky
-                 theta=0.1,   # Dice
-                 ignore_index=255):
-        super(CombinedLoss_All, self).__init__()
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
-        self.theta = theta
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta = alpha, beta, gamma, theta
         self.ignore_index = ignore_index
         self.num_classes = num_classes
 
-        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
-        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
-        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
-        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
+        if alpha != 0:
+            self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        if gamma != 0:
+            self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+        if theta != 0:
+            self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
 
     def forward(self, outputs, targets):
-        ce = self.ce_loss(outputs, targets)
-        lovasz = self.lovasz_loss(outputs, targets)
-        tversky = self.tversky_loss(outputs, targets)
-        dice = self.dice_loss(outputs, targets)
+        total_loss = 0.0
 
-        total_loss = (self.alpha * ce +
-                      self.beta * lovasz +
-                      self.gamma * tversky +
-                      self.theta * dice)
+        if self.alpha != 0:
+            total_loss += self.alpha * self.ce_loss(outputs, targets)
+
+        if self.beta != 0:
+            probs = torch.softmax(outputs, dim=1)
+            total_loss += self.beta * lovasz_softmax(probs, targets, ignore=self.ignore_index)
+
+        if self.gamma != 0:
+            total_loss += self.gamma * self.tversky_loss(outputs, targets)
+
+        if self.theta != 0:
+            total_loss += self.theta * self.dice_loss(outputs, targets)
+
         return total_loss
 
     def __repr__(self):
