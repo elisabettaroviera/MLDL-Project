@@ -18,7 +18,7 @@ from validation import validate
 from utils.metrics import compute_miou
 from torch import nn
 import wandb
-from torch.utils.data import Subset
+from torch.utils.data import ConcatDataset, Subset
 import gdown
 from models.bisenet.build_bisenet import BiSeNet
 
@@ -58,7 +58,21 @@ def print_metrics(title, metrics):
     for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
+def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
+    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
 
+    dataset = full_dataloader.dataset
+    total_samples = len(dataset)
+    num_samples = int(total_samples * fraction)
+
+    # Seleziona indici casuali senza ripetizioni
+    indices = np.random.choice(total_samples, num_samples, replace=False)
+
+    # Crea un subset e un nuovo dataloader
+    subset = Subset(dataset, indices)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+
+    return subset_dataloader
 
 if __name__ == "__main__":
     # ambient variable
@@ -99,33 +113,12 @@ if __name__ == "__main__":
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
-    ####################
-    '''
-    # TO SPEED UP THE TRAINING WE CAN USE A SUBSET OF THE DATASET
-    # -- Subset TRAIN --
-    total_len_train = len(cs_train)
-    indices_train = list(range(total_len_train))
-    random.shuffle(indices_train)
-    subset_len_train = (total_len_train // 4) -1 
-    subset_indices_train = indices_train[:subset_len_train]
-    train_subset = Subset(cs_train, subset_indices_train)
-
-    # -- Subset VAL --
-    total_len_val = len(cs_val)
-    indices_val = list(range(total_len_val))
-    random.shuffle(indices_val)
-    subset_len_val = (total_len_val // 4) +1 
-    subset_indices_val = indices_val[:subset_len_val]
-    val_subset = Subset(cs_val, subset_indices_val)
-
-    # -- DataLoader --
-    dataloader_cs_train, dataloader_cs_val = dataloader(train_subset, val_subset, batch_size, True, True)   
-    '''
-    ##########################
-    # INSTED TO TRAIN ON THE WHOLE DATASET UNCOMMENT:
+    # TO TRAIN ON THE WHOLE DATASET UNCOMMENT:
     # Define the dataloaders
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    full_dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    # TO USE ONLY A FRACTION OF IT USE 
+    dataloader_cs_train = select_random_fraction_of_dataset(full_dataloader_cs_train, fraction=3/4, batch_size=batch_size)
 
     # Definition of the parameters for CITYSCAPES
     # Search on the pdf!! 
@@ -158,7 +151,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
         # number of epoch that we want to start from
-        start_epoch = 43
+        start_epoch = 1
 
     # Load the model on the device    
     model = model.to(device)
@@ -185,7 +178,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
         ##### NB WHEN STARTIMG A NEW 50 EPOCH RUN CHANGE PROJECT NAME HERE 
-        project_name = f"{var_model}_lr_0.00625_ce_75%"
+        project_name = f"{var_model}_0.00625_ce_75%"
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
