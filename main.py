@@ -171,9 +171,9 @@ if __name__ == "__main__":
     #loss = nn.CrossEntropyLoss(ignore_index=ignore_index) # Loss function (CrossEntropyLoss for segmentation tasks)
     #loss = MaskedTverskyLoss(num_classes, alpha=0.5, beta=0.5, ignore_index=255)
     #loss = CombinedLoss_Lovasz(alpha=0.7, beta=0.3, ignore_index=255)
-    loss = CombinedLoss_All(num_classes, alpha=0.6,   # CrossEntropy
-                 beta=0.2,    # Lovász
-                 gamma=0.2,   # Tversky
+    loss = CombinedLoss_All(num_classes, alpha=1,   # CrossEntropy
+                 beta=0,    # Lovász
+                 gamma=0,   # Tversky
                  theta=0,   # Dice
                  ignore_index=255)
     print("loss loaded")
@@ -185,8 +185,9 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
         ##### NB WHEN STARTIMG A NEW 50 EPOCH RUN CHANGE PROJECT NAME HERE 
-        project_name = f"{var_model}_lr_0.00625_0.6ce_0.2ls_0.2tv"
-        wandb.init(project=project_name, entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        project_name = f"{var_model}_lr_0.00625_ce_75%"
+        entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
+        wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -195,7 +196,6 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            # artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{var_model}_ALBG_23/model_epoch_{epoch-1}:latest", type="model")
             path_last_model = f"{project_name}/model_epoch_{epoch-1}:latest"
             artifact = wandb.use_artifact(path_last_model, type="model")
 
