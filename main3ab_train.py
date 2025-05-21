@@ -12,6 +12,7 @@ from models.bisenet.build_bisenet import BiSeNet
 from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_wandb
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
+from torch.utils.data import ConcatDataset, Subset
 from train import train
 
 # Function to set the seed for reproducibility
@@ -52,6 +53,22 @@ def print_metrics(title, metrics):
     for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
+
+def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
+    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
+
+    dataset = full_dataloader.dataset
+    total_samples = len(dataset)
+    num_samples = int(total_samples * fraction)
+
+    # Seleziona indici casuali senza ripetizioni
+    indices = np.random.choice(total_samples, num_samples, replace=False)
+
+    # Crea un subset e un nuovo dataloader
+    subset = Subset(dataset, indices)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+
+    return subset_dataloader
 
 if __name__ == "__main__":
     set_seed(23)
