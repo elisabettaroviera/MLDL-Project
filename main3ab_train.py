@@ -100,8 +100,14 @@ if __name__ == "__main__":
     """
 
     type_aug = {} # CHANGE HERE!!!
-    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug
+    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
+    # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
+
+    # Choose with probability 0.5 the augmented images
+    num_augmented = int(0.5 * len(gta_train_aug))
+    indices = random.sample(range(len(gta_train_aug)), num_augmented)
+    gta_train_aug = Subset(gta_train_aug, indices)
 
     # Union of the dataset
     gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
