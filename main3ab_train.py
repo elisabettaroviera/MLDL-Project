@@ -66,7 +66,7 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     # Crea un subset e un nuovo dataloader
     subset = Subset(dataset, indices)
-    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True) # Drop of the last batch
 
     return subset_dataloader
 
