@@ -72,3 +72,10 @@ DONE
 - Dice
 
 ****
+
+
+
+COSA FACCIAMO
+- Facciamo 15 epoche
+- Su 1/4 del dataset (gta  1/4 + gta_aug 1/4)
+- Ognuna su una singola trasformazione del proprio gruppo, poi si mettono insieme guardando il risultato
