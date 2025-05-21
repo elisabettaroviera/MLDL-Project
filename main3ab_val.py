@@ -35,10 +35,10 @@ def print_metrics(title, metrics):
     for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
-def to_obtain_id():
+def to_obtain_id(project=""):
     # Configurazione del tuo progetto wandb
-    entity = "s328422-politecnico-di-torino"
-    project = "3b_GTA5_to_CITY_augmented_weather_cv07_tv_03"
+    entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
+    # entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
 
@@ -85,20 +85,27 @@ if __name__ == "__main__":
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255)
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+    """
+    alpha   # CrossEntropy
+    beta    # Lovász
+    gamma   # Tversky
+    theta   # Dice
+    """
 
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, shuffle_train=False, shuffle_val=False)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
-    project_name = "3b_GTA5_to_CITY_augmented_weather_cv07_tv_03"
+    project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
-    run_ids = to_obtain_id()
+    run_ids = to_obtain_id(project_name)
 
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
+            # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
             entity="s328422-politecnico-di-torino",
             name=f"epoch_{epoch}",
             id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
