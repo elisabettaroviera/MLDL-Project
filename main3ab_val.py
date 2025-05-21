@@ -37,7 +37,7 @@ def print_metrics(title, metrics):
 
 def to_obtain_id(project=""):
     # Configurazione del tuo progetto wandb
-    entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
+    entity = "s325951-politecnico-di-torino-mldl" # nuovo team Luci
     # entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    num_epochs = 50
+    num_epochs = 15
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
-    project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
+    project_name = "3b_GTA5_to_CITY_augmented_geometric_m_25_percent" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = to_obtain_id(project_name)
@@ -105,8 +105,8 @@ if __name__ == "__main__":
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
-            # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
-            entity="s328422-politecnico-di-torino",
+            entity = "s325951-politecnico-di-torino-mldl", # nuovo team Luci
+            #entity="s328422-politecnico-di-torino",
             name=f"epoch_{epoch}",
             id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
             resume="allow"
