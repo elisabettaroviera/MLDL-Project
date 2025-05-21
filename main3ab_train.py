@@ -93,6 +93,11 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
+    type_aug= {
+    'color': ['HueSaturationValue'], #a)
+    'weather': ['RandomShadow'], #f)
+    'geometric': ['RandomCrop'] #m)
+    }
     type_aug = {} # CHANGE HERE!!!
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
@@ -121,7 +126,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
+        project_name = "3b_GTA5_to_CITY_augmented_mix_afm_cv07_tv_03" #CHECK BEFORE RUNNING
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
