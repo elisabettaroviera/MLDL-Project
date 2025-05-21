@@ -91,6 +91,14 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
+    """
+    type_aug_dict = {
+    'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast'],
+    'weather': ['RandomShadow', 'RandomRain', 'RandomFog', 'ISONoise', 'GaussianBlur'],
+    'geometric': ['RandomCrop', 'Affine', 'Perspective']
+    }
+    """
+
     type_aug = {} # CHANGE HERE!!!
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
