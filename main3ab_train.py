@@ -86,16 +86,7 @@ if __name__ == "__main__":
 
     print("************ TRAINING BiSeNet ON GTA5 ***************")
 
-<<<<<<< HEAD
-    transform_gta_dataset = transform_gta()
-    target_transform_gta = transform_gta_mask()
-
-    print("Loading datasets")
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug='color') #CHECK BEFORE RUNNING
-
-=======
     # Constant value
->>>>>>> main
     batch_size = 4
     learning_rate = 0.00625
     momentum = 0.9
@@ -105,16 +96,9 @@ if __name__ == "__main__":
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
 
-<<<<<<< HEAD
-    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
-    #dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
-    # CHECK FRACTION BEFORE RUNNING
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
-=======
     # Transformation
     transform_gta_dataset = transform_gta()
     target_transform_gta = transform_gta_mask()
->>>>>>> main
 
     print("Loading datasets")
     type_aug = {} # CHANGE HERE!!!
@@ -132,12 +116,8 @@ if __name__ == "__main__":
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-<<<<<<< HEAD
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
-=======
     
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
->>>>>>> main
     """
     alpha   # CrossEntropy
     beta    # Lovász
@@ -149,14 +129,9 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-<<<<<<< HEAD
-        project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv03" #CHECK BEFORE RUNNING
-        entity = "s325951-politecnico-di-torino-mldl"
-=======
         project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
->>>>>>> main
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,
