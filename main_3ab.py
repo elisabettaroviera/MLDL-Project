@@ -22,7 +22,7 @@ import wandb
 import gdown
 import albumentations as A
 from models.bisenet.build_bisenet import BiSeNet
-from torch.utils.data import ConcatDataset
+from torch.utils.data import ConcatDataset, Subset
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
@@ -34,8 +34,6 @@ def set_seed(seed):
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
-    #A.set_seed(seed) # ATTENZIONE serve anche se abbiamo messo come seed gli id delle foto???
-
 # Function to print the metrics
 # This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
 def print_metrics(title, metrics):
@@ -62,7 +60,21 @@ def print_metrics(title, metrics):
     for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
+def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
+    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
 
+    dataset = full_dataloader.dataset
+    total_samples = len(dataset)
+    num_samples = int(total_samples * fraction)
+
+    # Seleziona indici casuali senza ripetizioni
+    indices = np.random.choice(total_samples, num_samples, replace=False)
+
+    # Crea un subset e un nuovo dataloader
+    subset = Subset(dataset, indices)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+
+    return subset_dataloader
 
 if __name__ == "__main__":
     var_model = os.environ['MODEL'] 
@@ -94,7 +106,8 @@ if __name__ == "__main__":
     # Lu - color
     # Auro - wheather
     # Betta - geometric
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = 'geometric')
+    type_aug = 'wheather'
+    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = type_aug)
 
     # Union of the dataset
     #gta_train = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
@@ -152,7 +165,7 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_gta_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" # Change here!
+        project_name = f"3b_GTA5_to_CITY_augmented_{type_aug}" # Change here!
         wandb.init(project=f"{project_name}", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 

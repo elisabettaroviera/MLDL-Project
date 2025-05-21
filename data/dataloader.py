@@ -1,6 +1,3 @@
-# We have to do something else?
-# We have to move to datasets folder?
-
 from torch.utils.data import DataLoader
 
 # Create a DataLoader
