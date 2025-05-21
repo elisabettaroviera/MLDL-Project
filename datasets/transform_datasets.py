@@ -137,14 +137,8 @@ def augmentation_transform(image, mask, type_aug):
     if not all_transforms:
         all_transforms = [A.NoOp()]
 
-    # Applica tutto con probabilità 50%
-    aug_transform = A.Compose([
-        A.OneOrOther(
-            A.Compose(all_transforms, p=1.0),
-            A.NoOp(),
-            p=0.5
-        )
-    ])
+    # Applica tutto!! perché dopo nel main prendo con probabilità 50%"
+    aug_transform = A.Compose(all_transforms, p=1.0)
 
     augmented = aug_transform(image=image, mask=mask)
     return augmented
