@@ -57,18 +57,18 @@ class GTA5(Dataset):
         if self.augmentation:
             # Applichiamo l'augmentazione con OneOf che include NoOp
             augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
-            image = Image.fromarray(augmented['image'])
-            label = Image.fromarray(augmented['mask'])
+            image_aug = Image.fromarray(augmented['image'])
+            label_aug = Image.fromarray(augmented['mask'])
 
             # DA USARE SE DECIDO DI AGGIUNGERE LE FOTO NUOVE INVECE CHE SOSTITUIRLE
             # DA ELIMINARE SE VANNO SOLO SOSTITUITE
             # Verifico se è stata trasformata (NoOp mantiene immagine identica)
-            #if np.array_equal(np.array(image), np.array(image_aug)):
-            #    # NoOp: non trasformata → ritorna None per scartarla
-            #    return None
-            #else:
-            #    image = image_aug
-            #    label = label_aug
+            if np.array_equal(np.array(image), np.array(image_aug)):
+                # NoOp: non trasformata → ritorna None per scartarla
+                return None
+            else:
+                image = image_aug
+                label = label_aug
 
         # Applico sempre le trasformazioni base
         if self.transform:

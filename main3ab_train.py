@@ -14,6 +14,7 @@ from models.bisenet.build_bisenet import BiSeNet
 from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_wandb
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
+from torch.utils.data import ConcatDataset, Subset
 from train import train
 
 # Function to set the seed for reproducibility
@@ -67,23 +68,34 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     # Crea un subset e un nuovo dataloader
     subset = Subset(dataset, indices)
+<<<<<<< HEAD
     subset_dataloader = dataloader(subset, None, batch_size, True, True)
 
     return subset_dataloader
 
 
+=======
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+
+    return subset_dataloader
+
+>>>>>>> main
 if __name__ == "__main__":
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print("************ TRAINING BiSeNet ON GTA5 ***************")
 
+<<<<<<< HEAD
     transform_gta_dataset = transform_gta()
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
     gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug='color') #CHECK BEFORE RUNNING
 
+=======
+    # Constant value
+>>>>>>> main
     batch_size = 4
     learning_rate = 0.00625
     momentum = 0.9
@@ -93,14 +105,39 @@ if __name__ == "__main__":
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
 
+<<<<<<< HEAD
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     #dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # CHECK FRACTION BEFORE RUNNING
     dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
+=======
+    # Transformation
+    transform_gta_dataset = transform_gta()
+    target_transform_gta = transform_gta_mask()
+>>>>>>> main
 
+    print("Loading datasets")
+    type_aug = {} # CHANGE HERE!!!
+    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug
+    gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
+
+    # Union of the dataset
+    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
+    
+    # Create dataloader
+    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    # Take a subset of the dataloader
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
+    
+    # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+<<<<<<< HEAD
     loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+=======
+    
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+>>>>>>> main
     """
     alpha   # CrossEntropy
     beta    # Lovász
@@ -108,15 +145,18 @@ if __name__ == "__main__":
     theta   # Dice
     """
 
-    max_iter = num_epochs * len(dataloader_gta_train)
-
-    
-
+    max_iter = num_epochs * len(full_dataloader_gta_train)
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
+<<<<<<< HEAD
         project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv03" #CHECK BEFORE RUNNING
         entity = "s325951-politecnico-di-torino-mldl"
+=======
+        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
+        entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
+        # entity="s328422-politecnico-di-torino" # old team Betta
+>>>>>>> main
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,

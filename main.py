@@ -127,7 +127,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
         # number of epoch that we want to start from
-        start_epoch = 30
+        start_epoch = 43
         
 
     elif var_model == 'BiSeNet':
@@ -164,7 +164,12 @@ if __name__ == "__main__":
         # Change the name of the project before the final run of 50 epochs
         # _cv07_di03
         # _cv07_tv03
+<<<<<<< HEAD
         entity = "s325951-politecnico-di-torino-mldl"
+=======
+        # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
+        entity="s328422-politecnico-di-torino"
+>>>>>>> main
         wandb.init(project=f"{var_model}_cv07_di03", entity=entity, name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
@@ -186,7 +191,7 @@ if __name__ == "__main__":
             # Carica il modello e lo stato dell'ottimizzatore
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        
+         
     
         # 2. Training step
         print("Training step")
