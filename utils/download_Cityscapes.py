@@ -6,7 +6,7 @@ import gdown
 
 
 #Personal Google Drive links for the datasets:
-#cityscapes_id = '11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb'  # Google Drive file ID
+cityscapes_id = '11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb'  # Google Drive file ID
 #cityscapes_id = '1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J' # quello di betta di cui è gelosa
 #cityscapes_id = '1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2'  # Google Drive file ID
 cityscapes_id = '1qKP1oqImbrMfDI9R9dJpnlLYn_hgS8Ht' #auro link
