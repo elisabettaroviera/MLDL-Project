@@ -81,7 +81,7 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    num_epochs = 50
+    num_epochs = 15
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
@@ -105,8 +105,8 @@ if __name__ == "__main__":
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
-            # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
-            entity="s328422-politecnico-di-torino",
+            entity = "s325951-politecnico-di-torino-mldl", # nuovo team Lucia
+            #entity="s328422-politecnico-di-torino",
             name=f"epoch_{epoch}",
             id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
             resume="allow"
