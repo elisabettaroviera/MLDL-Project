@@ -91,12 +91,12 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 24 #CHECK BEFORE RUNNING
+    start_epoch = 1 #CHECK BEFORE RUNNING
 
-    # full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
-    dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    #dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # CHECK FRACTION BEFORE RUNNING
-    # dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=batch_size)
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
