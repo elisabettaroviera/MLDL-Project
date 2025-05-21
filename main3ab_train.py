@@ -83,7 +83,7 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 50
+    num_epochs = 15
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
@@ -101,7 +101,11 @@ if __name__ == "__main__":
     }
     """
 
-    type_aug = {} # CHANGE HERE!!!
+    type_aug = {
+    'color': ['HueSaturationValue'], #a)
+    'weather': ['RandomShadow'], #f)
+    'geometric': ['RandomCrop'] #m)
+    }
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
