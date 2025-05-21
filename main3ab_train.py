@@ -94,12 +94,20 @@ if __name__ == "__main__":
     """
     type_aug_dict = {
     'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast'],
-    'weather': ['RandomShadow', 'RandomRain', 'RandomFog', 'ISONoise', 'GaussianBlur'],
+    'weather': ['RandomShadow','RandomFog','RandomRain',  'ISONoise', 'GaussianBlur'],
     'geometric': ['RandomCrop', 'Affine', 'Perspective']
     }
     """
+    """  weather_transforms = {
+        'RandomShadow': A.RandomShadow(shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=1, num_shadows_upper=2, p=1.0), #f)
+        'RandomFog': A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
+        'RandomRain': A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
+        'ISONoise': A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0), #i)
+        'GaussianBlur': A.GaussianBlur(blur_limit=(3, 5), sigma_limit=0.5, p=1.0) #l)
+    }
+"""
 
-    type_aug = {} # CHANGE HERE!!!
+    type_aug = {'color': ['RandomShadow']}
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
@@ -133,7 +141,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
+        project_name = "3b_GTA5_to_CITY_augmented_weather_f_25_percent" #CHECK BEFORE RUNNING
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
