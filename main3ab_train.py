@@ -68,18 +68,10 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     # Crea un subset e un nuovo dataloader
     subset = Subset(dataset, indices)
-<<<<<<< HEAD
-    subset_dataloader = dataloader(subset, None, batch_size, True, True)
-
-    return subset_dataloader
-
-
-=======
     subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
 
     return subset_dataloader
 
->>>>>>> main
 if __name__ == "__main__":
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
