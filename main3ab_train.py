@@ -81,10 +81,10 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 50
+    num_epochs = 15 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 35 #CHECK BEFORE RUNNING
+    start_epoch = 1 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
