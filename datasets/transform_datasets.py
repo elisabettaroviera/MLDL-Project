@@ -155,7 +155,7 @@ def augmentation_transform(image, mask, type_aug):
     augmented = aug_transform(image=image, mask=mask)
     return augmented
 '''
-def augmentation_transform(image, mask, type_aug_dict):
+def augmentation_transform(image, mask, type_aug):
     """
     Applica trasformazioni basate su un dizionario con chiavi tra 'color', 'weather', 'geometric'
     e valori come lista dei nomi delle trasformazioni da applicare.
@@ -198,18 +198,18 @@ def augmentation_transform(image, mask, type_aug_dict):
         'Perspective': A.Perspective(scale=(0.02, 0.05), keep_size=True, p=1.0) #o)
     }
 
-    if 'color' in type_aug_dict:
-        selected = get_selected_transforms(color_transforms, type_aug_dict['color'])
+    if 'color' in type_aug:
+        selected = get_selected_transforms(color_transforms, type_aug['color'])
         if selected:
             all_transforms.append(A.SomeOf(selected, n=len(selected), replace=False, p=1.0))
 
-    if 'weather' in type_aug_dict:
-        selected = get_selected_transforms(weather_transforms, type_aug_dict['weather'])
+    if 'weather' in type_aug:
+        selected = get_selected_transforms(weather_transforms, type_aug['weather'])
         if selected:
             all_transforms.append(A.SomeOf(selected, n=len(selected), replace=False, p=1.0))
 
-    if 'geometric' in type_aug_dict:
-        selected = get_selected_transforms(geometric_transforms, type_aug_dict['geometric'])
+    if 'geometric' in type_aug:
+        selected = get_selected_transforms(geometric_transforms, type_aug['geometric'])
         if selected:
             all_transforms.append(A.SomeOf(selected, n=len(selected), replace=False, p=1.0))
 
