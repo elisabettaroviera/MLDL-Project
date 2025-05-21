@@ -66,7 +66,7 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     # Crea un subset e un nuovo dataloader
     subset = Subset(dataset, indices)
-    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, drop_last_batch=True)
 
     return subset_dataloader
 
@@ -107,7 +107,8 @@ if __name__ == "__main__":
     }
 """
 
-    type_aug = {'color': ['RandomShadow']}
+    type_aug = {'color': ['RandomShadow']} #sta runnando in aurona 2
+    
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
