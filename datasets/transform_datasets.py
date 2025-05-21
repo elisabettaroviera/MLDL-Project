@@ -171,11 +171,7 @@ def augmentation_transform(image, mask, type_aug):
                 ], n=n_trans, replace=False)
             ], p=1.0)
         ])
-<<<<<<< HEAD
-    elif type_aug  == 'weather':
-=======
     elif 'weather' in type_aug :
->>>>>>> main
         # WEATHER AND ILLUMINATION 
         # RandomShadow — per aggiungere ombre stradali o da edifici.
         # RandomFog o RandomRain — per simulare condizioni meteo.
