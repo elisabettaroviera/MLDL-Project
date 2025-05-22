@@ -111,7 +111,7 @@ if __name__ == "__main__":
     #type_aug = {'weather': ['RandomFog']} #FINITO ANCEH VAL in aurona 3 auronagashi23 g
     #type_aug = {'weather': ['RandomRain']} #sta runnando in aurona 4 mail familje h
     #type_aug = {'weather': ['ISONoise']} #runnando in aurona3 auronagashi23 i
-    type_aug = {'weather': ['GaussianBlur']} #runnando in aurona? auronagashi23 L
+    type_aug = {'weather': ['GaussianBlur']} #runnando in aurona 2 auronagashi23 l
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
