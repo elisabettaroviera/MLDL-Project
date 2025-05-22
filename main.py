@@ -131,11 +131,12 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss")
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0.3, gamma=0, theta=0, focal_gamma=0, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0.3, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
     # theta   - Dice
+    # delta   - Focal
     
     # Iteration loop on EPOCHS
     for epoch in range(start_epoch, num_epochs + 1):
