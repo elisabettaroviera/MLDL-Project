@@ -23,11 +23,6 @@ def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
     optimizer.param_groups[0]['lr'] = float(lr) 
     return float(lr) 
 
-    # if iter % lr_decay_iter or iter > max_iter:
-    # 	return optimizer
-    # return lr
-
-
 
 def fast_hist(a, b, n):
     '''
@@ -43,59 +38,6 @@ def per_class_iou(hist):
     epsilon = 1e-5
     return (np.diag(hist)) / (hist.sum(1) + hist.sum(0) - np.diag(hist) + epsilon)
 
-def save_metrics_on_file(epoch, metrics_train, metrics_val):
-    open_mode = "w" if epoch == 1 else "a"
-
-    with open("IMoU.txt", open_mode) as imou_file:
-        imou_file.write(f"""Epoch - {epoch}
-    ---------------
-    Training Phase
-    mIoU: {metrics_train['mean_iou']}
-    mIoU per Class: {metrics_train['iou_per_class']}
-    ---------------
-    Validation Phase
-    mIoU: {metrics_val['mean_iou']}
-    mIoU per Class: {metrics_val['iou_per_class']}
-    ===============
-
-    """)
-
-    with open("Loss.txt", open_mode) as loss_file:
-        loss_file.write(f"""Epoch - {epoch}
-    ---------------
-    Training Phase
-    Value Loss: {metrics_train['mean_loss']}
-    ---------------
-    Validation Phase
-    Value Loss: {metrics_val['mean_loss']}
-    ===============
-
-    """)
-
-    if epoch == 50:
-        with open("Final_Metrics.txt", "w") as metrics_file:
-            metrics_file.write(f"""Epoch - {epoch}
-    ---------------
-    Training Phase
-    mIoU: {metrics_train['mean_iou']}
-    mIoU per Class: {metrics_train['iou_per_class']}
-    Loss: {metrics_train['mean_loss']}
-    Latency: {metrics_train['mean_latency']} ± {metrics_train['std_latency']}
-    FPS: {metrics_train['mean_fps']} ± {metrics_train['std_fps']}
-    FLOPs: {metrics_train['num_flops']}
-    Trainable Params: {metrics_train['trainable_params']}
-    ---------------
-    Validation Phase
-    mIoU: {metrics_val['mean_iou']}
-    mIoU per Class: {metrics_val['iou_per_class']}
-    Loss: {metrics_val['mean_loss']}
-    Latency: {metrics_val['mean_latency']} ± {metrics_val['std_latency']}
-    FPS: {metrics_val['mean_fps']} ± {metrics_val['std_fps']}
-    FLOPs: {metrics_val['num_flops']}
-    Trainable Params: {metrics_val['trainable_params']}
-    ===============
-
-    """)
 
 # Function to save the metrics on WandB UPDATED 
 # In this function, we log the metrics for each epoch
@@ -143,7 +85,7 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
     # Logging finale su wandb
     wandb.log(to_serialize)
 
-
+# To avoid void class on TverskyLoss
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
         super().__init__()
@@ -165,7 +107,7 @@ class MaskedTverskyLoss(nn.Module):
 
         return self.tversky(pred, target_onehot)
 
-# To avoid void class in dice loss
+# To avoid void class in DiceLoss
 class MaskedDiceLoss(nn.Module):
     def __init__(self, num_classes, ignore_index=255):
         super().__init__()
@@ -189,8 +131,7 @@ class MaskedDiceLoss(nn.Module):
 
         return self.dice(pred_masked, target_masked)
 
-#new version that calls only lossed that you need
-
+# CombinedLoss function
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255):
         super().__init__()
@@ -204,6 +145,7 @@ class CombinedLoss_All(nn.Module):
             self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
         if theta != 0:
             self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
+
 
     def forward(self, outputs, targets):
         total_loss = 0.0
@@ -223,47 +165,9 @@ class CombinedLoss_All(nn.Module):
 
         return total_loss
 
+
     def __repr__(self):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
                 f"alpha={self.alpha}, beta={self.beta}, "
                 f"gamma={self.gamma}, theta={self.theta})")
   
-"""
-class CombinedLoss_All(nn.Module):
-    def __init__(self, num_classes, 
-                 alpha=0.4,   # CrossEntropy
-                 beta=0.1,    # Lovász
-                 gamma=0.4,   # Tversky
-                 theta=0.1,   # Dice
-                 ignore_index=255):
-        super(CombinedLoss_All, self).__init__()
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
-        self.theta = theta
-        self.ignore_index = ignore_index
-        self.num_classes = num_classes
-
-        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
-        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
-        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
-
-    def forward(self, outputs, targets):
-        ce = self.ce_loss(outputs, targets)
-
-        probs = torch.softmax(outputs, dim=1)
-        lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
-
-        tversky = self.tversky_loss(outputs, targets)
-        dice = self.dice_loss(outputs, targets)
-
-        total_loss = (self.alpha * ce +
-                      self.beta * lovasz +
-                      self.gamma * tversky +
-                      self.theta * dice)
-        return total_loss
-
-    def __repr__(self):
-        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
-                f"alpha={self.alpha}, beta={self.beta}, "
-                f"gamma={self.gamma}, theta={self.theta})")"""
