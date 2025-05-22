@@ -112,11 +112,11 @@ if __name__ == "__main__":
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE']} # a+b) 3b_GTA5_to_CITY_aug_color_a_b_25percent OKK
     #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise']} # a+c) 3b_GTA5_to_CITY_aug_color_a_c_25percent OKK
     #type_aug = { 'color': ['HueSaturationValue', 'RGBShift']} # a+d) 3b_GTA5_to_CITY_aug_color_a_d_25percent OKK
-    #type_aug = { 'color': ['HueSaturationValue', 'RandomBrightnessContrast']} # a+e) 3b_GTA5_to_CITY_aug_color_a_e_25percent OK
+    #type_aug = { 'color': ['HueSaturationValue', 'RandomBrightnessContrast']} # a+e) 3b_GTA5_to_CITY_aug_color_a_e_25percent OKK
 
     # b + cose
-    #type_aug = { 'color': ['CLAHE', 'GaussNoise']} # b+c) 3b_GTA5_to_CITY_aug_color_b_c_25percent OK
-    #type_aug = { 'color': ['CLAHE', 'RGBShift']} # b+d) 3b_GTA5_to_CITY_aug_color_b_d_25percent OK
+    #type_aug = { 'color': ['CLAHE', 'GaussNoise']} # b+c) 3b_GTA5_to_CITY_aug_color_b_c_25percent OKK
+    #type_aug = { 'color': ['CLAHE', 'RGBShift']} # b+d) 3b_GTA5_to_CITY_aug_color_b_d_25percent OKK
     #type_aug = { 'color': ['CLAHE', 'RandomBrightnessContrast']} # b+e) 3b_GTA5_to_CITY_aug_color_b_e_25percent OK
 
     # c + cose
