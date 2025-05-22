@@ -12,7 +12,7 @@ import gdown
 # Link 5 - 1T4sLX0HLpI6kqe4V2F2oVAzur5fsp4Uc
 # Link 6 - 1dJ8HS9Z6XQtDwI1RBDQm89orz69npVTM
 # Link 7 - 1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO
-gta5_id ='1T4sLX0HLpI6kqe4V2F2oVAzur5fsp4Uc'
+gta5_id ='1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO'
 gta5_url = f'https://drive.google.com/uc?id={gta5_id}' # Construct the download URL
 
 """
