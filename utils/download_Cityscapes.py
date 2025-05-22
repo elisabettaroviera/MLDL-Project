@@ -4,7 +4,7 @@ from zipfile import ZipFile
 from io import BytesIO
 import gdown
 
-# Personal Google Drive links for the datasets - Chose one of them
+# Personal Google Drive links for the datasets - CHOOSE one of them
 # Link 1 - 1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J
 # Link 2 - 1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2
 # Link 3 - 10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI
