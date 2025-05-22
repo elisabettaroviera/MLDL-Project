@@ -14,6 +14,7 @@ from datasets.transform_datasets import transform_gta, transform_gta_mask, trans
 from data.dataloader import dataloader
 from torch.utils.data import ConcatDataset, Subset
 from train import train
+from itertools import combinations
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
@@ -116,88 +117,118 @@ if __name__ == "__main__":
     """COMBOS weather randomshadow ALL STILL TO VALIDATE"""
     #type_aug = {'weather': ['RandomShadow', 'RandomFog']} #f, g -> aurona 2
     #type_aug = {'weather': ['RandomShadow', 'RandomRain']} #f,h -> aurona 4
-    #type_aug = {'weather': ['RandomShadow', 'ISONoise']} #f, i -> aurona 4 
+    type_aug = {'weather': ['RandomShadow', 'ISONoise']} #f, i -> aurona 4 
     type_aug = {'weather': ['RandomShadow', 'GaussianBlur']} #f, l
 
     """Combos weather Randomfog"""
     #type_aug = {'weather': ['RandomFog', 'RandomRain']} #g, h
     #type_aug = {'weather': ['RandomFog', 'ISONoise']}  #g, i
     #type_aug = {'weather': ['RandomFog', 'GaussianBlur']} #g, l
-    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
-    # Contains all pictures bc they are all augmented
-    gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
 
-    # Choose with probability 0.5 the augmented images
-    num_augmented = int(0.5 * len(gta_train_aug))
-    indices = random.sample(range(len(gta_train_aug)), num_augmented)
-    gta_train_aug = Subset(gta_train_aug, indices)
 
-    # Union of the dataset
-    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
-    
-    # Create dataloader
-    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
-    # Take a subset of the dataloader
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
-    
-    # Definition of the model
-    model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-    
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
-    """
-    alpha   # CrossEntropy
-    beta    # Lovász
-    gamma   # Tversky
-    theta   # Dice
-    """
 
-    max_iter = num_epochs * len(full_dataloader_gta_train)
-    iter_curr = 0
+    dict_augs_w = {
+        'f': "RandomShadow",
+        'g': 'RandomFog',
+        'h': 'RandomRain',
+        'i': 'ISONoise',
+        'l': 'GaussianBlur'
+    }
 
-    for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_weather_f_l_25_percentage" #CHECK BEFORE RUNNING
-        entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
-        # entity="s328422-politecnico-di-torino" # old team Betta
-        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
-        wandb.config.update({
-            "batch_size": batch_size,
-            "learning_rate": learning_rate,
-            "momentum": momentum,
-            "weight_decay": weight_decay,
-            "num_epochs": num_epochs,
-            "num_classes": num_classes
-        })
+    # Escludiamo la chiave 'f'
+    valid_keys = [k for k in dict_augs_w.keys() if k != 'f']
 
-        if epoch > 1:
-            artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch-1}:latest", type="model")
-            checkpoint_path = artifact.download()
-            checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
-            model.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        print(f"\nEpoch {epoch}")
-        start_train = time.time()
+    # Generiamo tutte le combinazioni di 2 chiavi
+    combs = list(combinations(valid_keys, 2))
+    # Aggiungiamo manualmente le combinazioni ('f', 'i') e ('f', 'l')
+    combs.append(('f', 'i'))
+    combs.append(('f', 'l'))
 
-        metrics_train, iter_curr = train(epoch, model, dataloader_gta_train, loss, optimizer, iter_curr,
-                                         learning_rate, num_classes, max_iter)
-        end_train = time.time()
-        print(f"Time for training: {(end_train - start_train)/60:.2f} min")
+    # Ordiniamo ogni coppia e poi l'intera lista
+    sorted_combs = sorted([tuple(sorted(pair)) for pair in combs])
+    for comb in sorted_combs:
+        start_epoch = 1 #CHECK BEFORE RUNNING
+        type_aug = {'weather': [dict_augs_w[k] for k in comb]}
 
-        save_metrics_on_wandb(epoch, metrics_train, metrics_val=None)
+        gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
+        # Contains all pictures bc they are all augmented
+        gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
 
-        # Save model checkpoint as wandb artifact
-        checkpoint = {
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict()
-        }
-        save_path = f"model_epoch_{epoch}.pt"
-        torch.save(checkpoint, save_path)
+        # Choose with probability 0.5 the augmented images
+        num_augmented = int(0.5 * len(gta_train_aug))
+        indices = random.sample(range(len(gta_train_aug)), num_augmented)
+        gta_train_aug = Subset(gta_train_aug, indices)
 
-        artifact = wandb.Artifact(f"model_epoch_{epoch}", type="model")
-        artifact.add_file(save_path)
-        run.log_artifact(artifact)
-        os.remove(save_path)
+        # Union of the dataset
+        gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
+        
+        # Create dataloader
+        full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+        # Take a subset of the dataloader
+        dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
+        
+        # Definition of the model
+        model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        
+        loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+        """
+        alpha   # CrossEntropy
+        beta    # Lovász
+        gamma   # Tversky
+        theta   # Dice
+        """
 
-    wandb.finish()
+        max_iter = num_epochs * len(full_dataloader_gta_train)
+        iter_curr = 0
+        # Step 3: project_name con le lettere della combinazione
+        sorted_keys = sorted(comb)
+        project_name = f"3b_GTA5_to_CITY_augmented_weather_{sorted_keys[0]}_{sorted_keys[1]}_25_percentage"
+
+
+        for epoch in range(start_epoch, num_epochs + 1):
+            entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
+            # entity="s328422-politecnico-di-torino" # old team Betta
+            run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
+            wandb.config.update({
+                "batch_size": batch_size,
+                "learning_rate": learning_rate,
+                "momentum": momentum,
+                "weight_decay": weight_decay,
+                "num_epochs": num_epochs,
+                "num_classes": num_classes
+            })
+
+            if epoch > 1:
+                artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch-1}:latest", type="model")
+                checkpoint_path = artifact.download()
+                checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
+                model.load_state_dict(checkpoint['model_state_dict'])
+                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            print(f"\nEpoch {epoch}")
+            start_train = time.time()
+
+            metrics_train, iter_curr = train(epoch, model, dataloader_gta_train, loss, optimizer, iter_curr,
+                                            learning_rate, num_classes, max_iter)
+            end_train = time.time()
+            print(f"Time for training: {(end_train - start_train)/60:.2f} min")
+
+            save_metrics_on_wandb(epoch, metrics_train, metrics_val=None)
+
+            # Save model checkpoint as wandb artifact
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict()
+            }
+            save_path = f"model_epoch_{epoch}.pt"
+            torch.save(checkpoint, save_path)
+
+            artifact = wandb.Artifact(f"model_epoch_{epoch}", type="model")
+            artifact.add_file(save_path)
+            run.log_artifact(artifact)
+            os.remove(save_path)
+
+        wandb.finish()
