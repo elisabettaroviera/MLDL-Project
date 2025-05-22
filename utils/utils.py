@@ -145,22 +145,44 @@ class MaskedDiceLoss(nn.Module):
         target_masked = target_one_hot * mask
 
         return self.dice(pred_masked, target_masked)
-
-# CombinedLoss function
-class CombinedLoss_All(nn.Module):
-    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, ignore_index=255):
+    
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2.0, weight=None, ignore_index=255):
         super().__init__()
-        self.alpha, self.beta, self.gamma, self.theta = alpha, beta, gamma, theta
+        self.gamma = gamma
+        self.weight = weight
+        self.ignore_index = ignore_index
+        self.ce = nn.CrossEntropyLoss(reduction='none', weight=weight, ignore_index=ignore_index)
+
+    def forward(self, input, target):
+        logpt = -self.ce(input, target)
+        pt = torch.exp(logpt)
+        focal_loss = ((1 - pt) ** self.gamma) * (-logpt)
+        return focal_loss.mean()
+
+# CombinedLoss for C + L + T + D + F
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, focal_gamma=2.0, ignore_index=255):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta, self.delta = alpha, beta, gamma, theta, delta
         self.ignore_index = ignore_index
         self.num_classes = num_classes
 
         if alpha != 0:
             self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+
+        if beta != 0:
+            from utils.lovasz_losses import lovasz_softmax
+            self.lovasz_softmax = lovasz_softmax
+
         if gamma != 0:
             self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+
         if theta != 0:
             self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
 
+        if delta != 0:
+            self.focal_loss = FocalLoss(gamma=focal_gamma, ignore_index=ignore_index)
 
     def forward(self, outputs, targets):
         total_loss = 0.0
@@ -170,7 +192,7 @@ class CombinedLoss_All(nn.Module):
 
         if self.beta != 0:
             probs = torch.softmax(outputs, dim=1)
-            total_loss += self.beta * lovasz_softmax(probs, targets, ignore=self.ignore_index)
+            total_loss += self.beta * self.lovasz_softmax(probs, targets, ignore=self.ignore_index)
 
         if self.gamma != 0:
             total_loss += self.gamma * self.tversky_loss(outputs, targets)
@@ -178,11 +200,12 @@ class CombinedLoss_All(nn.Module):
         if self.theta != 0:
             total_loss += self.theta * self.dice_loss(outputs, targets)
 
-        return total_loss
+        if self.delta != 0:
+            total_loss += self.delta * self.focal_loss(outputs, targets)
 
+        return total_loss
 
     def __repr__(self):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
-                f"alpha={self.alpha}, beta={self.beta}, "
-                f"gamma={self.gamma}, theta={self.theta})")
-  
+                f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
+                f"theta={self.theta}, delta={self.delta})")
