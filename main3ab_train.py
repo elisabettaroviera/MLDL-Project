@@ -95,11 +95,11 @@ if __name__ == "__main__":
     type_aug_dict = {
     'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast'],
     'weather': ['RandomShadow', 'RandomRain', 'RandomFog', 'ISONoise', 'GaussianBlur'],
-    'geometric': ['RandomCrop', 'Affine', 'Perspective']
+    'geometric': ['RandomCrop', 'Affine', 'Perspective'] m, n, o
     }
     """
 
-    type_aug = {'geometric': ['Perspective']} # CHANGE HERE!!!
+    type_aug = {'geometric': ['RandomCrop', 'Affine']} # CHANGE HERE!!!
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_o_25_percent" #CHECK BEFORE RUNNING
+        project_name = "3b_GTA5_to_CITY_augmented_geometric_m_n_25_percent" #CHECK BEFORE RUNNING
         entity = "s325951-politecnico-di-torino-mldl" # new team Luci
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
