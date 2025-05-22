@@ -143,7 +143,7 @@ if __name__ == "__main__":
     combs = list(combinations(valid_keys, 2))
     # Aggiungiamo manualmente le combinazioni ('f', 'i') e ('f', 'l')
     combs.append(('f', 'i'))
-    combs.append(('f', 'l'))
+    combs.append(('f', 'h'))
 
     # Ordiniamo ogni coppia e poi l'intera lista
     sorted_combs = sorted([tuple(sorted(pair)) for pair in combs])
