@@ -3,18 +3,16 @@ import requests
 from zipfile import ZipFile
 from io import BytesIO
 import gdown
-"""
-cityscapes_id = '1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2'  # Google Drive file ID
-cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL"""
 
+# Personal Google Drive links for the datasets - Chose one of them
+# Link 1 - 1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J
+# Link 2 - 1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2
+# Link 3 - 10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI
+# Link 4 - 11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb
+# Link 5 - 1qKP1oqImbrMfDI9R9dJpnlLYn_hgS8Ht
 
-
-#Personal Google Drive links for the datasets:
 cityscapes_id = '1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J'  # Google Drive file ID
-#cityscapes_id = '1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J' # quello di betta di cui è gelosa
 cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
-
-
 cityscapes_output = 'cityscapes.zip' # Name of the output file
 
 gdown.download(cityscapes_url, cityscapes_output, quiet=False) # Download the file using gdown
