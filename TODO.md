@@ -46,7 +46,7 @@
 | Prova | Loss                | λ / gamma         | LR     | Extra Strategie  | mIoU         |
 | ----- | ------------------- | ----------------- | ------ | ---------------- | -------------|
 | 5     | CE + Lovasz         | 0.7 / 0.3         | 0.0002 | Warmup 500 step  |              | IN ATTO
-| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       |              |
+| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       |              | IN ATTO
 | 7     | CE + Lovasz + Dice  | 0.5 / 0.25 / 0.25 | 0.0002 | —                |              |
 | 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                |              |
 | 9     | CE + Boundary Loss  | 0.5 / 0.5         | 0.0003 | Warmup           |              |
