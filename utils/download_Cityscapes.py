@@ -1,4 +1,3 @@
-# Import necessary libraries
 import requests
 from zipfile import ZipFile
 from io import BytesIO
