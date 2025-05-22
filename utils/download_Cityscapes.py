@@ -9,6 +9,7 @@ import gdown
 # Link 3 - 10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI
 # Link 4 - 11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb
 # Link 5 - 1Qb4UrNsjvlU-wEsR9d7rckB0YS_LXgb2
+# Link 6 - 11radYwi905384YHAmC_AGvziOcqBpE4X
 
 cityscapes_id = '1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J'  # Google Drive file ID
 cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
