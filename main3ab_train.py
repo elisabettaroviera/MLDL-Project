@@ -108,7 +108,7 @@ if __name__ == "__main__":
 """
 
     #type_aug = {'weather': ['RandomShadow']} #sta runnando in aurona 2 holaatutti f
-    #type_aug = {'weather': ['RandomFog']} #FINITO ANCEH VAL in aurona 3 auronagashi23 g
+    #type_aug = {'weather': ['RandomFog']} #FINITO ANCHE VAL in aurona 3 auronagashi23 g
     #type_aug = {'weather': ['RandomRain']} #sta runnando in aurona 4 mail familje h
     #type_aug = {'weather': ['ISONoise']} #runnando in aurona3 auronagashi23 i
     type_aug = {'weather': ['GaussianBlur']} #runnando in aurona 2 auronagashi23 l
