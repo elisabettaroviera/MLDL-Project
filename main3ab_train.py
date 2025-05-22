@@ -107,11 +107,17 @@ if __name__ == "__main__":
     }
 """
 
-    #type_aug = {'weather': ['RandomShadow']} #sta runnando in aurona 2 holaatutti f
+    #type_aug = {'weather': ['RandomShadow']} #FINTIO ANCHE VALsta runnando in aurona 2 holaatutti f
     #type_aug = {'weather': ['RandomFog']} #FINITO ANCHE VAL in aurona 3 auronagashi23 g
-    #type_aug = {'weather': ['RandomRain']} #sta runnando in aurona 4 mail familje h
+    #type_aug = {'weather': ['RandomRain']} #FINITO ANCHE VAL sta runnando in aurona 4 mail familje h
     #type_aug = {'weather': ['ISONoise']} #runnando in aurona3 auronagashi23 i
-    type_aug = {'weather': ['GaussianBlur']} #runnando in aurona 2 auronagashi23 l
+    #type_aug = {'weather': ['GaussianBlur']} #runnando in aurona 2 auronagashi23 l
+
+    """COMBOS weather randomshadow"""
+    type_aug = {'weather': ['RandomShadow', 'RandomFog']} #f, g -> aurona 3
+    #type_aug = {'weather': ['RandomShadow', 'RandomRain']} #f,h -> aurona 4
+    #type_aug = {'weather': ['RandomShadow', 'ISONoise']} #f, i -> aurona 2
+    #type_aug = {'weather': ['RandomShadow', 'GaussianBlur']} #f, l
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
@@ -145,7 +151,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_weather_l_25_percentage" #CHECK BEFORE RUNNING
+        project_name = "3b_GTA5_to_CITY_augmented_weather_f_g_25_percentage" #CHECK BEFORE RUNNING
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
