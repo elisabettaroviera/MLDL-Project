@@ -68,7 +68,7 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     # Crea un subset e un nuovo dataloader
     subset = Subset(dataset, indices)
-    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True) # Drop of the last batch
 
     return subset_dataloader
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 15
+    num_epochs = 15 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING

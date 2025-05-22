@@ -40,8 +40,8 @@ def to_obtain_id(project=""):
 <<<<<<< HEAD
     entity = "s325951-politecnico-di-torino-mldl"
 =======
-    # entity = "s325951-politecnico-di-torino-mldl" nuovo team Lucia
-    entity = "s328422-politecnico-di-torino"
+    entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
+    # entity = "s328422-politecnico-di-torino"
 >>>>>>> main
 
     api = wandb.Api()
