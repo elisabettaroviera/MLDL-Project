@@ -148,6 +148,13 @@ if __name__ == "__main__":
     # Ordiniamo ogni coppia e poi l'intera lista
     sorted_combs = sorted([tuple(sorted(pair)) for pair in combs])
     for comb in sorted_combs:
+        batch_size = 4
+        learning_rate = 0.00625
+        momentum = 0.9
+        weight_decay = 1e-4
+        num_epochs = 15 #changed bc doing smaller runs
+        num_classes = 19
+        ignore_index = 255
         start_epoch = 1 #CHECK BEFORE RUNNING
         type_aug = {'weather': [dict_augs_w[k] for k in comb]}
 
