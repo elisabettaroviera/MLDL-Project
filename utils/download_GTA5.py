@@ -6,7 +6,8 @@ import gdown
 
 gta5_id = '1xYxlcMR2WFCpayNrW2-Rb7N-950vvl23'  # Google Drive file ID
 #gta5_id = '1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO'  # Google Drive file ID
-gta5_id = '1U5LpT_jGqTp2wuDvGHewTOnjbCCjVWE2' #link auro
+#gta5_id = '1U5LpT_jGqTp2wuDvGHewTOnjbCCjVWE2' #link auro
+gta5_id = '1T4sLX0HLpI6kqe4V2F2oVAzur5fsp4Uc'
 gta5_url = f'https://drive.google.com/uc?id={gta5_id}' # Construct the download URL
 
 """
