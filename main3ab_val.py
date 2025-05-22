@@ -81,7 +81,7 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    num_epochs = 50
+    num_epochs = 15 #CHECK BEFORE RUNNING
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
-    project_name = "3b_GTA5_to_CITY_augmented_color_cv07_tv03" #CHECK BEFORE RUNNING
+    project_name = "3b_GTA5_to_CITY_aug_color_a_25percent" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = to_obtain_id(project_name)
