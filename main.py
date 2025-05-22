@@ -19,6 +19,7 @@ from train import train
 from utils.utils import CombinedLoss_All, poly_lr_scheduler, save_metrics_on_file, save_metrics_on_wandb
 from validation import validate
 from utils.metrics import compute_miou
+from torch.utils.data import Subset
 
 # This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
@@ -28,6 +29,22 @@ def set_seed(seed):
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
+
+def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
+    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
+
+    dataset = full_dataloader.dataset
+    total_samples = len(dataset)
+    num_samples = int(total_samples * fraction)
+
+    # Seleziona indici casuali senza ripetizioni
+    indices = np.random.choice(total_samples, num_samples, replace=False)
+
+    # Crea un subset e un nuovo dataloader
+    subset = Subset(dataset, indices)
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True) # Drop of the last batch
+
+    return subset_dataloader
 
 if __name__ == "__main__":
     # Ambient variable
@@ -57,7 +74,7 @@ if __name__ == "__main__":
     if var_model == 'DeepLabV2':
         print("MODEL DEEPLABV2")
         batch_size = 3 # Bach size
-        learning_rate = 0.0001 # Learning rate for the optimizer 
+        learning_rate = 0.01 # Learning rate for the optimizer - on the Paper 0.01 or 0.001
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 0.0005 # Weight decay for the optimizer
         
@@ -72,9 +89,12 @@ if __name__ == "__main__":
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
+    # Take a subset of the dataloader
+    dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.25, batch_size=batch_size)
+
     # Definition of the parameters for CITYSCAPES 
     print("Define the parameters")
-    num_epochs = 50 # Number of epochs
+    num_epochs = 25 # Number of epochs
     num_classes = 19 # Number of classes in the dataset (Cityscapes)
     ignore_index = 255 # Ignore index for the loss function (void label in Cityscapes)
     iter_curr = 0 # Initialize the iteration counter
@@ -94,7 +114,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
        
-        start_epoch = 43 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
         
 
     elif var_model == 'BiSeNet':
@@ -111,7 +131,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function
     print("Definition of the loss")
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
