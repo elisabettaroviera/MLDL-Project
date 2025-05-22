@@ -115,8 +115,8 @@ if __name__ == "__main__":
 
     """COMBOS weather randomshadow"""
     #type_aug = {'weather': ['RandomShadow', 'RandomFog']} #f, g -> aurona 3
-    #type_aug = {'weather': ['RandomShadow', 'RandomRain']} #f,h -> aurona 4
-    type_aug = {'weather': ['RandomShadow', 'ISONoise']} #f, i -> aurona 2
+    type_aug = {'weather': ['RandomShadow', 'RandomRain']} #f,h -> aurona 4
+    #type_aug = {'weather': ['RandomShadow', 'ISONoise']} #f, i -> aurona 2
     #type_aug = {'weather': ['RandomShadow', 'GaussianBlur']} #f, l
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
