@@ -104,6 +104,9 @@ if __name__ == "__main__":
     #type_aug = { 'color': ['HueSaturationValue']} #a) 3b_GTA5_to_CITY_aug_color_a_25percent
     #type_aug = {'color': ['CLAHE']} # b) 3b_GTA5_to_CITY_aug_color_b_25percent
     type_aug = {'color': ['GaussNoise']} # c) 3b_GTA5_to_CITY_aug_color_c_25percent
+    #type_aug = {'color': ['RGBShift']} # d) 3b_GTA5_to_CITY_aug_color_d_25percent
+    #type_aug = {'color': ['RandomBrightnessContrast']} # e) 3b_GTA5_to_CITY_aug_color_e_25percent
+    
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
