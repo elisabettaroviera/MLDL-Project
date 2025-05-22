@@ -74,7 +74,7 @@ if __name__ == "__main__":
     if var_model == 'DeepLabV2':
         print("MODEL DEEPLABV2")
         batch_size = 3 # Bach size
-        learning_rate = 0.0003 # Learning rate for the optimizer - CHANGE HERE!
+        learning_rate = 0.0002 # Learning rate for the optimizer - CHANGE HERE!
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 0.0005 # Weight decay for the optimizer
         
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss")
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0.25, gamma=0, theta=0.25, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
-        project_name = f"{var_model}_ce05_f05_warnup_lr_0.0003"
+        project_name = f"{var_model}_ce05_l0.25_di0.25_no_warnup_lr_0.0002"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
