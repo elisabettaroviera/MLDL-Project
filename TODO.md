@@ -61,9 +61,13 @@ Con il nuovo power = 1.2:
 * Il modello dovrebbe essere più stabile e rifinire meglio la segmentazione,
 * E potenzialmente la mIoU potrà crescere già da questa epoca.
 
-Nel **run 6**
+Nel **run 6** ho cambiato il power → 1.0 per accelerare leggermente la discesa del learning rate e aiutare il modello a "chiudere meglio" nelle ultime 20 epoche (si spera).
 
-Nel **run 7**
+Nel **run 7** ho portato il power da 0.9 → 1.1 che mi ha permesso di:
+
+* Raffinare più in fretta
+* Ridurre un po’ di più il LR nelle prossime epoche
+* Aiutare il modello a consolidare i dettagli di classe (soprattutto con DeepLabV2)
 
 
 ## Commentare i risultati 
