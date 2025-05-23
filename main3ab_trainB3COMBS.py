@@ -142,8 +142,8 @@ if __name__ == "__main__":
 
     # Dividiamo in 3 gruppi quasi uguali
     group_size = (len(all_combs_3) + 2) // 3  # divide in 3 gruppi il più uniformemente possibile
-    # GROUP A
-    group = all_combs_3[:group_size]
+    # GROUP B
+    group = all_combs_3[group_size:2*group_size]
 
     for comb in group:
         batch_size = 4
