@@ -185,7 +185,7 @@ if __name__ == "__main__":
         iter_curr = 0
         # Step 3: project_name con le lettere della combinazione
         sorted_keys = sorted(comb)
-        project_name = f"3b_GTA5_to_CITY_augmented_weather_{sorted_keys[0]}_{sorted_keys[1]}_25_percentage"
+        project_name = f"3b_GTA5_to_CITY_augmented_weather_{sorted_keys[0]}_{sorted_keys[1]}_{sorted_keys[2]}_{sorted_keys[3]}_25_percentage"
 
 
         for epoch in range(start_epoch, num_epochs + 1):
