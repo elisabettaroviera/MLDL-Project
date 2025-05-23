@@ -26,29 +26,30 @@
 2. Lovász
 3. Tversky
 4. Dice
+5. Focal
 
 
 ### Optimizer
 1. Stochastic Gradient Descent
 
-❌ Sconsigliato cambiare ottimizzatore a metà training, DeepLabv2 + ResNet-101 è già molto sensibile alle modifiche dell’ottimizzazione. Cambiare da SGD a un altro ottimizzatore (es. Adam, RMSProp) distruggerebbe il regime di aggiornamento del learning rate (specie col poly). Si potrebbero introdurre salti instabili nella loss e ridurre la generalizzazione sul test set.
+❌ Sconsigliato cambiare ottimizzatore a metà training: DeepLabv2 + ResNet-101 è già molto sensibile alle modifiche dell’ottimizzazione. Cambiare da SGD a un altro ottimizzatore (es. Adam, RMSProp) distruggerebbe il regime di aggiornamento del learning rate (specie col poly). Si potrebbero introdurre salti instabili nella loss e ridurre la generalizzazione sul test set.
 
 ### Prove totali che voglio fare
 
-| Prova | Loss Function | λ combinazione | mIoU         |
-| ----- | ------------- | -------------- | ------------ |
-| 1     | CE            | —              | 50.50063     | FATTO
-| 2     | CE + Lovasz   | 0.5 / 0.5      | 50.82248     | FATTO
-| 3     | CE + Tversky  | 0.7 / 0.3      | 50.10477     | FATTO
-| 4     | CE + Dice     | 0.7 / 0.3      | 50.16859     | FATTO
+| Prova | Loss Function | combinazione | mIoU         | Esecuzione |
+| ----- | ------------- | -------------- | ------------ | ----- |
+| 1     | CE            | —              | 50.50063     | FATTO |
+| 2     | CE + Lovasz   | 0.5 / 0.5      | 50.82248     | FATTO |
+| 3     | CE + Tversky  | 0.7 / 0.3      | 50.10477     | FATTO |
+| 4     | CE + Dice     | 0.7 / 0.3      | 50.16859     | FATTO |
 
 
-| Prova | Loss                | λ / gamma         | LR     | Extra Strategie  | mIoU         |
-| ----- | ------------------- | ----------------- | ------ | ---------------- | -------------|
-| 5     | CE + Lovasz         | 0.7 / 0.3         | 0.0002 | Warmup 500 step  |              | IN ATTO
-| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       |              | IN ATTO
-| 7     | CE + Lovasz + Dice  | 0.5 / 0.25 / 0.25 | 0.0002 | —                |              | IN ATTO
-| 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                |              | IN ATTO
+| Prova | Loss                | combinazione      | LR     | Extra Strategie  | mIoU         | Esecuzione |
+| ----- | ------------------- | ----------------- | ------ | ---------------- | -------------| ------- |
+| 5     | CE + Lovasz         | 0.7 / 0.3         | 0.0002 | Warmup 500 step  |              | IN ATTO |
+| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       |              | IN ATTO |
+| 7     | CE + Lovasz + Dice  | 0.5 / 0.25 / 0.25 | 0.0002 | —                |              | IN ATTO |
+| 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                |              | IN ATTO |
 
 
 ## Commentare i risultati 
