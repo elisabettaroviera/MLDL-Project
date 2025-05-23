@@ -51,6 +51,14 @@
 | 7     | CE + Lovasz + Dice  | 0.5 / 0.25 / 0.25 | 0.0002 | —                |              | IN ATTO |
 | 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                |              | IN ATTO |
 
+**Aggiustamenti nei run**. Nel run 5, il più promettende, dopo 28 epoche ho preso la decisione di alzare il power a 1.2. Ecco le motivazioni:
+
+Con il nuovo power = 1.2:
+
+* Il learning rate scenderà un po’ più rapidamente,
+* Il modello dovrebbe essere più stabile e rifinire meglio la segmentazione,
+* E potenzialmente la mIoU potrà crescere già da questa epoca.
+
 
 ## Commentare i risultati 
 MANCA 
