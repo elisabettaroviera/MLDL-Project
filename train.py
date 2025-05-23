@@ -62,8 +62,8 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         optimizer.step()
 
         # Compute the learning rate
-        #lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
-        lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iter, max_iter=max_iter, power=0.9, warmup_iters=500, warmup_start_lr=1e-6)
+        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        #lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iter, max_iter=max_iter, power=0.9, warmup_iters=500, warmup_start_lr=1e-6)
 
         # Update the running loss
         running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
