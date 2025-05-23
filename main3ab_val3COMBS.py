@@ -83,6 +83,18 @@ if __name__ == "__main__":
 
     # Tutte le combinazioni di 3 chiavi, ordinate internamente e globalmente
     all_combs = sorted([tuple(sorted(c)) for c in combinations(dict_augs_w.keys(), 3)])
+        # Combo da mettere in fondo (ordine personalizzato)
+    custom_last = [
+        ('f', 'g', 'l'),
+        ('g', 'h', 'l'),
+        ('f', 'h', 'i')
+    ]
+
+    # Rimuoviamo quelle da mettere in fondo dalla lista principale
+    filtered_combs = [c for c in all_combs if c not in custom_last]
+
+    # Ordine finale: prima tutte le altre, poi quelle personalizzate
+    all_combs = filtered_combs + custom_last
 
     for comb in all_combs:
         # Genera il nome del progetto con la tripla di augmentations
