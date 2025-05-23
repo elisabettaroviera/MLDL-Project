@@ -1,10 +1,5 @@
 # PROGRESS STATUS
 
-## QUESTION
-
-- Data augmentation va fatta sostituendo o aggiungendo le foto?
-
-
 ## DOVE SIAMO ARRIVAI...?
 ### 1st STEP. RELATED WORKS 
 DONE
@@ -31,12 +26,17 @@ DONE
 - Tversky
 - Lovász
 - Dice
+- Focal
 
 ##### Run eseguite
 1. CrossEntropy
 2. 0.5 * CrossEntropy + 0.5 * Lovász
 3. 0.7 * CrossEntropy + 0.3 * Tversky
 4. 0.7 * CrossEntropy + 0.3 * Dice
+5. 
+6. 
+7. 
+8. 
 
 
 
@@ -72,10 +72,3 @@ DONE
 - Dice
 
 ****
-
-
-
-COSA FACCIAMO
-- Facciamo 15 epoche
-- Su 1/4 del dataset (gta  1/4 + gta_aug 1/4)
-- Ognuna su una singola trasformazione del proprio gruppo, poi si mettono insieme guardando il risultato
