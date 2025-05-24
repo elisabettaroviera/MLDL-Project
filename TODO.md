@@ -61,6 +61,11 @@ Con il nuovo power = 1.2:
 * Il modello dovrebbe essere più stabile e rifinire meglio la segmentazione,
 * E potenzialmente la mIoU potrà crescere già da questa epoca.
 
+Dall'epoca 46 ho fatto queste altre modifiche
+* alpha = 0.5, beta = 0.5 --> per stabilizzare (aggiungi motivazioni)
+* freeze per layer = 1, 2, 3, 4 e bn1 del backbone --> per apprendere meglio (aggiungi motivazioni)
+* power = 2 --> per fare decadere più velocemente il lr
+
 Nel **run 6** ho cambiato il power → 1.0 per accelerare leggermente la discesa del learning rate e aiutare il modello a "chiudere meglio" nelle ultime 20 epoche (si spera).
 
 Nel **run 7** ho portato il power da 0.9 → 1.1 che mi ha permesso di:
@@ -73,3 +78,5 @@ Nel **run 7** ho portato il power da 0.9 → 1.1 che mi ha permesso di:
 ## Commentare i risultati 
 MANCA 
 C'è un notebook sul main di Auro già un po' fatto. Alla fine di questi 8 run, farei dei bei plot, loss e mIoU riassuntivi.
+
+DeepLabV2_ce07_l03_warnup_lr_0.0002
