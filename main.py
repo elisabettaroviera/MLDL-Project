@@ -182,6 +182,16 @@ if __name__ == "__main__":
                 for param in module.parameters():
                     param.requires_grad = False
                     print(f"🔒 FROZEN module: {module}")
+            
+            frozen_layers = set()
+            for name, param in model.named_parameters():
+                if not param.requires_grad:
+                    module_name = name.split('.')[0]
+                    frozen_layers.add(module_name)
+
+            for layer in sorted(frozen_layers):
+                print(f"🔒 FROZEN layer: {layer}")
+
 
             # Create optimizer using only trainable params - 
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9, weight_decay=0.0005)
