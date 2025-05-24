@@ -74,7 +74,7 @@ if __name__ == "__main__":
     if var_model == 'DeepLabV2':
         print("MODEL DEEPLABV2")
         batch_size = 3 # Bach size
-        learning_rate = 0.0001 # Learning rate for the optimizer - CHANGE HERE!
+        learning_rate = 0.0002 # Learning rate for the optimizer - CHANGE HERE!
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 0.0005 # Weight decay for the optimizer
         
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
        
-        start_epoch = 31 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 46 # CHANGE HERE THE STARTING EPOCH
 
 
     elif var_model == 'BiSeNet':
@@ -131,13 +131,14 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.6, beta=0.2, gamma=0, theta=0, delta=0.2, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0.5, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
     # theta   - Dice
     # delta   - Focal
 
+    
    
     
     # Iteration loop on EPOCHS
@@ -151,13 +152,15 @@ if __name__ == "__main__":
         # _ce05_f05_warnup_lr_0.0003
         # _ce07_l03_warnup_lr_0.0002
         # _ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        project_name = f"{var_model}_ce06_l0.2_fo0.2_no_warnup_lr_0.0001"
+        project_name = f"{var_model}_ce07_l03_warnup_lr_0.0002"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
 
         print("Load the model")
+        if epoch == 46:
+            lr = 0.00002039 # Preso da wandb
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
@@ -173,13 +176,27 @@ if __name__ == "__main__":
             # Load the model and the ottimizator state
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            # 2. Freeze layer1 and layer2
+            for name, param in model.named_parameters():
+                if 'layer1' in name or 'layer2' in name:
+                    param.requires_grad = False
+
+            # 3. Create optimizer using only trainable params
+            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9, weight_decay=0.0005)
+
+            # 4. (Opzionale) Log frozen layers
+            for name, param in model.named_parameters():
+                if not param.requires_grad:
+                    print(f"🔒 FROZEN: {name}")
+
          
     
         # 2. Training step
         print("Training step")
 
         start_train = time.time()
-        metrics_train, iter_curr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr, lr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
         end_train = time.time()
 
         print(f"Time taken for training step: {(end_train - start_train)/60:.2f} minutes")
