@@ -177,8 +177,8 @@ if __name__ == "__main__":
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            # 2. Freeze layer1 and layer2
-            for module in [model.backbone.bn1, model.backbone.layer1, model.backbone.layer2]:
+            # 2. Freeze only layer3 and layer4
+            for module in [model.backbone.layer3, model.backbone.layer4]: 
                 for param in module.parameters():
                     param.requires_grad = False
                     print(f"🔒 FROZEN module: {module}")
