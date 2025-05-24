@@ -178,17 +178,14 @@ if __name__ == "__main__":
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
             # 2. Freeze layer1 and layer2
-            for name, param in model.named_parameters():
-                if 'layer1' in name or 'layer2' in name:
+            for module in [model.backbone.layer1, model.backbone.layer2]:
+                for param in module.parameters():
                     param.requires_grad = False
+                    print(f"🔒 FROZEN module: {module}")
+
 
             # 3. Create optimizer using only trainable params
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9, weight_decay=0.0005)
-
-            # 4. (Opzionale) Log frozen layers
-            for name, param in model.named_parameters():
-                if not param.requires_grad:
-                    print(f"🔒 FROZEN: {name}")
 
          
     
