@@ -74,7 +74,7 @@ if __name__ == "__main__":
     if var_model == 'DeepLabV2':
         print("MODEL DEEPLABV2")
         batch_size = 3 # Bach size
-        learning_rate = 0.0002 # Learning rate for the optimizer - CHANGE HERE!
+        learning_rate = 0.0001 # Learning rate for the optimizer - CHANGE HERE!
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 0.0005 # Weight decay for the optimizer
         
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0.5, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.6, beta=0.2, gamma=0, theta=0, delta=2, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -152,15 +152,15 @@ if __name__ == "__main__":
         # _ce05_f05_warnup_lr_0.0003
         # _ce07_l03_warnup_lr_0.0002
         # _ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        project_name = f"{var_model}_ce07_l03_warnup_lr_0.0002"
+        project_name = f"{var_model}_ce06_l0.2_fo0.2_no_warnup_lr_0.0001"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
 
         print("Load the model")
-        if epoch == 46:
-            lr = 0.00002039 # Preso da wandb
+        #if epoch == 46:
+        #    lr = 0.00002039 # Preso da wandb
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
@@ -178,6 +178,7 @@ if __name__ == "__main__":
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
             # Freeze only layer3 and layer4
+            """ 
             for module in [model.layer3, model.layer4]: 
                 for param in module.parameters():
                     param.requires_grad = False
@@ -191,11 +192,11 @@ if __name__ == "__main__":
 
             for layer in sorted(frozen_layers):
                 print(f"🔒 FROZEN layer: {layer}")
-
+            
 
             # Create optimizer using only trainable params - 
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9, weight_decay=0.0005)
-
+            """
          
          
     
