@@ -133,7 +133,7 @@ class ResNetMulti(nn.Module):
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64, affine=affine_par)
         for i in self.bn1.parameters():
-            i.requires_grad = False
+            i.requires_grad = False # This means that in the backbone layer the weight DOES NOT CHANGE
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1, ceil_mode=True)  # change
         self.layer1 = self._make_layer(block, 64, layers[0])
