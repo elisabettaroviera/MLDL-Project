@@ -163,8 +163,8 @@ if __name__ == "__main__":
         print(f"Epoch {epoch}")
 
         print("Load the model")
-        #if epoch == 46:
-        #    lr = 0.00002039 # Preso da wandb
+        if epoch == 44:
+            lr = 0.00002900792735348146 # Preso da wandb
         # 1. Obtain the pretrained model
         
         if epoch != 1:
