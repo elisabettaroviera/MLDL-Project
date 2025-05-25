@@ -132,7 +132,7 @@ if __name__ == "__main__":
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+d) 3b_GTA5_to_CITY_aug_color_a_b_d_25percent  OK --> to val ...
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RandomBrightnessContrast']} # a+b+e) 3b_GTA5_to_CITY_aug_color_a_b_e_25percent OK..
     # a + c + cose
-    #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RGBShift']} # a+c+d) 3b_GTA5_to_CITY_aug_color_a_c_d_25percent OK
+    #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RGBShift']} # a+c+d) 3b_GTA5_to_CITY_aug_color_a_c_d_25percent OK ...
     #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RandomBrightnessContrast']} # a+c+e) 3b_GTA5_to_CITY_aug_color_a_c_e_25percent OK
 
     # b + c +cose 
