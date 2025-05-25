@@ -66,6 +66,8 @@ Dall'epoca 46 ho fatto queste altre modifiche
 * freeze per layer = 1, 2, 3, 4 e bn1 del backbone --> per apprendere meglio (aggiungi motivazioni)
 * power = 2 --> per fare decadere più velocemente il lr
 
+All'epoca 47 ho modificato il power a 1.2 (discesa troppo rapida altrimenti)
+
 Nel **run 6** ho cambiato il power → 1.0 per accelerare leggermente la discesa del learning rate e aiutare il modello a "chiudere meglio" nelle ultime 20 epoche (si spera).
 All'epoca 44 ho freezato i layer 1, 2, 3, 4, bin1.
 
