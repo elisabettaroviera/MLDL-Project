@@ -45,11 +45,11 @@
 
 
 | Prova | Loss                | combinazione      | LR     | Extra Strategie  | mIoU         | Esecuzione |
-| ----- | ------------------- | ----------------- | ------ | ---------------- | -------------| ------- |
-| 5     | CE + Lovasz         | 0.7 / 0.3         | 0.0002 | Warmup 500 step  |              | IN ATTO |
-| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       |              | FATTO   |
-| 7     | CE + Lovasz + Dice  | 0.5 / 0.25 / 0.25 | 0.0002 | —                |              | IN ATTO |
-| 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                |              | FATTO   |
+| ----- | ------------------- | ----------------- | ------ | ---------------- | -------------| ---------- |
+| 5     | CE + Lovasz         | 0.7 / 0.3         | 0.0002 | Warmup 500 step  | 53.79201     | FATTO      |
+| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       | 53.9948      | FATTO      |
+| 7     | CE + Lovasz + Dice  | 0.5 / 0.25 / 0.25 | 0.0002 | —                | 53.30673     | FATTO      |
+| 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                | 50.37082     | FATTO      |
 
 **Aggiustamenti nei run**. 
 
