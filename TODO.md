@@ -47,9 +47,9 @@
 | Prova | Loss                | combinazione      | LR     | Extra Strategie  | mIoU         | Esecuzione |
 | ----- | ------------------- | ----------------- | ------ | ---------------- | -------------| ------- |
 | 5     | CE + Lovasz         | 0.7 / 0.3         | 0.0002 | Warmup 500 step  |              | IN ATTO |
-| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       |              | IN ATTO |
+| 6     | CE + Focal          | γ=2.0             | 0.0003 | Warmup 500       |              | FATTO   |
 | 7     | CE + Lovasz + Dice  | 0.5 / 0.25 / 0.25 | 0.0002 | —                |              | IN ATTO |
-| 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                |              | IN ATTO |
+| 8     | CE + Focal + Lovasz | 0.6 / 0.2 / 0.2   | 0.0001 | —                |              | FATTO   |
 
 **Aggiustamenti nei run**. 
 
@@ -67,6 +67,7 @@ Dall'epoca 46 ho fatto queste altre modifiche
 * power = 2 --> per fare decadere più velocemente il lr
 
 Nel **run 6** ho cambiato il power → 1.0 per accelerare leggermente la discesa del learning rate e aiutare il modello a "chiudere meglio" nelle ultime 20 epoche (si spera).
+All'epoca 44 ho freezato i layer 1, 2, 3, 4, bin1.
 
 Nel **run 7** ho portato il power da 0.9 → 1.1 che mi ha permesso di:
 

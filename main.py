@@ -120,7 +120,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
        
-        start_epoch = 46 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 48 # CHANGE HERE THE STARTING EPOCH
 
 
     elif var_model == 'BiSeNet':
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0.25, gamma=0, theta=0.25, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0.5, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -157,15 +157,15 @@ if __name__ == "__main__":
         # _ce07_l03_warnup_lr_0.0002
         # _ce05_l0.25_di0.25_no_warnup_lr_0.0002
         # DeepLabV2_ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        project_name = f"{var_model}_ce05_l0.25_di0.25_no_warnup_lr_0.0002"
+        project_name = f"{var_model}_ce07_l03_warnup_lr_0.0002"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
 
         print("Load the model")
-        if epoch == 44:
-            lr = 0.00002900792735348146 # Preso da wandb
+        if epoch == 48:
+            lr = 7.482880891459384e-7 # Preso da wandb
         # 1. Obtain the pretrained model
         
         if epoch != 1:
@@ -183,7 +183,7 @@ if __name__ == "__main__":
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            """
+            
             # Freeze only layer3 and layer4
             for module in [model.layer3, model.layer4]: 
                 for param in module.parameters():
@@ -202,8 +202,8 @@ if __name__ == "__main__":
 
             # Create optimizer using only trainable params - 
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9, weight_decay=0.0005)
-            """
-         
+            
+        
     
         # 2. Training step
         print("Training step")
