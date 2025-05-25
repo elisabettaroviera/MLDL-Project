@@ -128,9 +128,9 @@ if __name__ == "__main__":
 
     ## 3 TRASFORMAZIONI
     # a + b + cose
-    #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise']} # a+b+c) 3b_GTA5_to_CITY_aug_color_a_b_c_25percent 
-    type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+d) 3b_GTA5_to_CITY_aug_color_a_b_d_25percent  
-    #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RandomBrightnessContrast']} # a+b+e) 3b_GTA5_to_CITY_aug_color_a_b_e_25percent 
+    #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise']} # a+b+c) 3b_GTA5_to_CITY_aug_color_a_b_c_25percent OKK...
+    #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+d) 3b_GTA5_to_CITY_aug_color_a_b_d_25percent  OkK...
+    type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RandomBrightnessContrast']} # a+b+e) 3b_GTA5_to_CITY_aug_color_a_b_e_25percent 
     # a + c + cose
     #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RGBShift']} # a+c+d) 3b_GTA5_to_CITY_aug_color_a_c_d_25percent 
     #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RandomBrightnessContrast']} # a+c+e) 3b_GTA5_to_CITY_aug_color_a_c_e_25percent 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_a_b_d_25percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_a_b_e_25percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
