@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
             # Load the model and the ottimizator state
             model.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            #optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
             
             # Freeze only layer3 and layer4
@@ -203,6 +203,8 @@ if __name__ == "__main__":
             # Create optimizer using only trainable params - 
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9, weight_decay=0.0005)
             
+            # Now load optimizer state from checkpoint (same structure as above)
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         
     
         # 2. Training step
