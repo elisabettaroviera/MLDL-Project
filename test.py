@@ -387,13 +387,23 @@ indices = random.sample(range(len(gta_train_aug)), num_augmented)
 gta_train_aug = Subset(gta_train_aug, indices)
 output_dir = "./test_augmented_output"
 os.makedirs(output_dir, exist_ok=True)  # ✅ Questo crea la directory se non esiste
-for i in range(3):
-    image_tensor, label_tensor, filename = gta_train_aug[i]
 
-    image = transforms.ToPILImage()(image_tensor)
-    label = to_pil_image(label_tensor.to(torch.uint8))
+image_tensor, label_tensor, filename = gta_train_nonaug[0]
 
-    image.save(os.path.join(output_dir, f"augmented_{i}_{filename}"))
-    label.save(os.path.join(output_dir, f"mask_{i}_{filename}"))
+image = transforms.ToPILImage()(image_tensor)
+label = to_pil_image(label_tensor.to(torch.uint8))
 
-    print(f"Salvati: augmented_{i}_{filename} e mask_{i}_{filename}")
+image.save(os.path.join(output_dir, f"augmented_{1}_{filename}"))
+label.save(os.path.join(output_dir, f"mask_{1}_{filename}"))
+
+print(f"Salvati: augmented_{1}_{filename} e mask_{1}_{filename}")
+
+image_tensor, label_tensor, filename = gta_train_aug[0]
+
+image = transforms.ToPILImage()(image_tensor)
+label = to_pil_image(label_tensor.to(torch.uint8))
+
+image.save(os.path.join(output_dir, f"augmented_{0}_{filename}"))
+label.save(os.path.join(output_dir, f"mask_{0}_{filename}"))
+
+print(f"Salvati: augmented_{0}_{filename} e mask_{0}_{filename}")
