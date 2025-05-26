@@ -56,7 +56,6 @@ def transform_gta_to_cityscapes_label(mask):
 
 
 ## TODO: 
-"""
 def transform_gta(): 
     # NOTE: The training resolution and the val resolution are equal in Cityscapes
     # Hence, we can use the same transform for both train and test
@@ -66,14 +65,8 @@ def transform_gta():
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])  # Normalize using ImageNet stats
     ])
-    return transform"""
-def transform_gta(): 
-    # NOTE: The training resolution and the val resolution are equal in Cityscapes
-    # Hence, we can use the same transform for both train and test
-    transform = transforms.Compose([
-        transforms.Resize((720, 1280)),  # Resize to 1024x512 (note: H, W)
-        transforms.ToTensor() ])
     return transform
+    
 
 def transform_gta_mask():
     transform = transforms.Compose([
