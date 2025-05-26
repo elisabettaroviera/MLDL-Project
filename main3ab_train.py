@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     ## 3 TRASFORMAZIONI
     # a + b + cose
-    type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise']} # a+b+c) 3b_GTA5_to_CITY_aug_color_a_b_c_25percent -> rirunna
+    type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise']} # a+b+c) 3b_GTA5_to_CITY_aug_color_a_b_c_25percent -> rirunna manca val
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+d) 3b_GTA5_to_CITY_aug_color_a_b_d_25percent  OKK
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RandomBrightnessContrast']} # a+b+e) 3b_GTA5_to_CITY_aug_color_a_b_e_25percent OKK
     # a + c + cose
@@ -147,7 +147,9 @@ if __name__ == "__main__":
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RandomBrightnessContrast']} # a+b+c+e) 3b_GTA5_to_CITY_aug_color_a_b_c_e_25percent OKK
     #type_aug = { 'color': ['RandomBrightnessContrast', 'CLAHE', 'GaussNoise', 'RGBShift']} # b+c+d+e) 3b_GTA5_to_CITY_aug_color_b_c_d_e_25percent OKK
   
-    
+    ## 5 TRASFORMAZIONI
+    type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_c_d_e_25percent 
+
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
