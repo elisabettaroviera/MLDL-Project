@@ -364,7 +364,7 @@ for k, v in metrics_val.items():
 #test per vedere se applicare le augmentations funziona
 import os
 import torch
-
+from torchvision.transforms.functional import to_pil_image
 import random
 import numpy as np
 from datasets.gta5 import GTA5
@@ -389,11 +389,9 @@ output_dir = "./test_augmented_output"
 for i in range(3):
     image_tensor, label_tensor, filename = gta_train_aug[i]
 
-    # Converti in immagini PIL per salvataggio
     image = transforms.ToPILImage()(image_tensor)
-    label = transforms.ToPILImage()(label_tensor)
+    label = to_pil_image(label_tensor.to(torch.uint8))
 
-    # Salvataggio
     image.save(os.path.join(output_dir, f"augmented_{i}_{filename}"))
     label.save(os.path.join(output_dir, f"mask_{i}_{filename}"))
 
