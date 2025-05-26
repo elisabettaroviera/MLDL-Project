@@ -145,7 +145,7 @@ if __name__ == "__main__":
     ## 4 TRASFORMAZIONI
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift']} # a+b+c+d) 3b_GTA5_to_CITY_aug_color_a_b_c_d_25percent OKK
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RandomBrightnessContrast']} # a+b+c+e) 3b_GTA5_to_CITY_aug_color_a_b_c_e_25percent OK...
-    #type_aug = { 'color': ['RandomBrightnessContrast', 'CLAHE', 'GaussNoise', 'RGBShift']} # b+c+d+e) 3b_GTA5_to_CITY_aug_color_b_c_d_e_25percent OK
+    #type_aug = { 'color': ['RandomBrightnessContrast', 'CLAHE', 'GaussNoise', 'RGBShift']} # b+c+d+e) 3b_GTA5_to_CITY_aug_color_b_c_d_e_25percent OKK(epoch 2 su)
   
     
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
