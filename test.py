@@ -386,6 +386,7 @@ num_augmented = int(1* len(gta_train_aug))
 indices = random.sample(range(len(gta_train_aug)), num_augmented)
 gta_train_aug = Subset(gta_train_aug, indices)
 output_dir = "./test_augmented_output"
+os.makedirs(output_dir, exist_ok=True)  # ✅ Questo crea la directory se non esiste
 for i in range(3):
     image_tensor, label_tensor, filename = gta_train_aug[i]
 
