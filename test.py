@@ -396,7 +396,7 @@ label = to_pil_image(label_tensor.to(torch.uint8))
 image.save(os.path.join(output_dir, f"augmented_{1}_{filename}"))
 label.save(os.path.join(output_dir, f"mask_{1}_{filename}"))
 
-print(f"Salvati: augmented_{1}_{filename} e mask_{1}_{filename}")
+print(f"Salvata NON AUGMENTED : augmented_{1}_{filename} e mask_{1}_{filename}")
 
 image_tensor, label_tensor, filename = gta_train_aug[0]
 
@@ -406,4 +406,4 @@ label = to_pil_image(label_tensor.to(torch.uint8))
 image.save(os.path.join(output_dir, f"augmented_{0}_{filename}"))
 label.save(os.path.join(output_dir, f"mask_{0}_{filename}"))
 
-print(f"Salvati: augmented_{0}_{filename} e mask_{0}_{filename}")
+print(f"SalvatA AUGMENTED augmented_{0}_{filename} e mask_{0}_{filename}")
