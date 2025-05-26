@@ -360,3 +360,41 @@ for k, v in metrics_val.items():
     print(f"{k}: {v}")
 
 '''
+
+#test per vedere se applicare le augmentations funziona
+import os
+import torch
+
+import random
+import numpy as np
+from datasets.gta5 import GTA5
+from torchvision import transforms
+from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
+from torch.utils.data import ConcatDataset, Subset
+
+
+transform_gta_dataset = transform_gta()
+target_transform_gta = transform_gta_mask()
+
+type_aug = {'weather': ['RandomShadow', 'RandomFog', 'ISONoise','ISONoise', 'GaussianBlur']} #i,l
+gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
+# Contains all pictures bc they are all augmented
+gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
+
+# Choose with probability 1 PER IL TEST  the augmented images
+num_augmented = int(1* len(gta_train_aug))
+indices = random.sample(range(len(gta_train_aug)), num_augmented)
+gta_train_aug = Subset(gta_train_aug, indices)
+output_dir = "./test_augmented_output"
+for i in range(3):
+    image_tensor, label_tensor, filename = gta_train_aug[i]
+
+    # Converti in immagini PIL per salvataggio
+    image = transforms.ToPILImage()(image_tensor)
+    label = transforms.ToPILImage()(label_tensor)
+
+    # Salvataggio
+    image.save(os.path.join(output_dir, f"augmented_{i}_{filename}"))
+    label.save(os.path.join(output_dir, f"mask_{i}_{filename}"))
+
+    print(f"Salvati: augmented_{i}_{filename} e mask_{i}_{filename}")
