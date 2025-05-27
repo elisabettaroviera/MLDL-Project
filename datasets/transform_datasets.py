@@ -80,7 +80,7 @@ def transform_gta_mask():
 
 def augmentation_transform(image, mask, type_aug):
     """
-    Seleziona esattamente 2 trasformazioni casuali tra quelle elencate in type_aug['color']
+    Seleziona esattamente 3 trasformazioni casuali tra quelle elencate in type_aug['color']
     e le applica entrambe all'immagine e alla maschera.
     Le trasformazioni vengono applicate sempre (p=1.0).
     
