@@ -81,7 +81,7 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    num_epochs = 15 #CHECK BEFORE RUNNING
+    num_epochs = 30 #CHECK BEFORE RUNNING
     num_classes = 19
     ignore_index = 255
     start_epoch = 1

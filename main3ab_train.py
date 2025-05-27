@@ -83,7 +83,7 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 15 #changed bc doing smaller runs
+    num_epochs = 30 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
@@ -148,11 +148,23 @@ if __name__ == "__main__":
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift']} # a+b+c+d) 3b_GTA5_to_CITY_aug_color_a_b_c_d_25percent OKK
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RandomBrightnessContrast']} # a+b+c+e) 3b_GTA5_to_CITY_aug_color_a_b_c_e_25percent OKK
     #type_aug = { 'color': ['RandomBrightnessContrast', 'CLAHE', 'GaussNoise', 'RGBShift']} # b+c+d+e) 3b_GTA5_to_CITY_aug_color_b_c_d_e_25percent OKK
-    #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+c+d+e) 3b_GTA5_to_CITY_aug_color_a_c_d_e_25percent OK to val(?)
-    type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift', 'RandomBrightnessContrast']} # a+b+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_e_25percent OK to val(?)
+    #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+c+d+e) 3b_GTA5_to_CITY_aug_color_a_c_d_e_25percent OKK
+    #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift', 'RandomBrightnessContrast']} # a+b+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_e_25percent OKK
   
     ## 5 TRASFORMAZIONI
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_c_d_e_25percent OKK
+
+
+    # TRASFORMAZIONI  SU TUTTO IL DATASET
+    # 1) hue + RGB + RB  (a + d + e)
+    type_aug = { 'color': ['HueSaturationValue', 'RGBShift', 'RandomBrightnessContrast']} # 3b_GTA5_to_CITY_aug_color_a_d_e_100_percent
+    # 2) RGB + RB (d + e)
+    #type_aug = { 'color': ['RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_d_e_100_percent OKK
+    # 3) hue + clahe + RGB (a + b + d)
+    #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_100_percent OKK
+    # 4) Gn + RGB + RB (c + d + e)
+    #type_aug = { 'color': ['GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_c_d_e_100_percent OKK
+
 
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
@@ -169,7 +181,7 @@ if __name__ == "__main__":
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # Take a subset of the dataloader
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
     
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
@@ -187,7 +199,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_a_b_d_e_25percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_a_d_e_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
