@@ -159,9 +159,9 @@ if __name__ == "__main__":
     # 1) hue + RGB + RB  (a + d + e)
     #type_aug = { 'color': ['HueSaturationValue', 'RGBShift', 'RandomBrightnessContrast']} # 3b_GTA5_to_CITY_aug_color_a_d_e_100_percent OK...
     # 2) RGB + RB (d + e)
-    type_aug = { 'color': ['RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_d_e_100_percent 
+    #type_aug = { 'color': ['RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_d_e_100_percent OK...
     # 3) hue + clahe + RGB (a + b + d)
-    #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_100_percent 
+    type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_100_percent 
     # 4) Gn + RGB + RB (c + d + e)
     #type_aug = { 'color': ['GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_c_d_e_100_percent
 
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_d_e_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_a_b_d_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
