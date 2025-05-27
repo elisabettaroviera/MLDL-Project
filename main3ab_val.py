@@ -37,8 +37,8 @@ def print_metrics(title, metrics):
 
 def to_obtain_id(project=""):
     # Configurazione del tuo progetto wandb
-    # entity = "s325951-politecnico-di-torino-mldl" nuovo team Lucia
-    entity = "s328422-politecnico-di-torino"
+    entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
+    # entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
 

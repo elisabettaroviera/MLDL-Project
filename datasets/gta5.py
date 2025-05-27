@@ -6,9 +6,8 @@ import albumentations as A
 import numpy as np
 from datasets.transform_datasets import augmentation_transform
 
-
-# GTA5 dataset class
 class GTA5(Dataset):
+
     def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False, type_aug = None):
         super(GTA5, self).__init__()
         
@@ -32,11 +31,10 @@ class GTA5(Dataset):
 
         # Iterate over all image files
         for img_name in os.listdir(image_dir):
-            # Only consider common image formats
-            # all images are png actually
+            # Only consider common image formats (all images are png actually)
             if img_name.endswith(('.png', '.jpg', '.jpeg')):
                 img_path = os.path.join(image_dir, img_name)
-                label_path = os.path.join(label_dir, img_name)  # assume same filename for label
+                label_path = os.path.join(label_dir, img_name)  # Assume same filename for label
 
                 # Skip if the corresponding label does not exist
                 if not os.path.exists(label_path):
@@ -49,18 +47,24 @@ class GTA5(Dataset):
 
         print(f"Loaded {len(self.images)} images and {len(self.masks)} masks.")
 
+
+    def __len__(self):
+            # Return total number of samples
+            return len(self.images)
+
+
     def __getitem__(self, idx):
         image_path = self.images[idx]
         image = Image.open(image_path).convert('RGB')
         label = Image.open(self.masks[idx])
 
         if self.augmentation:
-            # Applichiamo l'augmentazione con OneOf che include NoOp
+            # Apply the Augmentation to all the image
             augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
             image = Image.fromarray(augmented['image'])
             label = Image.fromarray(augmented['mask'])
 
-        # Applico sempre le trasformazioni base
+        # Apply standard transformation such as resize
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
@@ -68,7 +72,3 @@ class GTA5(Dataset):
 
         filename = os.path.basename(image_path)
         return image, label, filename
-
-    def __len__(self):
-        # Return total number of samples
-        return len(self.images)

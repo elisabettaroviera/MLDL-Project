@@ -1,6 +1,3 @@
-# TODO: Define here your validation
-
-# Import necessary libraries
 import os
 import torch
 from torchvision.datasets import ImageFolder
@@ -15,7 +12,7 @@ from datasets.cityscapes import CityScapes
 from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
 from PIL import Image
 
-#Function to save sample images,ground truth color masks, prediction color masks
+# Function to save sample images,ground truth color masks, prediction color masks
 def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_name_2):
     resize_transform = transforms.Resize((512, 1024))  # Resize da applicare
     # color map       
@@ -30,28 +27,32 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
         if file_name in [file_name_1, file_name_2]:
             flag_save += 1
 
-            # Salva l'immagine originale da 'inputs' (tensore)
+            # Store the original image from 'inputs' in tensor form
             original_img_path = os.path.join("./datasets/Cityscapes/Cityspaces/images/val/frankfurt", file_name)
             original_img = Image.open(original_img_path).convert('RGB')
-            # resize image
+
+            # Resize the image
             resized_img = resize_transform(original_img)
             resized_img.save(f"{save_dir}/{file_name}_image_original.png")
-            # Salva la maschera predetta colorata (ovviamente ha le dimensioni giuste)
+
+            # Save the predicted colored mask
             color_mask = CITYSCAPES_COLORMAP[pred]
             color_mask_img = Image.fromarray(color_mask)  
             color_mask_img.save(f"{save_dir}/{file_name}_pred_color.png")
 
-            # Salva la maschera target colorata
+            # Store the colored target mask
             gt_file_name = file_name.replace("leftImg8bit", "gtFine_color")
             gt_path = os.path.join("./datasets/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name)
             color_target_img = Image.open(gt_path).convert('RGB')
             resized_target = resize_transform(color_target_img)
             resized_target.save(f"{save_dir}/{file_name}_color_target.png")
+
     return flag_save
 
 # VALIDATION LOOP
 def validate(epoch, new_model, val_loader, criterion, num_classes):
     var_model = os.environ['MODEL']
+
     # 1. Obtain the pretrained model 
     model = new_model
     print("Validating the model...")
@@ -67,22 +68,20 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     print("Starting the validation of the model...")
     model.eval()
 
-    print(f"Validating on {len(val_loader)} batches")
-            # Color map Cityscapes to visualize the mask with colors
-
+    print(f"Validating on {len(val_loader)} batches") 
+    
     # Make sure the cartella outputs exists
     save_dir = f'./outputs/{var_model}_outputs'
     os.makedirs(save_dir, exist_ok=True)
-    # flag used to say whether we have saved the two pictures
-    # if flag = 1, we still need to save another picture
     flag_save = 0
 
-    # image which we want to save the predicted masks of
+    # Image which we want to save the predicted masks of
+    # frankfurt_000001_054640_gtFine_color.png
     file_name_1 = "frankfurt_000001_054640_leftImg8bit.png"
-    #frankfurt_000001_054640_gtFine_color.png
+    # frankfurt_000001_062016_gtFine_color.png
     file_name_2 = "frankfurt_000001_062016_leftImg8bit.png"
-    #frankfurt_000001_062016_gtFine_color.png
     
+
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
         for batch_idx, (inputs, targets, file_names) in enumerate(val_loader):
@@ -99,42 +98,41 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             # Update the running loss
             running_loss += loss.item() 
 
-            ## Chat gpt dice: ##
             # Convert model outputs to predicted class labels
             preds = outputs.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
-
             
             # Accumulate intersections and unions per class
             _, _, inters, unions = compute_miou(gts, preds, num_classes)
             total_intersections += inters
             total_unions += unions
 
-            #only enter the loop if we haven't saved both images    
+            # Only enter the loop if we haven't saved both images    
             if flag_save < 2:
                 flag_save = save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
 
 
-    # print the two images i want to save
     # 5. Compute the metrics for the validation set 
     # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
     print("Computing the metrics for the validation set...")
-    # Calcola IoU per classe, ma imposta a NaN i valori con union == 0
+
     iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     iou_non_zero = np.array(iou_per_class)
     iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
-    # Calcola la media ignorando i NaN
-    mean_iou = np.nanmean(iou_non_zero)         
-    #mean_iou = np.nanmean(iou_per_class)
+    
+    mean_iou = np.nanmean(iou_non_zero) # Compute mIoU without considering the NaN value       
     mean_loss = running_loss / len(val_loader)
     
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
         print("Computing the computation metrics...")
+
         mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
         print(f"Latency: {mean_latency:.2f} ± {std_latency:.2f} ms | FPS: {mean_fps:.2f} ± {std_fps:.2f}")
+
         num_flops = compute_flops(model, height=512, width=1024)
         print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
+
         tot_params, trainable_params = compute_parameters(model)
         print(f"Total Params: {tot_params}, Trainable: {trainable_params}")
     else:
@@ -146,7 +144,6 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
         mean_fps = -1
         std_fps = -1
 
-   
     # 6. Return all the metrics
     metrics = {
         'mean_loss': mean_loss,

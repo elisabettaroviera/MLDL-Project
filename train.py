@@ -1,6 +1,3 @@
-# TODO: Define here your training and validation loops.
-
-# Import necessary libraries
 import os
 import torch
 from torchvision.datasets import ImageFolder
@@ -17,14 +14,16 @@ from utils.utils import poly_lr_scheduler
 import wandb
 
 # TRAIN LOOP
-def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion = loss
+def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion == loss function
     var_model = os.environ['MODEL'] 
+
     # 1. Obtain the pretrained model
     model = old_model 
     print("Training the model...")
 
-    # 2. Initialize the metrics variables and hyperparameters(?)
+    # 2. Initialize the metrics variables and hyperparameters
     print("Initializing the metrics variables...")
+    
     running_loss = 0.0 
     mean_loss = 0.0
     total_intersections = np.zeros(num_classes)
@@ -36,22 +35,8 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
 
     print(f"Training on {len(dataloader_train)} batches")
     
-    # IMPORTANT TO DISCUSS:
-    # Problem to fix: decay of learning rate
-    # In the paper we can see that the learning rate decays with each batch.
-    # Starting from 0.001 and updating for all 20K iterations (number of batches * epochs).
-    # We can use the poly_lr_scheduler function to update the learning rate.
-    # But this way we have max_iter = 39K (number of batches * epochs) (39300 = 50 * 786)
-    # So I think we can try to update the learning rate one iteration yes and one iteration no on the batches.
-
-    # SOLUTION:
-    # We decide to use the poly_lr_scheduler function to update the learning rate
-    # The initial learning rate is _0.0001_ and the maximum number of iterations is 39K (number of batches * epochs).
-    # The learning rate is updated every iterations (batches)
-
-
     # 4. Loop on the batches of the dataset
-    for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): #(X,y)
+    for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): 
         if batch_idx % 100 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_train)}")
 
@@ -67,7 +52,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         # BiseNet returns the output, aux1, aux2 (aux are predictions from contextpath)
         loss = criterion(outputs[0], targets)
         if var_model == "BiSeNet":
-            alpha = 1 # in the paper they use 1
+            alpha = 1 # In the paper they use 1
             loss +=  alpha * criterion(outputs[1], targets) + alpha *  criterion(outputs[2], targets)
              
 
@@ -80,9 +65,8 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
 
         # Update the running loss
-        running_loss += loss.item() # Update of the loss = contain the total loss of the epoch
+        running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
 
-        ## Chat gpt dice: ##
         # Convert model outputs to predicted class labels
         preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
         gts = targets.detach().cpu().numpy()
@@ -93,24 +77,30 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         total_unions += unions
 
     # 5. Compute the metrics for the training set 
-    # 5.a Compute the accuracy metrics, i.e. mIoU and mean loss
+    # 5.a Compute the standard metrics for all the epochs
     print("Computing the metrics for the training set...")
+
     iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     iou_non_zero = np.array(iou_per_class)
     iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
-    # Calcola la media ignorando i NaN
+
+    # Compute the mean without considering NaN value
     mean_iou = np.nanmean(iou_non_zero) 
     mean_loss = running_loss / len(dataloader_train)    
 
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
             print("Computing the computation metrics...")
+
             mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
             print(f"Latency: {mean_latency:.2f} ± {std_latency:.2f} ms | FPS: {mean_fps:.2f} ± {std_fps:.2f}")
+
             num_flops = compute_flops(model, height=512, width=1024)
             print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
+
             tot_params, trainable_params = compute_parameters(model)
             print(f"Total Params: {tot_params}, Trainable: {trainable_params}")
+
     else:
         # NB: metric = -1 means we have not computed it (we compute only at the last epoch)
         mean_latency = -1
@@ -122,16 +112,16 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
 
 
 
-    # 6. SAVE THE PARAMETERS OF THE MODEL 
+    # 6. Save the parameter of the model 
     print("Saving the model")
-    # Loggare la loss e altri dati per wandb
+
     wandb.log({
         "epoch": epoch,
         "loss": mean_loss,
         "lr": lr
     })
 
-    # Salva i pesi del modello dopo ogni epoca
+    # Save the model weight at each epoch
     model_save_path = f"model_epoch_{epoch}.pt"
     torch.save({
         'epoch': epoch,
@@ -140,20 +130,13 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         'loss': mean_loss,
     }, model_save_path)
 
-    # Crea un nuovo artifact per il modello della epoca corrente
+    # Create a new artefact for the current epoch
     artifact = wandb.Artifact(f"model_epoch_{epoch}", type="model")
-    artifact.add_file(model_save_path)  # Aggiungi il file del modello all'artifact
+    artifact.add_file(model_save_path) 
 
-    # Registra l'artifact su W&B
+    # Store the artefact on wandb
     wandb.log_artifact(artifact)
     print(f"Model saved for epoch {epoch}")
-    """
-    # Salva il modello su wandb
-    wandb.save(model_save_path)
-
-    # Alla fine del ciclo, termina il run di wandb
-    wandb.finish()
-    print("Model saved")"""
 
     # 7. Return all the metrics
     metrics = {
@@ -167,4 +150,5 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         'num_flops' : num_flops,
         'trainable_params': trainable_params
     }
+
     return metrics, iter
