@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # Take a subset of the dataloader
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=batch_size)
     
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
