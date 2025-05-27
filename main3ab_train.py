@@ -81,7 +81,7 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 15 #changed bc doing smaller runs
+    num_epochs = 30 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
@@ -125,7 +125,8 @@ if __name__ == "__main__":
     #type_aug = {'weather': ['RandomFog', 'GaussianBlur']} #g, l
     #type_aug = {'weather': ['RandomRain', 'GaussianBlur']} #g, l
     #type_aug = {'weather': ['RandomFog', 'RandomRain",ISONoise','GaussianBlur'] }#i,l
-    type_aug = {'color': ['CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']}
+
+    type_aug = {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']}
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
@@ -139,9 +140,9 @@ if __name__ == "__main__":
     gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
     
     # Create dataloader
-    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # Take a subset of the dataloader
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
+    ##dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
     
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
@@ -155,11 +156,12 @@ if __name__ == "__main__":
     theta   # Dice
     """
 
-    max_iter = num_epochs * len(full_dataloader_gta_train)
+   # max_iter = num_epochs * len(full_dataloader_gta_train)
+    max_iter = num_epochs * len(dataloader_gta_train)
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_color_b_c_d_e_25_percent"   # Change here!
+        project_name = "3b_GTA5_to_CITY_augmented_color_2_random_tranforms_color_100_percent"   # Change here!
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)

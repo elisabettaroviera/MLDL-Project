@@ -77,8 +77,67 @@ def transform_gta_mask():
     return transform
 
 
+
 def augmentation_transform(image, mask, type_aug):
     """
+    Seleziona esattamente 2 trasformazioni casuali tra quelle elencate in type_aug['color']
+    e le applica entrambe all'immagine e alla maschera.
+    Le trasformazioni vengono applicate sempre (p=1.0).
+    
+    type_aug deve essere del tipo:
+    type_aug = {
+        'color': ['HueSaturationValue', 'RGBShift', 'CLAHE', ...]
+    }
+    """
+
+    color_transforms = {
+        'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
+        'CLAHE': A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
+        'GaussNoise': A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0),
+        'RGBShift': A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0),
+        'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
+    }
+
+    # Prende solo i nomi validi forniti
+    selected_names = [name for name in type_aug.get('color', []) if name in color_transforms]
+
+    if len(selected_names) < 2:
+        raise ValueError("Servono almeno 2 trasformazioni di colore per selezionarne due a caso.")
+
+    # Seleziona esattamente 2 trasformazioni a caso
+    chosen = random.sample(selected_names, 2)
+    selected_transforms = [color_transforms[name] for name in chosen]
+
+    # Crea e applica la trasformazione composta
+    transform = A.Compose(selected_transforms, p=1.0)
+    augmented = transform(image=image, mask=mask)
+    return augmented
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+def augmentation_transform(image, mask, type_aug):
+
     Applica trasformazioni basate su un dizionario con chiavi tra 'color', 'weather', 'geometric'
     e valori come lista dei nomi delle trasformazioni da applicare.
     Le trasformazioni vengono applicate con probabilità del 50%.
@@ -88,7 +147,7 @@ def augmentation_transform(image, mask, type_aug):
     'weather': ['RandomRain'],
     'geometric': ['Affine', 'Perspective']
     }
-    """
+
     
     def get_selected_transforms(transform_dict, selected_names):
         return [transform_dict[name] for name in selected_names if name in transform_dict]
@@ -144,7 +203,6 @@ def augmentation_transform(image, mask, type_aug):
     augmented = aug_transform(image=image, mask=mask)
     return augmented
 
-    '''
 ### DATA AUGMENTATION VECCHIO PER SCEGLEIRE PIU TRASFORMAZIONI INSIEME ###
 def augmentation_transform(image, mask, type_aug): 
     # HorizontalFlip: ruota orizzontalmente l’immagine e la maschera con probabilità del 50%
@@ -223,4 +281,4 @@ def augmentation_transform(image, mask, type_aug):
     # ---------- applica le trasformazioni ----------
     augmented = aug_transform(image=image, mask=mask)
     return augmented
-'''
+"""
