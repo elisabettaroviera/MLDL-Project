@@ -15,7 +15,7 @@ import wandb
 import gc
 
 bce_loss = torch.nn.BCEWithLogitsLoss
-softmax = torch.nn.Softmax
+softmax = torch.nn.functional.softmax
 
 def lock_model(model):
     """
@@ -48,8 +48,9 @@ def backpropagate(optimizer, loss):
 def adversarial_loss(discriminators, outputs, target_label, source_label, device, lambdas):
     total_adv_loss = 0.0
     for i, discriminator in enumerate(discriminators):
-        disc_pred = discriminator(softmax(outputs[0]))
-        adv_loss = bce_loss(disc_pred, torch.full(disc_pred.shape, source_label, device=device))
+        disc_pred = discriminator(softmax(outputs[0], dim=1).detach())
+        target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype, device=device)
+        adv_loss = bce_loss(disc_pred, target_tensor)
         total_adv_loss += lambdas[i]*adv_loss
     return total_adv_loss
 
@@ -232,10 +233,10 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
         # Get the next batch from the target dataset   
         try:
-            inputs_target, _ = next(target_iter)
+            inputs_target, _, _ = next(target_iter)
         except StopIteration:
             target_iter = iter(dataloader_target_train)
-            inputs_target, _ = next(target_iter)
+            inputs_target, _, _ = next(target_iter)
         inputs_target = inputs_target.to(device)
 
         # Compute the output of the target dataset
