@@ -163,7 +163,7 @@ if __name__ == "__main__":
     # 3) hue + clahe + RGB (a + b + d)
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_100_percent OK stopped at 27+ val
     # 4) Gn + RGB + RB (c + d + e)
-    type_aug = { 'color': ['GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_c_d_e_100_percent OK check stop + val
+    type_aug = { 'color': ['GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_c_d_e_100_percent OK stopped at 26 + val
 
 
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
