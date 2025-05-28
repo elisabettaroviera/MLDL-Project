@@ -86,7 +86,7 @@ if __name__ == "__main__":
     num_epochs = 30 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 27 #CHECK BEFORE RUNNING
+    start_epoch = 26 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
