@@ -111,9 +111,13 @@ def augmentation_transform(image, mask, type_aug):
 
     if len(selected_names) < 2:
         raise ValueError("Servono almeno 2 trasformazioni di colore valide.")
-
+    """
     # Seleziona 2 trasformazioni di colore casuali
     chosen_color = random.sample(selected_names, 2)
+    selected_color_transforms = [color_transforms[name] for name in chosen_color]"""
+
+    # Seleziona 1 trasformazione di colore casuali
+    chosen_color = random.choice(selected_names)
     selected_color_transforms = [color_transforms[name] for name in chosen_color]
 
     # Seleziona 1 trasformazione atmosferica/fisica
