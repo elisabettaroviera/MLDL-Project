@@ -7,11 +7,11 @@ import numpy as np
 from datasets.gta5 import GTA5
 from datasets.cityscapes import CityScapes
 from models.bisenet.build_bisenet import BiSeNet
-from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import CombinedLoss_All, save_metrics_on_wandb
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
 from torch.utils.data import ConcatDataset, Subset
-from train import train, train_with_adversary
+from train import train_with_adversary
 from models.discriminator.build_discriminator import FCDiscriminator
 
 # Function to set the seed for reproducibility
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
-    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('./datasets/CityScapes', transform_cityscapes(), transform_cityscapes_mask(), augmentation=False), None, batch_size, True, True)
+    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('./datasets/CityScapes'), None, batch_size, True, True)
     # Take a subset of the dataloader
     dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
     
@@ -139,10 +139,11 @@ if __name__ == "__main__":
     optimizer_d2 = torch.optim.Adam(discriminator_2.parameters(), lr=0.0001, betas=(0.9, 0.99))
     discriminators_optimizers = [optimizer_d1, optimizer_d2]
 
+    lambdas = [0.1, 0.1]  # Lambda values for the adversarial loss
 
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
+        project_name = "4_Adversarial_Domain_Adaptation" #CHECK BEFORE RUNNING
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
@@ -165,8 +166,8 @@ if __name__ == "__main__":
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
-        metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, dataloader_gta_train, loss, optimizer, discriminators_optimizers, iter_curr,
-                                                        learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, dataloader_gta_train, full_dataloader_cityscapes_train, loss, optimizer, discriminators_optimizers, iter_curr,
+                                                        learning_rate, num_classes, max_iter, lambdas)
         end_train = time.time()
         print(f"Time for training: {(end_train - start_train)/60:.2f} min")
 
