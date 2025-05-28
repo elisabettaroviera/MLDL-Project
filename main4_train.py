@@ -163,6 +163,18 @@ if __name__ == "__main__":
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
+            artifact = wandb.use_artifact(f"{project_name}/discriminator_1_{epoch-1}:latest", type="model")
+            checkpoint_path = artifact.download()
+            checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
+            discriminator_1.load_state_dict(checkpoint['model_state_dict'])
+            optimizer_d1.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            artifact = wandb.use_artifact(f"{project_name}/discriminator_2_{epoch-1}:latest", type="model")
+            checkpoint_path = artifact.download()
+            checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
+            discriminator_2.load_state_dict(checkpoint['model_state_dict'])
+            optimizer_d2.load_state_dict(checkpoint['optimizer_state_dict'])
+
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
@@ -186,5 +198,29 @@ if __name__ == "__main__":
         artifact.add_file(save_path)
         run.log_artifact(artifact)
         os.remove(save_path)
+
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': discriminator_1.state_dict(),
+            'optimizer_state_dict': optimizer_d1.state_dict()
+        }
+        save_path_model = f"discriminator_1_epoch_{epoch}.pt"
+        torch.save(checkpoint, save_path_model)
+        artifact = wandb.Artifact(f"discriminator_1_epoch_{epoch}", type="model")
+        artifact.add_file(save_path_model)
+        run.log_artifact(artifact)
+        os.remove(save_path_model)
+
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': discriminator_2.state_dict(),
+            'optimizer_state_dict': optimizer_d2.state_dict()
+        }
+        save_path_model = f"discriminator_2_epoch_{epoch}.pt"
+        torch.save(checkpoint, save_path_model)
+        artifact = wandb.Artifact(f"discriminator_2_epoch_{epoch}", type="model")
+        artifact.add_file(save_path_model)
+        run.log_artifact(artifact)
+        os.remove(save_path_model)
 
     wandb.finish()
