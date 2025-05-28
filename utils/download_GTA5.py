@@ -8,8 +8,8 @@ import gdown
 #gta5_id = '1eL0EhtP_TYs8QY0WBRkfC665jYiBW3Fl' #link luci
 #gta5_id = '1291JV6dHH0YkT0jI2lgRZXtAXSWB5m90' #new link luci
 #gta5_id =  '1T4sLX0HLpI6kqe4V2F2oVAzur5fsp4Uc' #newwwissimo id --> sapo
-gta5_id ='10HzAF-r1YFNxGAX72_k3ACqfOSjd4Sab' #newissimissimo id --> nat
-#gta5_id = '1dJ8HS9Z6XQtDwI1RBDQm89orz69npVTM'
+#gta5_id ='10HzAF-r1YFNxGAX72_k3ACqfOSjd4Sab' #newissimissimo id --> nat
+gta5_id = '1dJ8HS9Z6XQtDwI1RBDQm89orz69npVTM'
 #gta5_id = '1QcNgt8xsDpU0lsjiJjCkZK_N9WuOytD8'
 gta5_url = f'https://drive.google.com/uc?id={gta5_id}' # Construct the download URL
 """
