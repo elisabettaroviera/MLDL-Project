@@ -12,11 +12,49 @@ from datasets.cityscapes import CityScapes
 from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
 from utils.utils import poly_lr_scheduler
 import wandb
+import gc
 
-bce_loss = torch.nn.BCEWithLogitsLoss()
+bce_loss = torch.nn.BCEWithLogitsLoss
+softmax = torch.nn.Softmax
+
+def lock_model(model):
+    """
+    Lock the model parameters to avoid training them.
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+    print("Model parameters locked. No training will be performed on the model.")
+    return model
+
+def unlock_model(model):
+    """
+    Unlock the model parameters to allow training.
+    """
+    for param in model.parameters():
+        param.requires_grad = True
+    print("Model parameters unlocked. Training will be performed on the model.")
+    return model
+
+def backpropagate(optimizer, loss):
+    """
+    Perform backpropagation and optimization step.
+    """
+    optimizer.zero_grad()  # Zero the gradients
+    loss.backward()        # Backpropagate the loss
+    optimizer.step()       # Update the model parameters
+    print("Backpropagation and optimization step completed.")
+    return optimizer
+
+def adversarial_loss(discriminators, outputs, target_label, source_label, device, lambdas):
+    total_adv_loss = 0.0
+    for i, discriminator in enumerate(discriminators):
+        disc_pred = discriminator(softmax(outputs[0]))
+        adv_loss = bce_loss(disc_pred, torch.full(disc_pred.shape, source_label, device=device))
+        total_adv_loss += lambdas[i]*adv_loss
+    return total_adv_loss
 
 # TRAIN LOOP
-def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion == loss function
+def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, learning_rate, num_classes, max_iter): # criterion == loss function
     var_model = os.environ['MODEL'] 
 
     # 1. Obtain the pretrained model
@@ -42,7 +80,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         if batch_idx % 100 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_train)}")
 
-        iter += 1 # Increment the iteration counter
+        iteration += 1 # Increment the iteration counter
 
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
 
@@ -64,7 +102,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         optimizer.step()
 
         # Compute the learning rate
-        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
 
         # Update the running loss
         running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
@@ -153,72 +191,123 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         'trainable_params': trainable_params
     }
 
-    return metrics, iter
+    return metrics, iteration
 
 
-def train_with_adversary(epoch, old_model, discriminators, dataloader_source_train, dataloader_target_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter, lambdas): # criterion == loss function
+def train_with_adversary(epoch, old_model, discriminators, dataloader_source_train, dataloader_target_train, 
+                         criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas): # criterion == loss function
+   
+    # --------------------------- BASIC DEFINITIONS -------------------------------------- #
     var_model = os.environ['MODEL'] 
-
     model = old_model     
     running_loss = 0.0 
     mean_loss = 0.0
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
-    model.train() 
-
     target_label = 0
     source_label = 1
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    target_iter = iter(dataloader_target_train) # Create an iterator for the target dataset
 
-    for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_source_train): 
+
+    model.train() 
+    # --------------------------- TRAINING LOOP -------------------------------------- #
+    for batch_idx, (inputs_src, targets_src, file_names) in enumerate(dataloader_source_train): 
         if batch_idx % 100 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_source_train)}")
 
-        iter += 1 # Increment the iteration counter
+        # ------------------- TRAINING BISENET WITH ADVERSARIAL LOSS ------------------- #
+        for discriminator in discriminators:
+            lock_model(discriminator) # Lock the discriminator parameters to avoid training them
 
-        inputs, targets = inputs.cuda(), targets.cuda() # GPU
+        iteration += 1 # Increment the iteration counter
+        inputs_src, targets_src = inputs_src.to(device), targets_src.to(device) # GPU
 
         # Compute output of the train
-        outputs = model(inputs)        
-        loss = criterion(outputs[0], targets)
-        if var_model == "BiSeNet":
-            alpha = 1 # In the paper they use 1
-            loss +=  alpha * criterion(outputs[1], targets) + alpha *  criterion(outputs[2], targets)
-             
-        targets = dataloader_source_train
-        # Compute the adversarial loss
-        for i, discriminator in enumerate(discriminators):
-            # Get the output of the discriminator
-            disc_output = discriminator(torch.nn.functional.softmax(outputs[0]))
-            # Compute the adversarial loss
-            adv_loss = bce_loss(disc_output, torch.full(discriminator.shape, source_label, device=device))  # We want the discriminator to predict 1 for the source domain
-            # Add the adversarial loss to the main loss
-            loss += lambdas[i]*adv_loss
+        outputs = model(inputs_src)        
+        loss = criterion(outputs[0], targets_src)
         
+        alpha = 1 # In the paper they use 1
+        loss +=  alpha * criterion(outputs[1], targets_src) + alpha *  criterion(outputs[2], targets_src)
+
+        # Get the next batch from the target dataset   
+        try:
+            inputs_target, _ = next(target_iter)
+        except StopIteration:
+            target_iter = iter(dataloader_target_train)
+            inputs_target, _ = next(target_iter)
+        inputs_target = inputs_target.to(device)
+
+        # Compute the output of the target dataset
+        outputs_target = model(inputs_target)
+
+        # Compute the adversarial loss
+        adv_loss = adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas)
+        # Combine the losses
+        loss += adv_loss
 
         # Backpropagation
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        optimizer = backpropagate(optimizer, loss)
+
         # Compute the learning rate
-        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
 
         # Update the running loss
         running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
 
         # Convert model outputs to predicted class labels
-        preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
-        gts = targets.detach().cpu().numpy()
+
+        # ------------------- TRAINING DISCRIMINATORS ------------------- #
+        lock_model(model) # Lock the model parameters to avoid training them
+        for discriminator in discriminators:
+            unlock_model(discriminator)
         
+        with torch.no_grad():
+            outputs_source = model(inputs_src)
+            outputs_target = model(inputs_target)
+        
+        softmax_src = softmax(outputs_source[0], dim=1).detach()
+        softmax_tgt = softmax(outputs_target[0], dim=1).detach()
+
+        for i, discriminator in enumerate(discriminators):
+            disc_optimizer = discriminator_optimizers[i]
+            disc_optimizer.zero_grad()
+
+            # SOURCE: discriminator deve dire "source_label"
+            disc_pred_src = discriminator(softmax_src)
+            loss_d_src = torch.nn.functional.binary_cross_entropy_with_logits(
+                disc_pred_src,
+                torch.full(disc_pred_src.shape, source_label, device=device)
+            )
+
+            # TARGET: discriminator deve dire "target_label"
+            disc_pred_tgt = discriminator(softmax_tgt)
+            loss_d_tgt = torch.nn.functional.binary_cross_entropy_with_logits(
+                disc_pred_tgt,
+                torch.full(disc_pred_tgt.shape, target_label, device=device)
+            )
+
+            # Media delle due loss
+            loss_d = 0.5 * (loss_d_src + loss_d_tgt)
+            loss_d.backward()
+            disc_optimizer.step()
+
+        unlock_model(model) # Unlock the model parameters to allow training
+
+        preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
+        gts = targets_src.detach().cpu().numpy()
+
         # Accumulate intersections and unions per class
         _, _, inters, unions = compute_miou(gts, preds, num_classes)
         total_intersections += inters
         total_unions += unions
 
-    for param in model.parameters():
-        param.requires_grad = False
+        del outputs, outputs_target, softmax_src, softmax_tgt, preds
+        torch.cuda.empty_cache()
+        gc.collect()
 
-
+        
+    # --------------------------- END OF TRAINING LOOP -------------------------------------- #
 
     # 5. Compute the metrics for the training set 
     # 5.a Compute the standard metrics for all the epochs
@@ -230,7 +319,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
     # Compute the mean without considering NaN value
     mean_iou = np.nanmean(iou_non_zero) 
-    mean_loss = running_loss / len(dataloader_train)    
+    mean_loss = running_loss / len(dataloader_source_train)    
 
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
@@ -295,4 +384,4 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         'trainable_params': trainable_params
     }
 
-    return metrics, iter
+    return metrics, iteration

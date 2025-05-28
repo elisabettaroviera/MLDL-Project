@@ -11,7 +11,7 @@ from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
 from torch.utils.data import ConcatDataset, Subset
-from train import train
+from train import train, train_with_adversary
 from models.discriminator.build_discriminator import FCDiscriminator
 
 # Function to set the seed for reproducibility
@@ -134,8 +134,10 @@ if __name__ == "__main__":
 
     discriminator_1 = FCDiscriminator(num_classes=num_classes).to(device)
     discriminator_2 = FCDiscriminator(num_classes=num_classes).to(device)
+    discriminators = [discriminator_1, discriminator_2]
     optimizer_d1 = torch.optim.Adam(discriminator_1.parameters(), lr=0.0001, betas=(0.9, 0.99))
     optimizer_d2 = torch.optim.Adam(discriminator_2.parameters(), lr=0.0001, betas=(0.9, 0.99))
+    discriminators_optimizers = [optimizer_d1, optimizer_d2]
 
 
 
@@ -163,8 +165,8 @@ if __name__ == "__main__":
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
-        metrics_train, iter_curr = train(epoch, model, dataloader_gta_train, loss, optimizer, iter_curr,
-                                         learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, dataloader_gta_train, loss, optimizer, discriminators_optimizers, iter_curr,
+                                                        learning_rate, num_classes, max_iter)
         end_train = time.time()
         print(f"Time for training: {(end_train - start_train)/60:.2f} min")
 
