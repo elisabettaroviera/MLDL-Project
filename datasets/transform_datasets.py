@@ -80,7 +80,7 @@ def transform_gta_mask():
 
 def augmentation_transform(image, mask, type_aug):
     """
-    Seleziona esattamente 2 trasformazioni casuali tra quelle elencate in type_aug['color']
+    Seleziona esattamente 3 trasformazioni casuali tra quelle elencate in type_aug['color']
     e le applica entrambe all'immagine e alla maschera.
     Le trasformazioni vengono applicate sempre (p=1.0).
     
@@ -101,11 +101,11 @@ def augmentation_transform(image, mask, type_aug):
     # Prende solo i nomi validi forniti
     selected_names = [name for name in type_aug.get('color', []) if name in color_transforms]
 
-    if len(selected_names) < 2:
-        raise ValueError("Servono almeno 2 trasformazioni di colore per selezionarne due a caso.")
+    if len(selected_names) < 3:
+        raise ValueError("Servono almeno 3 trasformazioni di colore per selezionarne due a caso.")
 
     # Seleziona esattamente 2 trasformazioni a caso
-    chosen = random.sample(selected_names, 2)
+    chosen = random.sample(selected_names, 3)
     selected_transforms = [color_transforms[name] for name in chosen]
 
     # Crea e applica la trasformazione composta
