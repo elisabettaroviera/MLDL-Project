@@ -14,7 +14,7 @@ from utils.utils import poly_lr_scheduler
 import wandb
 import gc
 
-bce_loss = torch.nn.BCEWithLogitsLoss
+bce_loss = torch.nn.BCEWithLogitsLoss(reduction="mean")
 softmax = torch.nn.functional.softmax
 
 def lock_model(model):
@@ -23,7 +23,6 @@ def lock_model(model):
     """
     for param in model.parameters():
         param.requires_grad = False
-    print("Model parameters locked. No training will be performed on the model.")
     return model
 
 def unlock_model(model):
@@ -32,7 +31,6 @@ def unlock_model(model):
     """
     for param in model.parameters():
         param.requires_grad = True
-    print("Model parameters unlocked. Training will be performed on the model.")
     return model
 
 def backpropagate(optimizer, loss):
@@ -42,14 +40,13 @@ def backpropagate(optimizer, loss):
     optimizer.zero_grad()  # Zero the gradients
     loss.backward()        # Backpropagate the loss
     optimizer.step()       # Update the model parameters
-    print("Backpropagation and optimization step completed.")
     return optimizer
 
 def adversarial_loss(discriminators, outputs, target_label, source_label, device, lambdas):
     total_adv_loss = 0.0
     for i, discriminator in enumerate(discriminators):
         disc_pred = discriminator(softmax(outputs[0], dim=1).detach())
-        target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype, device=device)
+        target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype)
         adv_loss = bce_loss(disc_pred, target_tensor)
         total_adv_loss += lambdas[i]*adv_loss
     return total_adv_loss
@@ -278,14 +275,14 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
             disc_pred_src = discriminator(softmax_src)
             loss_d_src = torch.nn.functional.binary_cross_entropy_with_logits(
                 disc_pred_src,
-                torch.full(disc_pred_src.shape, source_label, device=device)
+                torch.full(disc_pred_src.shape, float(source_label), device=device)
             )
 
             # TARGET: discriminator deve dire "target_label"
             disc_pred_tgt = discriminator(softmax_tgt)
             loss_d_tgt = torch.nn.functional.binary_cross_entropy_with_logits(
                 disc_pred_tgt,
-                torch.full(disc_pred_tgt.shape, target_label, device=device)
+                torch.full(disc_pred_tgt.shape, float(target_label), device=device)
             )
 
             # Media delle due loss
