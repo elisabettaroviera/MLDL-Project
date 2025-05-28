@@ -86,7 +86,7 @@ if __name__ == "__main__":
     num_epochs = 30 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 26 #CHECK BEFORE RUNNING
+    start_epoch = 27 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RGBShift']} # a+c+d) 3b_GTA5_to_CITY_aug_color_a_c_d_25percent OKK
     #type_aug = { 'color': ['HueSaturationValue', 'GaussNoise', 'RandomBrightnessContrast']} # a+c+e) 3b_GTA5_to_CITY_aug_color_a_c_e_25percent OKK
     # a + d + e
-    #type_aug = { 'color': ['HueSaturationValue', 'RGBShift', 'RandomBrightnessContrast']} # a+d+e) 3b_GTA5_to_CITY_aug_color_a_d_e_25percent OK to val
+    #type_aug = { 'color': ['HueSaturationValue', 'RGBShift', 'RandomBrightnessContrast']} # a+d+e) 3b_GTA5_to_CITY_aug_color_a_d_e_25percent OKK
     # b + c +cose 
     #type_aug = { 'color': ['CLAHE', 'GaussNoise']} # b+c) 3b_GTA5_to_CITY_aug_color_b_c_d_25percent OKK
     #type_aug = { 'color': ['CLAHE', 'RGBShift']} # b+d) 3b_GTA5_to_CITY_aug_color_b_c_e_25percent OKK
@@ -157,9 +157,9 @@ if __name__ == "__main__":
 
     # TRASFORMAZIONI  SU TUTTO IL DATASET
     # 1) hue + RGB + RB  (a + d + e)
-    type_aug = { 'color': ['HueSaturationValue', 'RGBShift', 'RandomBrightnessContrast']} # 3b_GTA5_to_CITY_aug_color_a_d_e_100_percent OK check where it stops + val 
+    #type_aug = { 'color': ['HueSaturationValue', 'RGBShift', 'RandomBrightnessContrast']} # 3b_GTA5_to_CITY_aug_color_a_d_e_100_percent OK stopped at 26 + val 
     # 2) RGB + RB (d + e)
-    #type_aug = { 'color': ['RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_d_e_100_percent OK check stop + val
+    type_aug = { 'color': ['RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_d_e_100_percent OK check stop + val
     # 3) hue + clahe + RGB (a + b + d)
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_100_percent OK check stop + val
     # 4) Gn + RGB + RB (c + d + e)
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_a_d_e_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_d_e_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
