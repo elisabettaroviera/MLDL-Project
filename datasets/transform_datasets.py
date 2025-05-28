@@ -76,10 +76,10 @@ def transform_gta_mask():
     return transform
 
 
-"""
+
 def augmentation_transform(image, mask, type_aug):
     """
-"""
+
     Applica trasformazioni basate su un dizionario con chiavi tra 'color', 'weather', 'geometric'
     e valori come lista dei nomi delle trasformazioni da applicare.
     Le trasformazioni vengono applicate con probabilità del 50%.
@@ -90,7 +90,7 @@ def augmentation_transform(image, mask, type_aug):
     'geometric': ['Affine', 'Perspective']
     }
     """
-"""
+
     def get_selected_transforms(transform_dict, selected_names):
         return [transform_dict[name] for name in selected_names if name in transform_dict]
     
@@ -144,7 +144,7 @@ def augmentation_transform(image, mask, type_aug):
 
     augmented = aug_transform(image=image, mask=mask)
     return augmented
-"""
+
 
 
 def augmentation_transform_oneof(image, mask):
@@ -168,8 +168,7 @@ def augmentation_transform_oneof(image, mask):
         A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0), #c)
         A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
         A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0) #e)
-    ])
-    ], p=1.0)
+    ])], p=1.0)
 
     augmented = aug_transform(image=image, mask=mask)
 
