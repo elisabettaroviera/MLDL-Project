@@ -78,8 +78,63 @@ def transform_gta_mask():
 
 
 
+
 def augmentation_transform(image, mask, type_aug):
     """
+    Seleziona 2 trasformazioni casuali da type_aug['color']
+    e 1 trasformazione casuale tra RandomFog, RandomRain, ISONoise.
+    Applica tutte le trasformazioni all'immagine e alla maschera (p=1.0).
+    
+    type_aug deve essere del tipo:
+    type_aug = {
+        'color': ['HueSaturationValue', 'RGBShift', 'CLAHE', ...]
+    }
+    """
+    # Dizionario delle trasformazioni di colore
+    color_transforms = {
+        'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
+        'CLAHE': A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
+        'GaussNoise': A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0),
+        'RGBShift': A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0),
+        'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
+    }
+
+    # Trasformazioni atmosferiche/fisiche aggiuntive che mi hanno dato al miglior combo
+    additional_transforms = [
+        A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
+        A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
+        A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0)] #i)]
+    
+
+    # Prende solo le trasformazioni valide dalla lista 'color'
+    selected_names = [name for name in type_aug.get('color', []) if name in color_transforms]
+
+    if len(selected_names) < 2:
+        raise ValueError("Servono almeno 2 trasformazioni di colore valide.")
+
+    # Seleziona 2 trasformazioni di colore casuali
+    chosen_color = random.sample(selected_names, 2)
+    selected_color_transforms = [color_transforms[name] for name in chosen_color]
+
+    # Seleziona 1 trasformazione atmosferica/fisica
+    selected_additional = random.choice(additional_transforms)
+
+    # Combina le trasformazioni
+    all_transforms = selected_color_transforms + [selected_additional]
+
+    # Crea e applica la trasformazione composta
+    transform = A.Compose(all_transforms, p=1.0)
+    augmented = transform(image=image, mask=mask)
+    return augmented
+
+
+
+
+
+
+""" #usata per 2/3 random transforms from color:3b_GTA5_to_CITY_augmented_color_2(3)_random_tranforms_color_100_percent
+def augmentation_transform(image, mask, type_aug):
+    
     Seleziona esattamente 3 trasformazioni casuali tra quelle elencate in type_aug['color']
     e le applica entrambe all'immagine e alla maschera.
     Le trasformazioni vengono applicate sempre (p=1.0).
@@ -88,7 +143,7 @@ def augmentation_transform(image, mask, type_aug):
     type_aug = {
         'color': ['HueSaturationValue', 'RGBShift', 'CLAHE', ...]
     }
-    """
+    
 
     color_transforms = {
         'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
@@ -113,7 +168,7 @@ def augmentation_transform(image, mask, type_aug):
     augmented = transform(image=image, mask=mask)
     return augmented
 
-
+"""
 
 
 
