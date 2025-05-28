@@ -76,8 +76,10 @@ def transform_gta_mask():
     return transform
 
 
+"""
 def augmentation_transform(image, mask, type_aug):
     """
+"""
     Applica trasformazioni basate su un dizionario con chiavi tra 'color', 'weather', 'geometric'
     e valori come lista dei nomi delle trasformazioni da applicare.
     Le trasformazioni vengono applicate con probabilità del 50%.
@@ -88,7 +90,7 @@ def augmentation_transform(image, mask, type_aug):
     'geometric': ['Affine', 'Perspective']
     }
     """
-    
+"""
     def get_selected_transforms(transform_dict, selected_names):
         return [transform_dict[name] for name in selected_names if name in transform_dict]
     
@@ -142,84 +144,33 @@ def augmentation_transform(image, mask, type_aug):
 
     augmented = aug_transform(image=image, mask=mask)
     return augmented
+"""
 
-    '''
-### DATA AUGMENTATION VECCHIO PER SCEGLEIRE PIU TRASFORMAZIONI INSIEME ###
-def augmentation_transform(image, mask, type_aug): 
-    # HorizontalFlip: ruota orizzontalmente l’immagine e la maschera con probabilità del 50%
-    # RGBShift: modifica i canali rosso, verde e blu con uno shift casuale nei valori di pixel
-    # RandomBrightnessContrast : cambia casualmente luminosità e contrasto
-    # MotionBlur : applica una leggera sfocatura da movimento
-    # GaussNoise : aggiunge rumore gaussiano (tipo "grana") all’immagine.
-    # ShiftScaleRotate : trasla, scala e ruota leggermente l’immagine e la maschera.  
-    # NB: le p sono le probabilità con cui quella trasformazione viene applicata
 
-    if 'color' in type_aug:
-        n_trans = random.randint(1, 3)          # 1‑3 trasformazioni
-        aug_transform = A.Compose([
-            A.OneOf([
-                A.NoOp(),
-                A.SomeOf([
-                    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15,
-                                            val_shift_limit=10, p=1.0),
-                    A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
-                    A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0),
-                    A.RGBShift(r_shift_limit=10, g_shift_limit=10,
-                                b_shift_limit=10, p=1.0),
-                    A.RandomBrightnessContrast(brightness_limit=0.2,
-                                                contrast_limit=0.2, p=1.0)
-                ], n=n_trans, replace=False)
-            ], p=1.0)
-        ])
-    elif 'weather' in type_aug :
-        # WEATHER AND ILLUMINATION 
-        # RandomShadow — per aggiungere ombre stradali o da edifici.
-        # RandomFog o RandomRain — per simulare condizioni meteo.
-        # ISONoise — aggiunge rumore simile a fotocamere reali.
-        # MotionBlur o GaussianBlur — per simulare imperfezioni delle fotocamere in movimento.
-        n_trans = random.randint(1, 2)          # 1‑2 trasformazioni
-        aug_transform = A.Compose([
-            A.OneOf([
-                A.NoOp(),
-                A.SomeOf([
-                    A.RandomShadow(shadow_roi=(0, 0.5, 1, 1),
-                                   num_shadows_lower=1, num_shadows_upper=2, p=1.0),
-                    A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15,
-                                alpha_coef=0.1, p=1.0),
-                    A.RandomRain(blur_value=2, drop_length=10, drop_width=1,
-                                 brightness_coefficient=0.95, p=1.0),
-                    A.ISONoise(color_shift=(0.01, 0.05),
-                               intensity=(0.1, 0.3), p=1.0),
-                    A.GaussianBlur(blur_limit=(3, 5), sigma_limit=0.5, p=1.0)
-                ], n=n_trans, replace=False)
-            ], p=1.0)
-        ])
-    elif 'geometric' in type_aug:
-        # GEOMETRIC TRANSFORMATIONS Geometric Transforms
-        # RandomCrop — per forzare la stessa FOV o porzione visiva.
-        # Affine con leggera rotazione/traslazione.
-        # Resize — per uniformare la risoluzione.
-        # Perspective (con cautela) — per rendere la prospettiva più simile a Cityscapes.
-        n_trans = random.randint(1, 2)          # 1‑2 trasformazioni
-        aug_transform = A.Compose([
-            A.OneOf([
-                A.NoOp(),
-                A.SomeOf([
-                    A.RandomCrop(height=720, width=1280, p=1.0),
-                    A.Affine(scale=(0.95, 1.05),
-                            translate_percent=(0.02, 0.05),
-                            rotate=(-5, 5),
-                            shear=(-2, 2), p=1.0),
-                    A.Perspective(scale=(0.02, 0.05),
-                                keep_size=True, p=1.0)
-                ], n=n_trans, replace=False)
-            ], p=1.0)
-        ])
+def augmentation_transform_oneof(image, mask):
+    aug_transform = A.OneOf([
+    A.Compose([ # a+d+e
+        A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0), #a)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0) #e)
+    ]),
+    A.Compose([# d+e
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0), #e)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0) #d)
+    ]),
+    A.Compose([ # a+b+d
+        A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0), #a)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
+        A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0) #b)
 
-    else:   # fallback sicuro, nel caso in cui non passo nessuno dei tipi tra color, wheather e geometric
-        aug_transform = A.Compose([A.NoOp()])
+    ]),
+    A.Compose([ # c+d+e
+        A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0), #c)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0) #e)
+    ])
+    ], p=1.0)
 
-    # ---------- applica le trasformazioni ----------
     augmented = aug_transform(image=image, mask=mask)
+
     return augmented
-'''
