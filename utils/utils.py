@@ -155,21 +155,11 @@ class FocalLoss(nn.Module):
         self.ignore_index = ignore_index
         self.ce = nn.CrossEntropyLoss(reduction='none', weight=weight, ignore_index=ignore_index)
 
-    def forward(self, inputs, targets):
-        logpt = F.log_softmax(inputs, dim=1)
+    def forward(self, input, target):
+        logpt = -self.ce(input, target)
         pt = torch.exp(logpt)
-        logpt = logpt.gather(1, targets.unsqueeze(1)).squeeze(1)
-        pt = pt.gather(1, targets.unsqueeze(1)).squeeze(1)
-
-        if self.weight is not None:
-            class_weight = self.weight[targets]
-            loss = -class_weight * ((1 - pt) ** self.gamma) * logpt
-        else:
-            loss = -((1 - pt) ** self.gamma) * logpt
-
-        mask = targets != self.ignore_index
-        return loss[mask].mean()
-
+        focal_loss = ((1 - pt) ** self.gamma) * (-logpt)
+        return focal_loss.mean()
 """
  def forward(self, input, target):
         logpt = -self.ce(input, target)
