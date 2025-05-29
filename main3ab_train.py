@@ -168,9 +168,9 @@ if __name__ == "__main__":
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent OK to finish + val
 
     # ALTRE CON 25 % DATASET MIX TRASFORMAZIONI
-    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_25_percent OK 
-    #type_aug = None # 3b_GTA5_to_CITY_aug_color_geo_oneof_3_comb_25_percent OK 
-    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_25_percent 
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_25_percent OKK 
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_geo_oneof_3_comb_25_percent OKK 
+    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_25_percent OK
 
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
