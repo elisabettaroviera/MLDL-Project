@@ -87,7 +87,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
         batch_size = 4 # Bach size
-        learning_rate = 0.0025 # Learning rate for the optimizer - 1e-4
+        learning_rate = 0.000625 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
