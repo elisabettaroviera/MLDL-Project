@@ -78,8 +78,8 @@ def transform_gta_mask():
 
 
 
-
-def augmentation_transform(image, mask, type_aug):
+#3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent
+def augmentation_transform_AAA(image, mask, type_aug):
     """
     Con probabilità 0.5 applica:
     - 2 trasformazioni casuali dalla lista 'color' di type_aug
@@ -128,9 +128,9 @@ def augmentation_transform(image, mask, type_aug):
 #3b_GTA5_to_CITY_augmented_color_2_random_tranforms_color_+_1_from_g_h_i_100_percent
 #3b_GTA5_to_CITY_augmented_color_1_random_tranform_color_plus_1_from_g_h_i_100_percent
 
-def augmentation_transform_r(image, mask, type_aug):
+def augmentation_transform(image, mask, type_aug):
     """
-    Seleziona 2 trasformazioni casuali da type_aug['color']
+    Seleziona 1/2  (SPECIFICALO)trasformazioni casuali da type_aug['color']
     e 1 trasformazione casuale tra RandomFog, RandomRain, ISONoise.
     Applica tutte le trasformazioni all'immagine e alla maschera (p=1.0).
     
