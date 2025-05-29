@@ -146,7 +146,7 @@ class MaskedDiceLoss(nn.Module):
 
         return self.dice(pred_masked, target_masked)
     
-"""   
+   
 class FocalLoss(nn.Module):
     def __init__(self, gamma=2.0, weight=None, ignore_index=255):
         super().__init__()
@@ -169,7 +169,7 @@ class FocalLoss(nn.Module):
 
         mask = targets != self.ignore_index
         return loss[mask].mean()
-"""
+
 """
  def forward(self, input, target):
         logpt = -self.ce(input, target)
@@ -177,7 +177,7 @@ class FocalLoss(nn.Module):
         focal_loss = ((1 - pt) ** self.gamma) * (-logpt)
         return focal_loss.mean()
 """
-
+"""  
 # Focal loss with class weights and ignore index
 class FocalLoss(nn.Module):
     def __init__(self, gamma=2.0, weight=None, ignore_index=255):
@@ -187,10 +187,6 @@ class FocalLoss(nn.Module):
         self.ignore_index = ignore_index
 
     def forward(self, input, target):
-        """
-        input: (B, C, H, W) - logits
-        target: (B, H, W) - class labels
-        """
         logpt = F.log_softmax(input, dim=1)  # (B, C, H, W)
         pt = torch.exp(logpt)  # (B, C, H, W)
 
@@ -215,7 +211,7 @@ class FocalLoss(nn.Module):
             loss = -((1 - pt) ** self.gamma) * logpt
 
         return loss.mean()
-
+"""  
 
 
 # CombinedLoss for C + L + T + D + F
