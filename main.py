@@ -136,7 +136,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0.2, theta=0, delta=0.3, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         # _ce07_l03_warnup_lr_0.0002
         # _ce05_l0.25_di0.25_no_warnup_lr_0.0002
         # DeepLabV2_ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        project_name = f"{var_model}_ce05_f05_warmup1100_lr_0.00625"
+        project_name = f"{var_model}_ce05_f03, tv02_warmup1100_lr_0.00625"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
