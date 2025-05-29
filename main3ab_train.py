@@ -159,7 +159,7 @@ if __name__ == "__main__":
     # 1) hue + RGB + RB  (a + d + e)
     #type_aug = { 'color': ['HueSaturationValue', 'RGBShift', 'RandomBrightnessContrast']} # 3b_GTA5_to_CITY_aug_color_a_d_e_100_percent OK going from 30 on
     # 2) RGB + RB (d + e)
-    type_aug = { 'color': ['RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_d_e_100_percent OK
+    type_aug = { 'color': ['RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_d_e_100_percent OK going from 30 on
     # 3) hue + clahe + RGB (a + b + d)
     #type_aug = { 'color': ['HueSaturationValue', 'CLAHE', 'RGBShift']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_a_b_d_100_percent OK 
     # 4) Gn + RGB + RB (c + d + e)
