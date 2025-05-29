@@ -146,7 +146,80 @@ class MaskedDiceLoss(nn.Module):
 
         return self.dice(pred_masked, target_masked)
     
+"""   
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2.0, weight=None, ignore_index=255):
+        super().__init__()
+        self.gamma = gamma
+        self.weight = weight
+        self.ignore_index = ignore_index
+        self.ce = nn.CrossEntropyLoss(reduction='none', weight=weight, ignore_index=ignore_index)
 
+    def forward(self, inputs, targets):
+        logpt = F.log_softmax(inputs, dim=1)
+        pt = torch.exp(logpt)
+        logpt = logpt.gather(1, targets.unsqueeze(1)).squeeze(1)
+        pt = pt.gather(1, targets.unsqueeze(1)).squeeze(1)
+
+        if self.weight is not None:
+            class_weight = self.weight[targets]
+            loss = -class_weight * ((1 - pt) ** self.gamma) * logpt
+        else:
+            loss = -((1 - pt) ** self.gamma) * logpt
+
+        mask = targets != self.ignore_index
+        return loss[mask].mean()
+"""
+"""
+ def forward(self, input, target):
+        logpt = -self.ce(input, target)
+        pt = torch.exp(logpt)
+        focal_loss = ((1 - pt) ** self.gamma) * (-logpt)
+        return focal_loss.mean()
+"""
+
+# Focal loss with class weights and ignore index
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2.0, weight=None, ignore_index=255):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.weight = weight  # Tensor di pesi (num_classes,)
+        self.ignore_index = ignore_index
+
+    def forward(self, input, target):
+        """
+        input: (B, C, H, W) - logits
+        target: (B, H, W) - class labels
+        """
+        logpt = F.log_softmax(input, dim=1)  # (B, C, H, W)
+        pt = torch.exp(logpt)  # (B, C, H, W)
+
+        # Select only the probabilities for the target classes
+        target = target.long()
+        mask = (target != self.ignore_index)
+
+        # Flatten per pixel
+        logpt = logpt.permute(0, 2, 3, 1)[mask]  # (N, C)
+        pt = pt.permute(0, 2, 3, 1)[mask]
+        target_flat = target[mask]
+
+        logpt = logpt.gather(1, target_flat.unsqueeze(1)).squeeze(1)  # (N,)
+        pt = pt.gather(1, target_flat.unsqueeze(1)).squeeze(1)
+
+        # Weight per classe
+        if self.weight is not None:
+            class_weights = self.weight.to(input.device)
+            w = class_weights[target_flat]
+            loss = -w * ((1 - pt) ** self.gamma) * logpt
+        else:
+            loss = -((1 - pt) ** self.gamma) * logpt
+
+        return loss.mean()
+
+
+
+# CombinedLoss for C + L + T + D + F
+"""
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, focal_gamma=2.0, ignore_index=255):
         super().__init__()
@@ -247,5 +320,9 @@ class CombinedLoss_All(nn.Module):
 
     def __repr__(self):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
-                f"alpha={self.alpha}, beta={self.beta}, "
-                f"gamma={self.gamma}, theta={self.theta})")
+                f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
+                f"theta={self.theta}, delta={self.delta})")
+    
+
+    
+
