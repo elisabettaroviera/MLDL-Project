@@ -124,6 +124,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
+        #entity = "s281401-politecnico-di-torino" #new team auro
         project_name = f"{var_model}_cv07_di03"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
