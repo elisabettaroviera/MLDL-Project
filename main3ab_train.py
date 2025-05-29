@@ -84,7 +84,7 @@ if __name__ == "__main__":
     num_epochs = 30 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 21 #CHECK BEFORE RUNNING
+    start_epoch = 22 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_color_1_random_tranform_color_plus_1_from_g_h_i_100_percent"   # Change here!
+        project_name = "3b_GTA5_to_CITY_augmented_color_2_random_tranforms_color_+_1_from_g_h_i_100_percent"   # Change here!
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
