@@ -58,9 +58,9 @@ class GTA5(Dataset):
             # Applichiamo l'augmentazione con OneOf che include NoOp
             #augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug) #to use augmentation_transfrom with type_aug            
             #augmented = augmentation_transform_oneof(image=np.array(image), mask=np.array(label)) # one of 3 best comb of color
-            #augmented = augmentation_transform_oneof_col_wea(image=np.array(image), mask=np.array(label)) # one of 2 best color and best weather
+            augmented = augmentation_transform_oneof_col_wea(image=np.array(image), mask=np.array(label)) # one of 2 best color and best weather
             #augmented = augmentation_transform_oneof_col_geo(image=np.array(image), mask=np.array(label)) # one of 2 best color and best geo
-            augmented = augmentation_transform_oneof_col_wea_geo(image=np.array(image), mask=np.array(label)) # # one of 2 best color and best weather + best geo prob 0.3
+            #augmented = augmentation_transform_oneof_col_wea_geo(image=np.array(image), mask=np.array(label)) # # one of 2 best color and best weather + best geo prob 0.3
             label = Image.fromarray(augmented['mask'])
             image = Image.fromarray(augmented['image'])
 

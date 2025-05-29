@@ -83,7 +83,7 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 15 #changed bc doing smaller runs
+    num_epochs = 30 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
@@ -166,10 +166,14 @@ if __name__ == "__main__":
     # 5) one of 4 best comb  of color 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent OK to finish + val
 
+    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent OKK 
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_geo_oneof_3_comb_100_percent OKK 
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent OKK
+
     # ALTRE CON 25 % DATASET MIX TRASFORMAZIONI
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_25_percent OKK 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_geo_oneof_3_comb_25_percent OKK 
-    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_25_percent OK
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_25_percent OKK
 
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
@@ -186,7 +190,7 @@ if __name__ == "__main__":
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # Take a subset of the dataloader
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=batch_size)
     
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
@@ -204,7 +208,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_25_percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
