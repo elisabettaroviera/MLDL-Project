@@ -87,7 +87,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
         batch_size = 4 # Bach size
-        learning_rate = 0.000625 # Learning rate for the optimizer - 1e-4
+        learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        start_epoch = 45 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
 
     # Load the model on the device    
     model = model.to(device)
@@ -134,6 +134,14 @@ if __name__ == "__main__":
     print("Definition of the optimizer")
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
     
+    # Defintion of the loss function CombinedLoss_All
+    print("Definition of the loss") 
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    # alpha   - CrossEntropy
+    # beta    - Lovász
+    # gamma   - Tversky
+    # theta   - Dice
+    # delta   - Focal
 
 
     # Iteration loop on EPOCHS
@@ -152,6 +160,7 @@ if __name__ == "__main__":
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
+        """
         # Update the weights
         api = wandb.Api()
 
@@ -175,7 +184,7 @@ if __name__ == "__main__":
         class_weights = torch.tensor(weights, dtype=torch.float32).cuda()
 
         print(f"Class weights (from train mIoU): {class_weights}")
-
+        
         # Defintion of the loss function CombinedLoss_All
         print("Definition of the loss") 
         loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
@@ -184,7 +193,7 @@ if __name__ == "__main__":
         # gamma   - Tversky
         # theta   - Dice
         # delta   - Focal
-
+        """
         print(f"Epoch {epoch}")
 
         print("Load the model")
