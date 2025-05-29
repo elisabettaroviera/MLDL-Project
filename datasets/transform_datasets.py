@@ -173,3 +173,26 @@ def augmentation_transform_oneof(image, mask):
     augmented = aug_transform(image=image, mask=mask)
 
     return augmented
+
+def augmentation_transform_oneof_col_wea(image, mask):
+    aug_transform = A.OneOf([
+    A.Compose([ # a+d+e
+        A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0), #a)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0) #e)
+    ]),
+    A.Compose([# d+e
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0), #e)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0) #d)
+    ]),
+    A.Compose([ # g+h+i
+        A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
+        A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
+        A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0) #i)
+    ])
+    ], p=1.0)
+
+    augmented = aug_transform(image=image, mask=mask)
+
+    return augmented
+
