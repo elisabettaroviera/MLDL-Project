@@ -145,7 +145,8 @@ class MaskedDiceLoss(nn.Module):
         target_masked = target_one_hot * mask
 
         return self.dice(pred_masked, target_masked)
- """   
+    
+"""   
 class FocalLoss(nn.Module):
     def __init__(self, gamma=2.0, weight=None, ignore_index=255):
         super().__init__()
