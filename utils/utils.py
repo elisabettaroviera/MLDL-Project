@@ -154,13 +154,24 @@ class FocalLoss(nn.Module):
         self.ignore_index = ignore_index
         self.ce = nn.CrossEntropyLoss(reduction='none', weight=weight, ignore_index=ignore_index)
 
-    def forward(self, input, target):
-        logpt = -self.ce(input, target)
+    def forward(self, inputs, targets):
+        logpt = F.log_softmax(inputs, dim=1)
         pt = torch.exp(logpt)
-        focal_loss = ((1 - pt) ** self.gamma) * (-logpt)
-        return focal_loss.mean()
+        logpt = logpt.gather(1, targets.unsqueeze(1)).squeeze(1)
+        pt = pt.gather(1, targets.unsqueeze(1)).squeeze(1)
+
+        if self.weight is not None:
+            class_weight = self.weight[targets]
+            loss = -class_weight * ((1 - pt) ** self.gamma) * logpt
+        else:
+            loss = -((1 - pt) ** self.gamma) * logpt
+
+        mask = targets != self.ignore_index
+        return loss[mask].mean()
+
 
 # CombinedLoss for C + L + T + D + F
+"""
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, focal_gamma=2.0, ignore_index=255):
         super().__init__()
@@ -209,3 +220,61 @@ class CombinedLoss_All(nn.Module):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
                 f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
                 f"theta={self.theta}, delta={self.delta})")
+"""
+                
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, focal_gamma=2.0, ignore_index=255, class_weights=None):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta, self.delta = alpha, beta, gamma, theta, delta
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+        self.class_weights = class_weights
+
+        if alpha != 0:
+            if class_weights is not None:
+                self.ce_loss = nn.CrossEntropyLoss(weight=class_weights, ignore_index=ignore_index)
+            else:
+                self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+
+        if beta != 0:
+            from utils.lovasz_losses import lovasz_softmax
+            self.lovasz_softmax = lovasz_softmax
+
+        if gamma != 0:
+            self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+
+        if theta != 0:
+            self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
+
+        if delta != 0:
+            self.focal_loss = FocalLoss(gamma=focal_gamma, ignore_index=ignore_index)
+
+    def forward(self, outputs, targets):
+        total_loss = 0.0
+
+        if self.alpha != 0:
+            total_loss += self.alpha * self.ce_loss(outputs, targets)
+
+        if self.beta != 0:
+            probs = torch.softmax(outputs, dim=1)
+            total_loss += self.beta * self.lovasz_softmax(probs, targets, ignore=self.ignore_index)
+
+        if self.gamma != 0:
+            total_loss += self.gamma * self.tversky_loss(outputs, targets)
+
+        if self.theta != 0:
+            total_loss += self.theta * self.dice_loss(outputs, targets)
+
+        if self.delta != 0:
+            total_loss += self.delta * self.focal_loss(outputs, targets)
+
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
+                f"theta={self.theta}, delta={self.delta})")
+    
+
+    
+

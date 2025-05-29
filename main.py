@@ -120,7 +120,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
        
-        start_epoch = 37 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 41 # CHANGE HERE THE STARTING EPOCH
 
 
     elif var_model == 'BiSeNet':
@@ -134,15 +134,6 @@ if __name__ == "__main__":
     print("Definition of the optimizer")
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
     
-    
-    # Defintion of the loss function CombinedLoss_All
-    print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
-    # alpha   - CrossEntropy
-    # beta    - Lovász
-    # gamma   - Tversky
-    # theta   - Dice
-    # delta   - Focal
 
 
     # Iteration loop on EPOCHS
@@ -160,6 +151,39 @@ if __name__ == "__main__":
         project_name = f"{var_model}_ce05_f05_warmup1500_lr_0.0005"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
+
+        # Update the weights
+        api = wandb.Api()
+
+        # Recupera la run precedente: epoch_(epoch-1)
+        prev_run_name = f"epoch_{epoch-1}"
+        runs = api.runs(f"{entity}/{project_name}")
+        run = next((r for r in runs if r.name == prev_run_name), None)
+
+        if run is None:
+            raise ValueError(f"Run {prev_run_name} non trovata su WandB")
+
+        summary = run.summary
+
+        # Carica le mIoU per classe dalla TRAIN
+        miou_vals = np.array([
+            summary.get(f"class_{i}_train", 0.0) for i in range(num_classes)
+        ])
+
+        inv_miou = 1.0 / (miou_vals + 1e-6)
+        weights = inv_miou / inv_miou.sum()
+        class_weights = torch.tensor(weights, dtype=torch.float32).cuda()
+
+        print(f"Class weights (from train mIoU): {class_weights}")
+
+        # Defintion of the loss function CombinedLoss_All
+        print("Definition of the loss") 
+        loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
+        # alpha   - CrossEntropy
+        # beta    - Lovász
+        # gamma   - Tversky
+        # theta   - Dice
+        # delta   - Focal
 
         print(f"Epoch {epoch}")
 
