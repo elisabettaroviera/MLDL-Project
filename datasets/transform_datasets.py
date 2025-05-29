@@ -216,3 +216,28 @@ def augmentation_transform_oneof_col_geo(image, mask):
 
     return augmented
 
+def augmentation_transform_oneof_col_wea_geo(image, mask):
+    aug_transform = A.OneOf([
+    A.Compose([ # a+d+e (+ m prob 0.3)
+        A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0), #a)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0), #e)
+        A.RandomCrop(height=720, width=1280, p=0.3) #m)
+    ]),
+    A.Compose([# d+e (+ m prob 0.3)
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0), #e)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
+        A.RandomCrop(height=720, width=1280, p=0.3) #m)
+    ]),
+    A.Compose([ # g+h+i (+ m prob 0.3)
+        A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
+        A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
+        A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0), #i)
+        A.RandomCrop(height=720, width=1280, p=0.3) #m)
+    ])
+    ], p=1.0)
+
+    augmented = aug_transform(image=image, mask=mask)
+
+    return augmented
+
