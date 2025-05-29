@@ -1,7 +1,6 @@
 import numpy as np
 from utils.lovasz_losses import lovasz_softmax
 import wandb
-#from lovasz_losses import lovasz_softmax  # file taken from github
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -24,9 +23,19 @@ def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
     optimizer.param_groups[0]['lr'] = float(lr) 
     return float(lr) 
 
-    # if iter % lr_decay_iter or iter > max_iter:
-    # 	return optimizer
-    # return lr
+def poly_lr_scheduler_warmup(optimizer, base_lr, curr_iter, max_iter, power=0.9, warmup_iters=500, warmup_start_lr=1e-6):
+    """Polynomial decay with warmup"""
+    if curr_iter < warmup_iters:
+        # Linear warmup
+        lr = warmup_start_lr + (base_lr - warmup_start_lr) * (curr_iter / warmup_iters)
+    else:
+        # Poly decay
+        decay_iter = curr_iter - warmup_iters
+        total_decay = max_iter - warmup_iters
+        lr = base_lr * (1 - decay_iter / total_decay) ** power
+
+    optimizer.param_groups[0]['lr'] = lr
+    return lr
 
 
 
@@ -44,124 +53,54 @@ def per_class_iou(hist):
     epsilon = 1e-5
     return (np.diag(hist)) / (hist.sum(1) + hist.sum(0) - np.diag(hist) + epsilon)
 
-def save_metrics_on_file(epoch, metrics_train, metrics_val):
-    open_mode = "w" if epoch == 1 else "a"
 
-    with open("IMoU.txt", open_mode) as imou_file:
-        imou_file.write(f"""Epoch - {epoch}
-    ---------------
-    Training Phase
-    mIoU: {metrics_train['mean_iou']}
-    mIoU per Class: {metrics_train['iou_per_class']}
-    ---------------
-    Validation Phase
-    mIoU: {metrics_val['mean_iou']}
-    mIoU per Class: {metrics_val['iou_per_class']}
-    ===============
+# Function to save the metrics on WandB UPDATED 
+# In this function, we log the metrics for each epoch
+# and also log additional metrics at the end of the training (epoch 50)   
+def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
+    to_serialize = {"epoch": epoch}
 
-    """)
-
-    with open("Loss.txt", open_mode) as loss_file:
-        loss_file.write(f"""Epoch - {epoch}
-    ---------------
-    Training Phase
-    Value Loss: {metrics_train['mean_loss']}
-    ---------------
-    Validation Phase
-    Value Loss: {metrics_val['mean_loss']}
-    ===============
-
-    """)
-
-    if epoch == 50:
-        with open("Final_Metrics.txt", "w") as metrics_file:
-            metrics_file.write(f"""Epoch - {epoch}
-    ---------------
-    Training Phase
-    mIoU: {metrics_train['mean_iou']}
-    mIoU per Class: {metrics_train['iou_per_class']}
-    Loss: {metrics_train['mean_loss']}
-    Latency: {metrics_train['mean_latency']} ± {metrics_train['std_latency']}
-    FPS: {metrics_train['mean_fps']} ± {metrics_train['std_fps']}
-    FLOPs: {metrics_train['num_flops']}
-    Trainable Params: {metrics_train['trainable_params']}
-    ---------------
-    Validation Phase
-    mIoU: {metrics_val['mean_iou']}
-    mIoU per Class: {metrics_val['iou_per_class']}
-    Loss: {metrics_val['mean_loss']}
-    Latency: {metrics_val['mean_latency']} ± {metrics_val['std_latency']}
-    FPS: {metrics_val['mean_fps']} ± {metrics_val['std_fps']}
-    FLOPs: {metrics_val['num_flops']}
-    Trainable Params: {metrics_val['trainable_params']}
-    ===============
-
-    """)
-
- #Function to save the metrics on WandB           
-def save_metrics_on_wandb(epoch, metrics_train, metrics_val):
-
-    to_serialize = {
-        "epoch": epoch,
-        "train_mIoU": metrics_train['mean_iou'],
-        "train_loss": metrics_train['mean_loss'],
-        "val_mIoU": metrics_val['mean_iou'],
-        "val_mIoU_per_class": metrics_val['iou_per_class'],
-        "val_loss": metrics_val['mean_loss']
-    }
-
-    print(metrics_train['iou_per_class'])
-
-    for index, iou in enumerate(metrics_train['iou_per_class']):
-        to_serialize[f"class_{index}_train"] = iou
-
-    for index, iou in enumerate(metrics_val['iou_per_class']):
-        to_serialize[f"class_{index}_val"] = iou
-
-    # Log delle metriche di training e validazione su WandB
-    if epoch != 50:
-        wandb.log(to_serialize)
-
-    # Salvataggio delle metriche finali al 50esimo epoch
-    if epoch == 50:
-        wandb.log({
-            "train_mIoU_final": metrics_train['mean_iou'],
-            "train_loss_final": metrics_train['mean_loss'],
-            "train_latency": metrics_train['mean_latency'],
-            "train_fps": metrics_train['mean_fps'],
-            "train_flops": metrics_train['num_flops'],
-            "train_params": metrics_train['trainable_params'],
-            "val_mIoU_final": metrics_val['mean_iou'],
-            "val_loss_final": metrics_val['mean_loss'],
-            "val_latency": metrics_val['mean_latency'],
-            "val_fps": metrics_val['mean_fps'],
-            "val_flops": metrics_val['num_flops'],
-            "val_params": metrics_val['trainable_params']
+    # Log training metrics
+    if metrics_train is not None:
+        to_serialize.update({
+            "train_mIoU": metrics_train['mean_iou'],
+            "train_loss": metrics_train['mean_loss']
         })
 
-# Class to compute the combined loss: alpha*cross entropy + beta*lovasz
-#https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
-# Class to compute the combined loss: alpha*cross entropy + beta*lovasz
-#https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
-class CombinedLoss_Lovasz(nn.Module):
-    def __init__(self, alpha=0.5, beta=0.5, ignore_index=255):
-        super(CombinedLoss_Lovasz, self).__init__()
-        self.alpha = alpha
-        self.beta = beta
-        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
-        self.ignore_index = ignore_index
+        for index, iou in enumerate(metrics_train['iou_per_class']):
+            to_serialize[f"class_{index}_train"] = iou
 
-    def forward(self, outputs, targets):
-        ce = self.ce_loss(outputs, targets)
-        probs = torch.softmax(outputs, dim=1)
-        lovasz = lovasz_softmax(probs, targets, ignore=self.ignore_index)
-        return self.alpha * ce + self.beta * lovasz # alpha = cross entropy, beta = lovasz
-    
-    def __repr__(self):
-        return f"{self.__class__.__name__}(num_classes={self.num_classes})"
+        if epoch == final_epoch:
+            to_serialize.update({
+                "train_latency": metrics_train['mean_latency'],
+                "train_fps": metrics_train['mean_fps'],
+                "train_flops": metrics_train['num_flops'],
+                "train_params": metrics_train['trainable_params']
+            })
 
+    # Log validation metrics
+    if metrics_val is not None:
+        to_serialize.update({
+            "val_mIoU": metrics_val['mean_iou'],
+            "val_mIoU_per_class": metrics_val['iou_per_class'],
+            "val_loss": metrics_val['mean_loss']
+        })
 
+        for index, iou in enumerate(metrics_val['iou_per_class']):
+            to_serialize[f"class_{index}_val"] = iou
 
+        if epoch == final_epoch:
+            to_serialize.update({
+                "val_latency": metrics_val['mean_latency'],
+                "val_fps": metrics_val['mean_fps'],
+                "val_flops": metrics_val['num_flops'],
+                "val_params": metrics_val['trainable_params']
+            })
+
+    # Logging finale su wandb
+    wandb.log(to_serialize)
+
+# To avoid void class on TverskyLoss
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
         super().__init__()
@@ -183,28 +122,7 @@ class MaskedTverskyLoss(nn.Module):
 
         return self.tversky(pred, target_onehot)
 
-
-class CombinedLoss_Tversky(nn.Module):
-    def __init__(self, num_classes, alpha=0.4, beta=0.6, ignore_index=255):
-        super(CombinedLoss_Tversky, self).__init__()
-        self.alpha = alpha  # Peso CrossEntropy
-        self.beta = beta    # Peso Tversky
-        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
-        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
-        self.num_classes = num_classes
-        self.ignore_index = ignore_index
-
-    def forward(self, outputs, targets):
-        ce = self.ce_loss(outputs, targets)
-        tversky = self.tversky_loss(outputs, targets)
-        return self.alpha * ce + self.beta * tversky
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(num_classes={self.num_classes}, alpha={self.alpha}, beta={self.beta})"
-
-
-
-# To avoid void class in dice loss
+# To avoid void class in DiceLoss
 class MaskedDiceLoss(nn.Module):
     def __init__(self, num_classes, ignore_index=255):
         super().__init__()
@@ -228,40 +146,183 @@ class MaskedDiceLoss(nn.Module):
 
         return self.dice(pred_masked, target_masked)
     
-
-class CombinedLoss_All(nn.Module):
-    def __init__(self, num_classes, 
-                 alpha=0.4,   # CrossEntropy
-                 beta=0.1,    # Lovász
-                 gamma=0.4,   # Tversky
-                 theta=0.1,   # Dice
-                 ignore_index=255):
-        super(CombinedLoss_All, self).__init__()
-        self.alpha = alpha
-        self.beta = beta
+"""   
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2.0, weight=None, ignore_index=255):
+        super().__init__()
         self.gamma = gamma
-        self.theta = theta
+        self.weight = weight
+        self.ignore_index = ignore_index
+        self.ce = nn.CrossEntropyLoss(reduction='none', weight=weight, ignore_index=ignore_index)
+
+    def forward(self, inputs, targets):
+        logpt = F.log_softmax(inputs, dim=1)
+        pt = torch.exp(logpt)
+        logpt = logpt.gather(1, targets.unsqueeze(1)).squeeze(1)
+        pt = pt.gather(1, targets.unsqueeze(1)).squeeze(1)
+
+        if self.weight is not None:
+            class_weight = self.weight[targets]
+            loss = -class_weight * ((1 - pt) ** self.gamma) * logpt
+        else:
+            loss = -((1 - pt) ** self.gamma) * logpt
+
+        mask = targets != self.ignore_index
+        return loss[mask].mean()
+"""
+"""
+ def forward(self, input, target):
+        logpt = -self.ce(input, target)
+        pt = torch.exp(logpt)
+        focal_loss = ((1 - pt) ** self.gamma) * (-logpt)
+        return focal_loss.mean()
+"""
+
+# Focal loss with class weights and ignore index
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2.0, weight=None, ignore_index=255):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.weight = weight  # Tensor di pesi (num_classes,)
+        self.ignore_index = ignore_index
+
+    def forward(self, input, target):
+        """
+        input: (B, C, H, W) - logits
+        target: (B, H, W) - class labels
+        """
+        logpt = F.log_softmax(input, dim=1)  # (B, C, H, W)
+        pt = torch.exp(logpt)  # (B, C, H, W)
+
+        # Select only the probabilities for the target classes
+        target = target.long()
+        mask = (target != self.ignore_index)
+
+        # Flatten per pixel
+        logpt = logpt.permute(0, 2, 3, 1)[mask]  # (N, C)
+        pt = pt.permute(0, 2, 3, 1)[mask]
+        target_flat = target[mask]
+
+        logpt = logpt.gather(1, target_flat.unsqueeze(1)).squeeze(1)  # (N,)
+        pt = pt.gather(1, target_flat.unsqueeze(1)).squeeze(1)
+
+        # Weight per classe
+        if self.weight is not None:
+            class_weights = self.weight.to(input.device)
+            w = class_weights[target_flat]
+            loss = -w * ((1 - pt) ** self.gamma) * logpt
+        else:
+            loss = -((1 - pt) ** self.gamma) * logpt
+
+        return loss.mean()
+
+
+
+# CombinedLoss for C + L + T + D + F
+"""
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, focal_gamma=2.0, ignore_index=255):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta, self.delta = alpha, beta, gamma, theta, delta
         self.ignore_index = ignore_index
         self.num_classes = num_classes
 
-        self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
-        self.lovasz_loss = CombinedLoss_Lovasz(alpha=0, beta=1, ignore_index=ignore_index)
-        self.tversky_loss = MaskedTverskyLoss(num_classes=num_classes, ignore_index=ignore_index)
-        self.dice_loss = MaskedDiceLoss(num_classes=num_classes, ignore_index=ignore_index)
+        if alpha != 0:
+            self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+
+        if beta != 0:
+            from utils.lovasz_losses import lovasz_softmax
+            self.lovasz_softmax = lovasz_softmax
+
+        if gamma != 0:
+            self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+
+        if theta != 0:
+            self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
+
+        if delta != 0:
+            self.focal_loss = FocalLoss(gamma=focal_gamma, ignore_index=ignore_index)
 
     def forward(self, outputs, targets):
-        ce = self.ce_loss(outputs, targets)
-        lovasz = self.lovasz_loss(outputs, targets)
-        tversky = self.tversky_loss(outputs, targets)
-        dice = self.dice_loss(outputs, targets)
+        total_loss = 0.0
 
-        total_loss = (self.alpha * ce +
-                      self.beta * lovasz +
-                      self.gamma * tversky +
-                      self.theta * dice)
+        if self.alpha != 0:
+            total_loss += self.alpha * self.ce_loss(outputs, targets)
+
+        if self.beta != 0:
+            probs = torch.softmax(outputs, dim=1)
+            total_loss += self.beta * self.lovasz_softmax(probs, targets, ignore=self.ignore_index)
+
+        if self.gamma != 0:
+            total_loss += self.gamma * self.tversky_loss(outputs, targets)
+
+        if self.theta != 0:
+            total_loss += self.theta * self.dice_loss(outputs, targets)
+
+        if self.delta != 0:
+            total_loss += self.delta * self.focal_loss(outputs, targets)
+
         return total_loss
 
     def __repr__(self):
         return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
-                f"alpha={self.alpha}, beta={self.beta}, "
-                f"gamma={self.gamma}, theta={self.theta})")
+                f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
+                f"theta={self.theta}, delta={self.delta})")
+"""
+                
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, focal_gamma=2.0, ignore_index=255, class_weights=None):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta, self.delta = alpha, beta, gamma, theta, delta
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+        self.class_weights = class_weights
+
+        if alpha != 0:
+            if class_weights is not None:
+                self.ce_loss = nn.CrossEntropyLoss(weight=class_weights, ignore_index=ignore_index)
+            else:
+                self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+
+        if beta != 0:
+            from utils.lovasz_losses import lovasz_softmax
+            self.lovasz_softmax = lovasz_softmax
+
+        if gamma != 0:
+            self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+
+        if theta != 0:
+            self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
+
+        if delta != 0:
+            self.focal_loss = FocalLoss(gamma=focal_gamma, ignore_index=ignore_index)
+
+    def forward(self, outputs, targets):
+        total_loss = 0.0
+
+        if self.alpha != 0:
+            total_loss += self.alpha * self.ce_loss(outputs, targets)
+
+        if self.beta != 0:
+            probs = torch.softmax(outputs, dim=1)
+            total_loss += self.beta * self.lovasz_softmax(probs, targets, ignore=self.ignore_index)
+
+        if self.gamma != 0:
+            total_loss += self.gamma * self.tversky_loss(outputs, targets)
+
+        if self.theta != 0:
+            total_loss += self.theta * self.dice_loss(outputs, targets)
+
+        if self.delta != 0:
+            total_loss += self.delta * self.focal_loss(outputs, targets)
+
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
+                f"theta={self.theta}, delta={self.delta})")
+    
+
+    
+
