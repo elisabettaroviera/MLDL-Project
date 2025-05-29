@@ -8,7 +8,7 @@ import time
 import numpy as np
 from datasets.cityscapes import CityScapes
 from models.bisenet.build_bisenet import BiSeNet
-from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import CombinedLoss_All,  save_metrics_on_wandb
 from datasets.transform_datasets import transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
 from validation import validate
