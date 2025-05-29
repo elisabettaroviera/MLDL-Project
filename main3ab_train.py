@@ -83,10 +83,10 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 30 #changed bc doing smaller runs
+    num_epochs = 50 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 1 #CHECK BEFORE RUNNING
+    start_epoch = 27 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     #type_aug = { 'color': ['GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_c_d_e_100_percent OK + val
 
 
-    type_aug = None
+    type_aug = None # 3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
