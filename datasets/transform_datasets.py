@@ -196,3 +196,23 @@ def augmentation_transform_oneof_col_wea(image, mask):
 
     return augmented
 
+def augmentation_transform_oneof_col_geo(image, mask):
+    aug_transform = A.OneOf([
+    A.Compose([ # a+d+e
+        A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0), #a)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0) #e)
+    ]),
+    A.Compose([# d+e
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0), #e)
+        A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0) #d)
+    ]),
+    A.Compose([ # m
+       A.RandomCrop(height=720, width=1280, p=1.0) #m)
+    ])
+    ], p=1.0)
+
+    augmented = aug_transform(image=image, mask=mask)
+
+    return augmented
+

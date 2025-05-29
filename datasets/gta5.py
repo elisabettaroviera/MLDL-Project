@@ -4,7 +4,7 @@ from PIL import Image
 import random
 import albumentations as A
 import numpy as np
-from datasets.transform_datasets import augmentation_transform, augmentation_transform_oneof, augmentation_transform_oneof_col_wea
+from datasets.transform_datasets import augmentation_transform, augmentation_transform_oneof, augmentation_transform_oneof_col_wea, augmentation_transform_oneof_col_geo
 
 
 # GTA5 dataset class
@@ -58,7 +58,8 @@ class GTA5(Dataset):
             # Applichiamo l'augmentazione con OneOf che include NoOp
             #augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug) #to use augmentation_transfrom with type_aug            
             #augmented = augmentation_transform_oneof(image=np.array(image), mask=np.array(label))
-            augmented = augmentation_transform_oneof_col_wea(image=np.array(image), mask=np.array(label))
+            #augmented = augmentation_transform_oneof_col_wea(image=np.array(image), mask=np.array(label))
+            augmented = augmentation_transform_oneof_col_geo(image=np.array(image), mask=np.array(label))
             label = Image.fromarray(augmented['mask'])
             image = Image.fromarray(augmented['image'])
 
