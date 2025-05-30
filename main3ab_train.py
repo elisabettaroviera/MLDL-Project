@@ -86,7 +86,7 @@ if __name__ == "__main__":
     num_epochs = 50 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 22 #CHECK BEFORE RUNNING
+    start_epoch = 1 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -166,8 +166,9 @@ if __name__ == "__main__":
     # 5) one of 4 best comb  of color 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent OK to finish + val : going from 26 on
     # 6) one of 2 best comb of color + best comb of weather
-    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent OK to finish + val : going from 22 on...
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent OK to finish + val : going from 22 on...
     # 7) one of 3(!) best comb of color + best comb of weather
+    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent
 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent forse non ha senso farla...
 
@@ -209,7 +210,7 @@ if __name__ == "__main__":
     iter_curr = 0
     ################################ IN THIS BRANCH USE AURO TEAM : API a99b701251206c5e11379d8f1674d044e02abf5d ###################################
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s281401-politecnico-di-torino" #new team auro
         # "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
