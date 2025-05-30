@@ -167,8 +167,9 @@ if __name__ == "__main__":
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent OK to finish + val : going from 26 on
     # 6) one of 2 best comb of color + best comb of weather
     type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent OK to finish + val : going from 22 on...
+    # 7) one of 3(!) best comb of color + best comb of weather
+
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent forse non ha senso farla...
-    # secondo me ha senso prrovare anche  one of 3!! best comb of color + best comb of weather
 
     # ALTRE CON 25 % DATASET MIX TRASFORMAZIONI
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_25_percent OKK 
@@ -206,7 +207,7 @@ if __name__ == "__main__":
 
     max_iter = num_epochs * len(full_dataloader_gta_train)
     iter_curr = 0
-
+    ################################ IN THIS BRANCH USE AURO TEAM : API a99b701251206c5e11379d8f1674d044e02abf5d ###################################
     for epoch in range(start_epoch, num_epochs + 1):
         project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
