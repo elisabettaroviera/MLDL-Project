@@ -81,10 +81,10 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    num_epochs = 15 #CHECK BEFORE RUNNING
+    num_epochs = 50 #CHECK BEFORE RUNNING
     num_classes = 19
     ignore_index = 255
-    start_epoch = 1
+    start_epoch = 31
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
     """
     alpha   # CrossEntropy
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
-    project_name = "3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_25_percent" #CHECK BEFORE RUNNING
+    project_name = "3b_GTA5_to_CITY_aug_color_a_d_e_100_percent" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = to_obtain_id(project_name)
