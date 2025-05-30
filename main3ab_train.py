@@ -86,7 +86,7 @@ if __name__ == "__main__":
     num_epochs = 50 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 26 #CHECK BEFORE RUNNING
+    start_epoch = 22 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -164,10 +164,11 @@ if __name__ == "__main__":
     # 4) Gn + RGB + RB (c + d + e)
     #type_aug = { 'color': ['GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # a+b+c+d+e) 3b_GTA5_to_CITY_aug_color_c_d_e_100_percent OKK
     # 5) one of 4 best comb  of color 
-    type_aug = None # 3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent OK to finish + val
-
-    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent 
-    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent 
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent OK to finish + val : going from 26 on
+    # 6) one of 2 best comb of color + best comb of weather
+    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent OK to finish + val : going from 22 on...
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent forse non ha senso farla...
+    # secondo me ha senso prrovare anche  one of 3!! best comb of color + best comb of weather
 
     # ALTRE CON 25 % DATASET MIX TRASFORMAZIONI
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_25_percent OKK 
@@ -207,7 +208,7 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_oneof_4_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
