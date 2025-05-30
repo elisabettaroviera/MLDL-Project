@@ -208,7 +208,8 @@ if __name__ == "__main__":
 
     max_iter = num_epochs * len(full_dataloader_gta_train)
     iter_curr = 0
-    ################################ IN THIS BRANCH USE AURO TEAM : API a99b701251206c5e11379d8f1674d044e02abf5d ###################################
+    wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
+    ################################ IN THIS BRANCH USE AURO TEAM : API 2bc32b7d4d8f8601d9a93be55631ae9e18f78690 ###################################
     for epoch in range(start_epoch, num_epochs + 1):
         project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s281401-politecnico-di-torino" #new team auro
