@@ -210,7 +210,8 @@ if __name__ == "__main__":
     ################################ IN THIS BRANCH USE AURO TEAM : API a99b701251206c5e11379d8f1674d044e02abf5d ###################################
     for epoch in range(start_epoch, num_epochs + 1):
         project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
-        entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
+        entity = "s281401-politecnico-di-torino" #new team auro
+        # "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
