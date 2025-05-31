@@ -87,7 +87,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
         batch_size = 4 # Bach size
-        learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
+        learning_rate = 0.005 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 11 # CHANGE HERE THE STARTING EPOCH
 
     # Load the model on the device    
     model = model.to(device)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.6, beta=0, gamma=0, theta=0, delta=0.4, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         # _lr_0.005_ce1_warmup1100_alpha1
         # _lr_0.00625_ce1_warmup1100_alpha0.4
         
-        project_name = f"{var_model}baseline_lr_0.00625_ce1_warmup1100_alpha1" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.005_ce1_warmup1100_alpha1" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
