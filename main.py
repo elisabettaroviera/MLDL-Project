@@ -51,7 +51,7 @@ def freeze_batchnorm(model):
         if isinstance(module, nn.BatchNorm2d):
             module.eval()
 
-
+# 1- SGD (lr=0.00625, mom=0.9, wd=1e-4)	Warmup 1100 iters 1e-6→0.00625 + poly (power 0.9)	CE_main + 1.0×(CE_aux1 + CE_aux2)
 if __name__ == "__main__":
     # Ambient variable
     var_model = os.environ['MODEL'] #'DeepLabV2' OR 'BiSeNet' # CHOOSE the model to train
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -151,13 +151,11 @@ if __name__ == "__main__":
 
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
-        entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
-        # _ce06_l0.2_fo0.2_no_warnup_lr_0.0001
-        # _ce05_f05_warnup_lr_0.0003
-        # _ce07_l03_warnup_lr_0.0002
-        # _ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        # DeepLabV2_ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        project_name = f"{var_model}_ce05_warmup1100_lr_0.00625"
+        # entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
+        entity = "s281401-politecnico-di-torino" # New new entity Auro
+        # baseline_lr_0.00625_ce1_warmup1100_alpha1
+        
+        project_name = f"{var_model}baseline_lr_0.00625_ce1_warmup1100_alpha1" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
