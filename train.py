@@ -103,9 +103,9 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     # Compute the mean without considering NaN value
     mean_iou = np.nanmean(iou_non_zero) 
     mean_loss = running_loss / len(dataloader_train) 
-    loss_aux1 = running_loss_aux1 / len(dataloader_train) 
-    loss_aux2 = running_loss_aux2 / len(dataloader_train) 
-    loss_main = running_loss_main / len(dataloader_train)
+    mean_loss_aux1 = running_loss_aux1 / len(dataloader_train) 
+    mean_loss_aux2 = running_loss_aux2 / len(dataloader_train) 
+    mean_loss_main = running_loss_main / len(dataloader_train)
 
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
@@ -137,9 +137,9 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     wandb.log({
         "epoch": epoch,
         "loss": mean_loss,
-        "loss_main": loss_main.item(),
-        "loss_aux1": loss_aux1.item(),
-        "loss_aux2": loss_aux2.item(),
+        "loss_main": mean_loss_main,
+        "loss_aux1": mean_loss_aux1,
+        "loss_aux2": mean_loss_aux2,
         "lr": lr
     })
 
