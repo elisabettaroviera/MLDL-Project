@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from monai.losses import DiceLoss
 from monai.losses import TverskyLoss
+import matplotlib.pyplot as plt
 
 
 def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
@@ -37,6 +38,99 @@ def poly_lr_scheduler_warmup(optimizer, base_lr, curr_iter, max_iter, power=0.9,
     optimizer.param_groups[0]['lr'] = lr
     return lr
 
+def lr_range_test(
+    model,
+    dataloader_train,
+    optimizer,
+    criterion,
+    lr_start=1e-6,
+    lr_end=0.1,
+    num_iters=None,
+    device='cuda',
+):
+    """
+    Esegue il LR range test su un numero limitato di iterazioni (default: 2 epoche intere).
+    """
+    model.train()
+    lrs = []
+    losses = []
+
+    # Calcola quanti batch totali in 2 epoche (o meno se num_iters specificato)
+    if num_iters is None:
+        num_iters = len(dataloader_train) * 2
+
+    # Calcola il moltiplicatore per salire esponenzialmente da lr_start a lr_end
+    lr_mult = (lr_end / lr_start) ** (1 / num_iters)
+    lr = lr_start
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+    iter_count = 0
+    avg_loss = 0.
+    best_loss = float('inf')
+
+    dataloader_iter = iter(dataloader_train)
+
+    while iter_count < num_iters:
+        try:
+            inputs, targets, _ = next(dataloader_iter)
+        except StopIteration:
+            dataloader_iter = iter(dataloader_train)
+            inputs, targets, _ = next(dataloader_iter)
+
+        inputs, targets = inputs.to(device), targets.to(device)
+        optimizer.zero_grad()
+
+        outputs = model(inputs)
+        # BiSeNet: outputs = (result, aux1, aux2)
+        loss_main = criterion(outputs[0], targets)
+        loss_aux1 = criterion(outputs[1], targets)
+        loss_aux2 = criterion(outputs[2], targets)
+        total_loss = loss_main + (loss_aux1 + loss_aux2)
+
+        total_loss.backward()
+        optimizer.step()
+
+        # Smoothing per ridurre rumore (opzionale)
+        avg_loss = 0.98 * avg_loss + 0.02 * total_loss.item() if iter_count > 0 else total_loss.item()
+
+        # Salva lr e loss
+        lrs.append(lr)
+        losses.append(avg_loss)
+
+        # Aggiorna lr esponenzialmente
+        lr *= lr_mult
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+
+        # Controllo se la loss esplode
+        if avg_loss > 4 * best_loss:
+            print(f"Loss esplosa a iter {iter_count}, fermo il test.")
+            break
+        if avg_loss < best_loss or iter_count == 0:
+            best_loss = avg_loss
+
+        if iter_count % 50 == 0:
+            print(f"Iter {iter_count}/{num_iters} | lr={lr:.6f} | loss={avg_loss:.4f}")
+
+        iter_count += 1
+
+    # Plot della curva
+    plt.figure()
+    plt.plot(lrs, losses)
+    plt.xscale('log')
+    plt.xlabel('Learning Rate (log scale)')
+    plt.ylabel('Loss')
+    plt.title('LR Range Test')
+    plt.grid(True)
+    plt.savefig('lr_range_test.png')
+    plt.show()
+
+    # Salva anche i dati in npz
+    np.savez('lr_range_data.npz', lrs=lrs, losses=losses)
+    print("Salvato plot e dati in: lr_range_test.png e lr_range_data.npz")
+
+    return lrs, losses
 
 
 def fast_hist(a, b, n):
