@@ -12,7 +12,7 @@ import gdown
 # Link 6 - 11radYwi905384YHAmC_AGvziOcqBpE4X
 # Link 7 - 1CdfqzwuIeJSmta-mEFxDPQ4SR7VXg80Z
 
-cityscapes_id = '11radYwi905384YHAmC_AGvziOcqBpE4X'  # Google Drive file ID
+cityscapes_id = '1CdfqzwuIeJSmta-mEFxDPQ4SR7VXg80Z'  # Google Drive file ID
 cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
 cityscapes_output = 'cityscapes.zip' # Name of the output file
 
