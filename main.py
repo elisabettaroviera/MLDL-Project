@@ -133,6 +133,7 @@ if __name__ == "__main__":
     # Definition of the optimizer for the first epoch
     print("Definition of the optimizer")
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
+
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
@@ -243,8 +244,10 @@ if __name__ == "__main__":
         # 2. Training step
         print("Training step")
 
+        alpha_change = 1 # CHANGE HERE THE ALPHA VALUE FOR DIFFERENT WIGHTS ON THE LOSS FUNCTION
+
         start_train = time.time()
-        metrics_train, iter_curr, lr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr, lr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter, alpha_change) 
         end_train = time.time()
 
         print(f"Time taken for training step: {(end_train - start_train)/60:.2f} minutes")
