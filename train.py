@@ -25,6 +25,9 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     print("Initializing the metrics variables...")
     
     running_loss = 0.0 
+    running_loss_aux1 = 0.0
+    running_loss_aux2 = 0.0
+    running_loss_main = 0.0
     mean_loss = 0.0
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
