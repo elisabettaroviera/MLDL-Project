@@ -14,7 +14,7 @@ from utils.utils import poly_lr_scheduler, poly_lr_scheduler_warmup
 import wandb
 
 # TRAIN LOOP
-def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion == loss function
+def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter, alpha_change=1): # criterion == loss function
     var_model = os.environ['MODEL'] 
 
     # 1. Obtain the pretrained model
@@ -36,37 +36,49 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     print(f"Training on {len(dataloader_train)} batches")
     
     # 4. Loop on the batches of the dataset
-    for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): 
+    accumulation_steps = 2  # o 1 se non vuoi accumulation
+    optimizer.zero_grad()
+
+    for batch_idx, (inputs, targets, _) in enumerate(dataloader_train):
+
         if batch_idx % 100 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_train)}")
 
-        iter += 1 # Increment the iteration counter
+        iter += 1
+        inputs, targets = inputs.cuda(), targets.cuda()
+        outputs = model(inputs)
 
-        inputs, targets = inputs.cuda(), targets.cuda() # GPU
+        # Calcolo loss
+        loss_main = criterion(outputs[0], targets)
+        loss_aux1 = criterion(outputs[1], targets)
+        loss_aux2 = criterion(outputs[2], targets)
+        total_loss = loss_main + alpha_change * (loss_aux1 + loss_aux2)
 
-        # Compute output of the train
-        outputs = model(inputs)        
+        # Normalizza la loss per il numero di accumulation
+        total_loss = total_loss / accumulation_steps
 
-        # Compute the loss
-        # DeepLabV2 returns for training the output, None, None
-        # BiseNet returns the output, aux1, aux2 (aux are predictions from contextpath)
-        loss = criterion(outputs[0], targets)
-        if var_model == "BiSeNet":
-            alpha = 1 # In the paper they use 1
-            loss +=  alpha * criterion(outputs[1], targets) + alpha *  criterion(outputs[2], targets)
-             
+        # Backward
+        total_loss.backward()
 
-        # Backpropagation
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        # Ogni accumulation_steps fai optimizer.step()
+        if (batch_idx + 1) % accumulation_steps == 0:
+            # (facoltativo) gradient clipping
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+            optimizer.step()
+            optimizer.zero_grad()
+
+        # Salvataggio e metrica...
 
         # Compute the learning rate
         #lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=1.1)
         lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iter, max_iter=max_iter, power=0.9,  warmup_iters=1100, warmup_start_lr=1e-6) # poco meno 3 epoche
 
         # Update the running loss
-        running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
+        running_loss += total_loss.item() # Update of the loss == contain the total loss of the epoch
+        running_loss_aux1 += loss_aux1.item()
+        running_loss_aux2 += loss_aux2.item()
+        running_loss_main += loss_main.item()
 
         # Convert model outputs to predicted class labels
         preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
@@ -87,7 +99,10 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
 
     # Compute the mean without considering NaN value
     mean_iou = np.nanmean(iou_non_zero) 
-    mean_loss = running_loss / len(dataloader_train)    
+    mean_loss = running_loss / len(dataloader_train) 
+    loss_aux1 = running_loss_aux1 / len(dataloader_train) 
+    loss_aux2 = running_loss_aux2 / len(dataloader_train) 
+    loss_main = running_loss_main / len(dataloader_train)
 
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
@@ -119,6 +134,9 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     wandb.log({
         "epoch": epoch,
         "loss": mean_loss,
+        "loss_main": loss_main.item(),
+        "loss_aux1": loss_aux1.item(),
+        "loss_aux2": loss_aux2.item(),
         "lr": lr
     })
 
