@@ -103,7 +103,7 @@ if __name__ == "__main__":
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
     cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
-    dataloader_cs_train, _ = dataloader(cs_train, None, batch_size=4, shuffle=True, drop_last=True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, None, 4, True, True, False)
 
     if var_model == 'BiSeNet':
         print("MODEL BISENET")
