@@ -87,7 +87,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
         batch_size = 4 # Bach size
-        learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
+        learning_rate = 0.005 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
@@ -154,8 +154,9 @@ if __name__ == "__main__":
         # entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
         entity = "s281401-politecnico-di-torino" # New new entity Auro
         # baseline_lr_0.00625_ce1_warmup1100_alpha1
+        # _lr_0.005_ce1_warmup1100_alpha1
         
-        project_name = f"{var_model}baseline_lr_0.00625_ce1_warmup1100_alpha1" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.005_ce1_warmup1100_alpha1" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
