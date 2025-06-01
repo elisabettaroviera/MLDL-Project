@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 2 # CHANGE HERE THE STARTING EPOCH
 
     # Load the model on the device    
     model = model.to(device)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
+    #loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
-        """
+        
         # Update the weights
         api = wandb.Api()
 
@@ -195,7 +195,7 @@ if __name__ == "__main__":
         # gamma   - Tversky
         # theta   - Dice
         # delta   - Focal
-        """
+        
         print(f"Epoch {epoch}")
 
         print("Load the model")
