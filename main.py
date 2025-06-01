@@ -158,7 +158,7 @@ if __name__ == "__main__":
         # _lr_0.00625_ce1_warmup1100_alpha0.4
         # _lr_0.00625_ce1_warmup2500_alpha1_weighted
         
-        project_name = f"{var_model}_lr_0.00625_ce1_warmup2500_alpha1_weighted" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.00625_ce05_f05__warmup2500_alpha1_weighted" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
