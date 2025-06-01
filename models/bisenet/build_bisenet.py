@@ -146,6 +146,7 @@ class BiSeNet(torch.nn.Module):
             # supervision block
             self.supervision1 = nn.Conv2d(in_channels=256, out_channels=num_classes, kernel_size=1)
             self.supervision2 = nn.Conv2d(in_channels=512, out_channels=num_classes, kernel_size=1)
+            self.dropout = nn.Dropout(p=0.2)
             # build feature fusion module
             self.feature_fusion_module = FeatureFusionModule(num_classes, 1024)
         else:
@@ -207,6 +208,8 @@ class BiSeNet(torch.nn.Module):
 
         # output of feature fusion module
         result = self.feature_fusion_module(sx, cx)
+
+        result = self.dropout(result)
 
         # upsampling
         result = torch.nn.functional.interpolate(result, scale_factor=8, mode='bilinear')
