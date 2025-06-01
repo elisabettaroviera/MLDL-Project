@@ -195,6 +195,7 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
     wandb.log(to_serialize)
 
 # To avoid void class on TverskyLoss
+"""
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):
         super().__init__()
@@ -215,6 +216,41 @@ class MaskedTverskyLoss(nn.Module):
         target_onehot = target_onehot * valid_mask
 
         return self.tversky(pred, target_onehot)
+"""
+class MaskedTverskyLoss(nn.Module):
+    def __init__(self, num_classes, alpha=0.5, beta=0.5, gamma=1.0, ignore_index=255):  # CHANGED HERE
+        super().__init__()
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.alpha = alpha  # CHANGED HERE
+        self.beta = beta    # CHANGED HERE
+        self.gamma = gamma  # CHANGED HERE
+
+    def forward(self, pred, target):
+        valid_mask = (target != self.ignore_index)
+        target_clean = target.clone()
+        target_clean[~valid_mask] = 0
+
+        target_onehot = F.one_hot(target_clean, num_classes=self.num_classes)
+        target_onehot = target_onehot.permute(0, 3, 1, 2).float()
+
+        valid_mask = valid_mask.unsqueeze(1).float()
+        pred = pred * valid_mask
+        target_onehot = target_onehot * valid_mask
+
+        pred_probs = torch.softmax(pred, dim=1)  # CHANGED HERE
+
+        dims = (0, 2, 3)
+        TP = (pred_probs * target_onehot).sum(dim=dims)
+        FP = (pred_probs * (1 - target_onehot)).sum(dim=dims)
+        FN = ((1 - pred_probs) * target_onehot).sum(dim=dims)
+
+        tversky_index = (TP + 1e-6) / (TP + self.alpha * FP + self.beta * FN + 1e-6)  # CHANGED HERE
+
+        focal_tversky = torch.pow((1 - tversky_index), self.gamma)  # CHANGED HERE
+
+        return focal_tversky.mean()  # CHANGED HERE
+
 
 # To avoid void class in DiceLoss
 class MaskedDiceLoss(nn.Module):
