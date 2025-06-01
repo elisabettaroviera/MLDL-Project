@@ -87,7 +87,7 @@ if __name__ == "__main__":
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
         batch_size = 4 # Bach size
-        learning_rate = 0.005 # Learning rate for the optimizer - 1e-4
+        learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
         weight_decay = 1e-4 # Weight decay for the optimizer
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        start_epoch = 11 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
 
     # Load the model on the device    
     model = model.to(device)
@@ -156,8 +156,9 @@ if __name__ == "__main__":
         # baseline_lr_0.00625_ce1_warmup1100_alpha1
         # _lr_0.005_ce1_warmup1100_alpha1
         # _lr_0.00625_ce1_warmup1100_alpha0.4
+        # _lr_0.00625_ce1_warmup2500_alpha1_weighted
         
-        project_name = f"{var_model}_lr_0.005_ce1_warmup1100_alpha1" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.00625_ce1_warmup2500_alpha1_weighted" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
@@ -244,7 +245,7 @@ if __name__ == "__main__":
         # 2. Training step
         print("Training step")
 
-        alpha_change = 0.4 # CHANGE HERE THE ALPHA VALUE FOR DIFFERENT WIGHTS ON THE LOSS FUNCTION
+        alpha_change = 1 # CHANGE HERE THE ALPHA VALUE FOR DIFFERENT WIGHTS ON THE LOSS FUNCTION
 
         start_train = time.time()
         metrics_train, iter_curr, lr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter, alpha_change) 
