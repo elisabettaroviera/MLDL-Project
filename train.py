@@ -55,7 +55,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         loss_main = criterion(outputs[0], targets)
         loss_aux1 = criterion(outputs[1], targets)
         loss_aux2 = criterion(outputs[2], targets)
-        total_loss = loss_main + alpha_change * (0.5*loss_aux1 + loss_aux2)
+        total_loss = loss_main + alpha_change * (loss_aux1 + loss_aux2)
 
         # Normalizza la loss per il numero di accumulation
         total_loss = total_loss / accumulation_steps
