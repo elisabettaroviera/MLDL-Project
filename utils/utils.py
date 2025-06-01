@@ -218,13 +218,13 @@ class MaskedTverskyLoss(nn.Module):
         return self.tversky(pred, target_onehot)
 """
 class MaskedTverskyLoss(nn.Module):
-    def __init__(self, num_classes, alpha=0.5, beta=0.5, gamma=1.0, ignore_index=255):  # CHANGED HERE
+    def __init__(self, num_classes, alpha=0.5, beta=0.5, focal_gamma=1.0, ignore_index=255):  # CHANGED HERE
         super().__init__()
         self.num_classes = num_classes
         self.ignore_index = ignore_index
         self.alpha = alpha  # CHANGED HERE
         self.beta = beta    # CHANGED HERE
-        self.gamma = gamma  # CHANGED HERE
+        self.gamma = focal_gamma  # CHANGED HERE
 
     def forward(self, pred, target):
         valid_mask = (target != self.ignore_index)

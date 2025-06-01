@@ -89,7 +89,7 @@ if __name__ == "__main__":
         batch_size = 4 # Bach size
         learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
         momentum = 0.9 # Momentum for the optimizer
-        weight_decay = 1e-4 # Weight decay for the optimizer
+        weight_decay = 5e-4 # Weight decay for the optimizer
 
     # Define the dataloaders
     print("Create the dataloaders")
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        start_epoch = 11 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
 
     # Load the model on the device    
     model = model.to(device)
@@ -158,44 +158,49 @@ if __name__ == "__main__":
         # _lr_0.00625_ce1_warmup1100_alpha0.4
         # _lr_0.00625_ce1_warmup2500_alpha1_weighted
         
-        project_name = f"{var_model}_lr_0.00625_ce1_warmup2500_alpha1_weighted" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.00625_ce05_tvf05_warmup2750_weighted" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
+        if epoch != 1:
+            # Update the weights
+            api = wandb.Api()
+
+            # Recupera la run precedente: epoch_(epoch-1)
+            prev_run_name = f"epoch_{epoch-1}"
+            runs = api.runs(f"{entity}/{project_name}")
+            run = next((r for r in runs if r.name == prev_run_name), None)
+
+            if run is None:
+                raise ValueError(f"Run {prev_run_name} non trovata su WandB")
+
+            summary = run.summary
+
+            # Carica le mIoU per classe dalla TRAIN
+            miou_vals = np.array([
+                summary.get(f"class_{i}_train", 0.0) for i in range(num_classes)
+            ])
+
+            inv_miou = 1.0 / (miou_vals + 1e-6)
+            weights = inv_miou / inv_miou.sum()
+            class_weights = torch.tensor(weights, dtype=torch.float32).cuda()
+
+            print(f"Class weights (from train mIoU): {class_weights}")
+            
+            # Defintion of the loss function CombinedLoss_All
+            print("Definition of the loss") 
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0.5, theta=0, delta=0, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
+            # alpha   - CrossEntropy
+            # beta    - Lovász
+            # gamma   - Tversky
+            # theta   - Dice
+            # delta   - Focal
         
-        # Update the weights
-        api = wandb.Api()
-
-        # Recupera la run precedente: epoch_(epoch-1)
-        prev_run_name = f"epoch_{epoch-1}"
-        runs = api.runs(f"{entity}/{project_name}")
-        run = next((r for r in runs if r.name == prev_run_name), None)
-
-        if run is None:
-            raise ValueError(f"Run {prev_run_name} non trovata su WandB")
-
-        summary = run.summary
-
-        # Carica le mIoU per classe dalla TRAIN
-        miou_vals = np.array([
-            summary.get(f"class_{i}_train", 0.0) for i in range(num_classes)
-        ])
-
-        inv_miou = 1.0 / (miou_vals + 1e-6)
-        weights = inv_miou / inv_miou.sum()
-        class_weights = torch.tensor(weights, dtype=torch.float32).cuda()
-
-        print(f"Class weights (from train mIoU): {class_weights}")
-        
-        # Defintion of the loss function CombinedLoss_All
-        print("Definition of the loss") 
-        loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=1.75, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
-        # alpha   - CrossEntropy
-        # beta    - Lovász
-        # gamma   - Tversky
-        # theta   - Dice
-        # delta   - Focal
-        
+        elif epoch == 1:
+            # Definition of the loss function CombinedLoss_All
+            print("Definition of the loss") 
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0.5, theta=0, delta=0.5, focal_gamma=2, ignore_index=255)
+            
         print(f"Epoch {epoch}")
 
         print("Load the model")
