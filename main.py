@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        start_epoch = 2 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 11 # CHANGE HERE THE STARTING EPOCH
 
     # Load the model on the device    
     model = model.to(device)
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         
         # Defintion of the loss function CombinedLoss_All
         print("Definition of the loss") 
-        loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
+        loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=1.75, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
         # alpha   - CrossEntropy
         # beta    - Lovász
         # gamma   - Tversky
