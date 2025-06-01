@@ -199,7 +199,7 @@ if __name__ == "__main__":
         elif epoch == 1:
             # Definition of the loss function CombinedLoss_All
             print("Definition of the loss") 
-            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0.5, theta=0, delta=0.5, focal_gamma=2, ignore_index=255)
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0.5, theta=0, delta=0, focal_gamma=2, ignore_index=255)
             
         print(f"Epoch {epoch}")
 
