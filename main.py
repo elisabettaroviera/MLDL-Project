@@ -120,7 +120,7 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
        
-        start_epoch = 43 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
 
 
     elif var_model == 'BiSeNet':
@@ -148,42 +148,47 @@ if __name__ == "__main__":
         # _ce07_l03_warnup_lr_0.0002
         # _ce05_l0.25_di0.25_no_warnup_lr_0.0002
         # DeepLabV2_ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        project_name = f"{var_model}_ce05_f05_warmup1500_lr_0.0005"
+        project_name = f"{var_model}_ce05_f05_warmup2500_lr_0.0005_ALL_WHEIGHTED"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
         # Update the weights
         api = wandb.Api()
+        if epoch != 1:
+            # Recupera la run precedente: epoch_(epoch-1)
+            prev_run_name = f"epoch_{epoch-1}"
+            runs = api.runs(f"{entity}/{project_name}")
+            run = next((r for r in runs if r.name == prev_run_name), None)
 
-        # Recupera la run precedente: epoch_(epoch-1)
-        prev_run_name = f"epoch_{epoch-1}"
-        runs = api.runs(f"{entity}/{project_name}")
-        run = next((r for r in runs if r.name == prev_run_name), None)
+            if run is None:
+                raise ValueError(f"Run {prev_run_name} non trovata su WandB")
 
-        if run is None:
-            raise ValueError(f"Run {prev_run_name} non trovata su WandB")
+            summary = run.summary
 
-        summary = run.summary
+            # Carica le mIoU per classe dalla TRAIN
+            miou_vals = np.array([
+                summary.get(f"class_{i}_train", 0.0) for i in range(num_classes)
+            ])
 
-        # Carica le mIoU per classe dalla TRAIN
-        miou_vals = np.array([
-            summary.get(f"class_{i}_train", 0.0) for i in range(num_classes)
-        ])
+            inv_miou = 1.0 / (miou_vals + 1e-6)
+            weights = inv_miou / inv_miou.sum()
+            class_weights = torch.tensor(weights, dtype=torch.float32).cuda()
 
-        inv_miou = 1.0 / (miou_vals + 1e-6)
-        weights = inv_miou / inv_miou.sum()
-        class_weights = torch.tensor(weights, dtype=torch.float32).cuda()
+            print(f"Class weights (from train mIoU): {class_weights}")
 
-        print(f"Class weights (from train mIoU): {class_weights}")
-
-        # Defintion of the loss function CombinedLoss_All
-        print("Definition of the loss") 
-        loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
-        # alpha   - CrossEntropy
+            # Defintion of the loss function CombinedLoss_All
+            print("Definition of the loss") 
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
+            # alpha   - CrossEntropy
         # beta    - Lovász
         # gamma   - Tversky
         # theta   - Dice
         # delta   - Focal
+
+        elif epoch == 1:
+            # Definition of the loss function CombinedLoss_All
+            print("Definition of the loss") 
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=2, ignore_index=255)
 
         print(f"Epoch {epoch}")
 
