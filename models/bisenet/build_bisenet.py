@@ -6,9 +6,46 @@ from .build_contextpath import build_contextpath
 import warnings
 warnings.filterwarnings(action='ignore')
 
+class DropConnectConv2d(nn.Conv2d):  # CHANGED HERE
+    def __init__(self, *args, drop_prob=0.2, **kwargs):  # CHANGED HERE
+        super().__init__(*args, **kwargs)
+        self.drop_prob = drop_prob  # CHANGED HERE
+
+    def forward(self, input):  # CHANGED HERE
+        if self.training:
+            mask = (torch.rand_like(self.weight) > self.drop_prob).float()
+            weight = self.weight * mask
+        else:
+            weight = self.weight * (1 - self.drop_prob)
+        return nn.functional.conv2d(input, weight, self.bias, self.stride,
+                                    self.padding, self.dilation, self.groups)
+
 # questo è ognuno dei blocchi dentro Spatial Path con le trasformazioni conv+bn+relu
 # **ConvBlock**. This class implements a standard convolutional block consisting of a 2D convolution, Batch Normalization, 
 # and ReLU activation. It is typically used for downsampling the feature map.
+class ConvBlock(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=2, padding=1):
+        super().__init__()
+        # self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size,
+        #                        stride=stride, padding=padding, bias=False)
+        self.conv1 = DropConnectConv2d(in_channels, out_channels,  # CHANGED HERE
+                                       kernel_size=kernel_size,
+                                       stride=stride,
+                                       padding=padding,
+                                       bias=False,
+                                       drop_prob=0.3)  # CHANGED HERE
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.relu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
+        self.dropout = nn.Dropout2d(p=0.1)  # CHANGED HERE
+
+    def forward(self, input):
+        x = self.conv1(input)
+        x = self.relu(self.bn(x))
+        x = self.dropout(x)  # CHANGED HERE
+        return x
+
+
+"""
 class ConvBlock(torch.nn.Module):
     # **ConvBlock.__init__**. This is the constructor method. It initializes the convolutional layer (`nn.Conv2d`),
     # the batch normalization layer (`nn.BatchNorm2d`), and the ReLU activation layer (`nn.ReLU`).
@@ -24,7 +61,7 @@ class ConvBlock(torch.nn.Module):
     # the batch normalization, and finally the ReLU activation to the input.
     def forward(self, input):
         x = self.conv1(input)
-        return self.relu(self.bn(x))
+        return self.relu(self.bn(x))"""
 
 #sussueguri di blocchi in spatial path
 # **Spatial_path**. This module processes the input image to extract rich spatial details.
