@@ -17,7 +17,8 @@ class ConvBlock(torch.nn.Module):
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size,
                                stride=stride, padding=padding, bias=False)
         self.bn = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU()
+        #self.relu = nn.ReLU() # nn.leakyRelu? nn.leakyReLU(negative_slope=0.1, inplace=True)
+        self.relu = nn.leakyReLU(negative_slope=0.1, inplace=True) 
 
     # **ConvBlock.forward**. This method defines the forward pass of the block. It applies the convolution, then 
     # the batch normalization, and finally the ReLU activation to the input.
@@ -89,7 +90,8 @@ class FeatureFusionModule(torch.nn.Module):
 
         self.convblock = ConvBlock(in_channels=self.in_channels, out_channels=num_classes, stride=1)
         self.conv1 = nn.Conv2d(num_classes, num_classes, kernel_size=1)
-        self.relu = nn.ReLU()
+        #self.relu = nn.ReLU() # nn.leakyReLU(negative_slope=0.1, inplace=True)
+        self.relu = nn.LeakyReLU(negative_slope=0.1, inplace=True) # nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(num_classes, num_classes, kernel_size=1)
         self.sigmoid = nn.Sigmoid()
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
@@ -146,7 +148,7 @@ class BiSeNet(torch.nn.Module):
             # supervision block
             self.supervision1 = nn.Conv2d(in_channels=256, out_channels=num_classes, kernel_size=1)
             self.supervision2 = nn.Conv2d(in_channels=512, out_channels=num_classes, kernel_size=1)
-            self.dropout = nn.Dropout(p=0.2)
+            self.dropout = nn.Dropout(p=0.2) # dropout AUMENTA P    
             # build feature fusion module
             self.feature_fusion_module = FeatureFusionModule(num_classes, 1024)
         else:
@@ -219,3 +221,8 @@ class BiSeNet(torch.nn.Module):
             return result, cx1_sup, cx2_sup
 
         return result
+
+
+#DROPCONNECT
+#CUTOUT
+#BATCHNORMALIZATION
