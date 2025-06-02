@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
     # Load the datasets (Cityspaces)
     print("Load the datasets")
-    cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
-    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
+    cs_train = CityScapes('./datasets/cityscapes', 'train', transform, target_transform)
+    cs_val = CityScapes('./datasets/cityscapes', 'val', transform, target_transform)
 
 
     # Choose the model's parameters
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         # _ce07_l03_warnup_lr_0.0002
         # _ce05_l0.25_di0.25_no_warnup_lr_0.0002
         # DeepLabV2_ce05_l0.25_di0.25_no_warnup_lr_0.0002
-        project_name = f"{var_model}_ce05_f05_warmup2500_lr_0.0005_ALL_WHEIGHTED"
+        project_name = f"{var_model}_test_dataset"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 

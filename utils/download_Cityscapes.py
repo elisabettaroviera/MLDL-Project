@@ -1,4 +1,4 @@
-
+"""
 import requests
 from zipfile import ZipFile
 from io import BytesIO
@@ -43,4 +43,3 @@ with ZipFile(zip_path, 'r') as zip_ref:
     zip_ref.extractall(extract_dir)
 
 print(f'Estrazione completata! Dataset disponibile in: {extract_dir}')
-"""
