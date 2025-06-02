@@ -43,3 +43,8 @@ with ZipFile(zip_path, 'r') as zip_ref:
     zip_ref.extractall(extract_dir)
 
 print(f'Estrazione completata! Dataset disponibile in: {extract_dir}')
+
+# Qui metti questo codice di debug:
+for root, dirs, files in os.walk('./datasets/cityscapes'):
+    print(root)
+    break

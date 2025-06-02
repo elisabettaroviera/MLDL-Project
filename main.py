@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
     # Load the datasets (Cityspaces)
     print("Load the datasets")
-    cs_train = CityScapes('./datasets/cityscapes', 'train', transform, target_transform)
-    cs_val = CityScapes('./datasets/cityscapes', 'val', transform, target_transform)
+    cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
+    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
 
     # Choose the model's parameters
