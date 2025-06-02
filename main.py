@@ -132,8 +132,8 @@ if __name__ == "__main__":
 
     # Definition of the optimizer for the first epoch
     print("Definition of the optimizer")
-    #optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-2)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
+    #optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-2)
 
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         # _lr_0.00625_ce07_tvf03_warmup3000_weighted_AdamW
         # _lr_0.00625_ce05_h05_warmup3000_weighted_AdamW
         
-        project_name = f"{var_model}_lr_0.00625_ce05_h05_warmup3000_weighted_AdamW" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.00625_ce05_h05_warmup3000_weighted_SGD" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
