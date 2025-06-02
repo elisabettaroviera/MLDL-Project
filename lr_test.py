@@ -2,7 +2,7 @@ import os
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from models.bisenet.build_bisenet import BiSeNet
+from models.bisenet.build_bisenet2 import BiSeNet
 from datasets.cityscapes import CityScapes
 from data.dataloader import dataloader
 from datasets.transform_datasets import transform_cityscapes, transform_cityscapes_mask
