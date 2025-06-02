@@ -74,6 +74,12 @@ if __name__ == "__main__":
     print("Load the datasets")
     cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)
     cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
+    print("Access CITYSCAPES dataset")
+
+    cs_train_gta = CityScapes('/kaggle/input/gta5-dataset/GTA5', 'train', transform, target_transform)
+    cs_val_gta = CityScapes('', 'val', transform, target_transform)
+    print("Access GTA dataset")
+
 
 
     # Choose the model's parameters
