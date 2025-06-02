@@ -185,7 +185,7 @@ class BiSeNet(torch.nn.Module):
             # supervision block
             self.supervision1 = nn.Conv2d(in_channels=256, out_channels=num_classes, kernel_size=1)
             self.supervision2 = nn.Conv2d(in_channels=512, out_channels=num_classes, kernel_size=1)
-            self.dropout = nn.Dropout(p=0.2) # dropout AUMENTA P    
+            self.dropout = nn.Dropout(p=0.3) # dropout AUMENTA P    
             # build feature fusion module
             self.feature_fusion_module = FeatureFusionModule(num_classes, 1024)
         else:

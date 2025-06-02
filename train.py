@@ -55,7 +55,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         loss_main = criterion(outputs[0], targets)
         loss_aux1 = criterion(outputs[1], targets)
         loss_aux2 = criterion(outputs[2], targets)
-        total_loss = loss_main + alpha_change * (loss_aux1 + loss_aux2)
+        total_loss = loss_main + alpha_change * (0.75*loss_aux1 + loss_aux2)
 
         # Normalizza la loss per il numero di accumulation
         total_loss = total_loss / accumulation_steps
@@ -75,7 +75,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
 
         # Compute the learning rate
         #lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iter, lr_decay_iter=1, max_iter=max_iter, power=1.1)
-        lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iter, max_iter=max_iter, power=0.9,  warmup_iters=2700, warmup_start_lr=1e-6) # poco meno 3 epoche
+        lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iter, max_iter=max_iter, power=0.9,  warmup_iters=3000, warmup_start_lr=1e-6) # poco meno 3 epoche
 
         # Update the running loss
         running_loss += total_loss.item() # Update of the loss == contain the total loss of the epoch
