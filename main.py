@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
     # Load the datasets (Cityspaces)
     print("Load the datasets")
-    cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
-    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
+    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
 
 
     # Choose the model's parameters
