@@ -5,7 +5,7 @@ import wandb
 import gdown
 from torchvision.datasets import ImageFolder
 from models.deeplabv2.deeplabv2 import get_deeplab_v2
-from models.bisenet.build_bisenet import BiSeNet
+from models.bisenet.build_bisenet2 import BiSeNet
 from datasets.transform_datasets import *
 from data.dataloader import dataloader
 import numpy as np
@@ -132,9 +132,9 @@ if __name__ == "__main__":
 
     # Definition of the optimizer for the first epoch
     print("Definition of the optimizer")
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
+    #optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-2)
 
-    
     # Defintion of the loss function CombinedLoss_All
     print("Definition of the loss") 
     #loss = CombinedLoss_All(num_classes=num_classes, alpha=1, beta=0, gamma=0, theta=0, delta=0, focal_gamma=2, ignore_index=255) # CHANGE HERE THE LOSS
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         # _lr_0.00625_ce1_warmup1100_alpha0.4
         # _lr_0.00625_ce1_warmup2500_alpha1_weighted
         
-        project_name = f"{var_model}_lr_0.00625_ce07_tvf03_warmup3000_weighted_alpha075" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.00625_ce07_tvf03_warmup3000_weighted_AdamW" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
             
             # Defintion of the loss function CombinedLoss_All
             print("Definition of the loss") 
-            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, delta=0, focal_gamma=3, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, delta=0, epsilon=0, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
             # alpha   - CrossEntropy
             # beta    - Lovász
             # gamma   - Tversky
@@ -199,7 +199,7 @@ if __name__ == "__main__":
         elif epoch == 1:
             # Definition of the loss function CombinedLoss_All
             print("Definition of the loss") 
-            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, delta=0, focal_gamma=3, ignore_index=255)
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, delta=0, epsilon=0, focal_gamma=2, ignore_index=255)
             
         print(f"Epoch {epoch}")
 
