@@ -159,8 +159,10 @@ if __name__ == "__main__":
         # _lr_0.00625_ce1_warmup2500_alpha1_weighted
         # _lr_0.00625_ce07_tvf03_warmup3000_weighted_AdamW
         # _lr_0.00625_ce05_h05_warmup3000_weighted_AdamW
+        # _lr_0.00625_ce05_h03_d02_warmup3000_weighted_SGD
+        # 
         
-        project_name = f"{var_model}_lr_0.00625_ce05_h03_d02_warmup3000_weighted_SGD" # CHANGE HERE THE PROJECT NAME
+        project_name = f"{var_model}_lr_0.00625_ce06_h04_(ONLY)_warmup3000_weighted_SGD" # CHANGE HERE THE PROJECT NAME
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
@@ -191,7 +193,7 @@ if __name__ == "__main__":
             
             # Defintion of the loss function CombinedLoss_All
             print("Definition of the loss") 
-            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0.2, delta=0, epsilon=0.3, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.6, beta=0, gamma=0, theta=0, delta=0, epsilon=0.4, focal_gamma=2, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
             # alpha   - CrossEntropy
             # beta    - Lovász
             # gamma   - Tversky
@@ -201,7 +203,7 @@ if __name__ == "__main__":
         elif epoch == 1:
             # Definition of the loss function CombinedLoss_All
             print("Definition of the loss") 
-            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0.2, delta=0, epsilon=0.3, focal_gamma=2, ignore_index=255)
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.6, beta=0, gamma=0, theta=0, delta=0, epsilon=0.4, focal_gamma=2, ignore_index=255)
             
         print(f"Epoch {epoch}")
 
