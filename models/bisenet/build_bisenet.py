@@ -1,17 +1,15 @@
-# We have to implement somethin in this file?
-
 import torch
 from torch import nn
 from .build_contextpath import build_contextpath
 import warnings
 warnings.filterwarnings(action='ignore')
 
-class DropConnectConv2d(nn.Conv2d):  # CHANGED HERE
-    def __init__(self, *args, drop_prob=0.2, **kwargs):  # CHANGED HERE
+class DropConnectConv2d(nn.Conv2d):
+    def __init__(self, *args, drop_prob=0.2, **kwargs):
         super().__init__(*args, **kwargs)
-        self.drop_prob = drop_prob  # CHANGED HERE
+        self.drop_prob = drop_prob
 
-    def forward(self, input):  # CHANGED HERE
+    def forward(self, input):
         if self.training:
             mask = (torch.rand_like(self.weight) > self.drop_prob).float()
             weight = self.weight * mask
@@ -20,75 +18,42 @@ class DropConnectConv2d(nn.Conv2d):  # CHANGED HERE
         return nn.functional.conv2d(input, weight, self.bias, self.stride,
                                     self.padding, self.dilation, self.groups)
 
-# questo è ognuno dei blocchi dentro Spatial Path con le trasformazioni conv+bn+relu
-# **ConvBlock**. This class implements a standard convolutional block consisting of a 2D convolution, Batch Normalization, 
-# and ReLU activation. It is typically used for downsampling the feature map.
+
 class ConvBlock(torch.nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=2, padding=1):
         super().__init__()
-        # self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size,
-        #                        stride=stride, padding=padding, bias=False)
-        self.conv1 = DropConnectConv2d(in_channels, out_channels,  # CHANGED HERE
+        self.conv1 = DropConnectConv2d(in_channels, out_channels,
                                        kernel_size=kernel_size,
                                        stride=stride,
                                        padding=padding,
                                        bias=False,
-                                       drop_prob=0.3)  # CHANGED HERE
+                                       drop_prob=0.3)
         self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
-        self.dropout = nn.Dropout2d(p=0.1)  # CHANGED HERE
+        self.dropout = nn.Dropout2d(p=0.1)
 
     def forward(self, input):
         x = self.conv1(input)
         x = self.relu(self.bn(x))
-        x = self.dropout(x)  # CHANGED HERE
+        x = self.dropout(x)
         return x
 
 
-"""
-class ConvBlock(torch.nn.Module):
-    # **ConvBlock.__init__**. This is the constructor method. It initializes the convolutional layer (`nn.Conv2d`),
-    # the batch normalization layer (`nn.BatchNorm2d`), and the ReLU activation layer (`nn.ReLU`).
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=2, padding=1):
-        super().__init__()
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size,
-                               stride=stride, padding=padding, bias=False)
-        self.bn = nn.BatchNorm2d(out_channels)
-        #self.relu = nn.ReLU() # nn.leakyRelu? nn.leakyReLU(negative_slope=0.1, inplace=True)
-        self.relu = nn.leakyReLU(negative_slope=0.1, inplace=True) 
-
-    # **ConvBlock.forward**. This method defines the forward pass of the block. It applies the convolution, then 
-    # the batch normalization, and finally the ReLU activation to the input.
-    def forward(self, input):
-        x = self.conv1(input)
-        return self.relu(self.bn(x))"""
-
-#sussueguri di blocchi in spatial path
-# **Spatial_path**. This module processes the input image to extract rich spatial details.
-# It consists of a sequence of three `ConvBlock` instances.
 class Spatial_path(torch.nn.Module):
-    # **Spatial_path.__init__**. This is the constructor method. It initializes the three `ConvBlock` layers with 
-    # specific input/output channels to create a spatial processing path.
     def __init__(self):
         super().__init__()
         self.convblock1 = ConvBlock(in_channels=3, out_channels=64)
         self.convblock2 = ConvBlock(in_channels=64, out_channels=128)
         self.convblock3 = ConvBlock(in_channels=128, out_channels=256)
 
-    # **Spatial_path.forward**. This method defines the forward pass. It passes the input sequentially through 
-    # the three convolutional blocks defined in the constructor.
     def forward(self, input):
-        x = self.convblock1(input) # Qui PyTorch chiama automaticamente ConvBlock.forward(input)
+        x = self.convblock1(input)
         x = self.convblock2(x)
         x = self.convblock3(x)
         return x
 
-# **AttentionRefinementModule**. This module refines features from a specific path (likely the context path) by
-#  applying channel-wise attention. It uses global average pooling to get channel statistics, processes them, and 
-# multiplies the resulting attention mask with the original feature map.
+
 class AttentionRefinementModule(torch.nn.Module):
-    # **AttentionRefinementModule.__init__**. This is the constructor method. It initializes the necessary layers for 
-    # attention: a 1x1 convolution, batch normalization, sigmoid activation, and adaptive average pooling.
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
@@ -97,52 +62,92 @@ class AttentionRefinementModule(torch.nn.Module):
         self.in_channels = in_channels
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
 
-    # **AttentionRefinementModule.forward**. This method defines the forward pass of the module. It computes global average
-    # pooling on the input, applies convolution/BN/sigmoid to get attention weights, and finally multiplies these weights 
-    # with the original input feature map.
     def forward(self, input):
-        # global average pooling
         x = self.avgpool(input)
         assert self.in_channels == x.size(1), 'in_channels and out_channels should all be {}'.format(x.size(1))
         x = self.conv(x)
         x = self.sigmoid(self.bn(x))
-        # x = self.sigmoid(x)
-        # channels of input and x should be same
         x = torch.mul(input, x)
         return x
 
-# **FeatureFusionModule**. This module combines features from the spatial path and the context path (or parts of it). 
-# It concatenates them, processes them through a `ConvBlock` (without downsampling), and then applies a refinement step 
-# similar to the Attention Refinement Module, adding the result back to the original fused feature.
+
+# === ASPP MODULE (Atrous Spatial Pyramid Pooling) === #CHANGE HERE
+class ASPP(nn.Module):  # CHANGE HERE
+    def __init__(self, in_channels, out_channels):  # CHANGE HERE
+        super(ASPP, self).__init__()  # CHANGE HERE
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1)  # CHANGE HERE
+        self.conv2 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=6, dilation=6)  # CHANGE HERE
+        self.conv3 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=12, dilation=12)  # CHANGE HERE
+        self.conv4 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=18, dilation=18)  # CHANGE HERE
+        self.out_conv = nn.Conv2d(out_channels * 4, out_channels, kernel_size=1)  # CHANGE HERE
+        self.bn = nn.BatchNorm2d(out_channels)  # CHANGE HERE
+        self.relu = nn.ReLU(inplace=True)  # CHANGE HERE
+
+    def forward(self, x):  # CHANGE HERE
+        x1 = self.conv1(x)  # CHANGE HERE
+        x2 = self.conv2(x)  # CHANGE HERE
+        x3 = self.conv3(x)  # CHANGE HERE
+        x4 = self.conv4(x)  # CHANGE HERE
+        x_cat = torch.cat((x1, x2, x3, x4), dim=1)  # CHANGE HERE
+        x_out = self.relu(self.bn(self.out_conv(x_cat)))  # CHANGE HERE
+        return x_out  # CHANGE HERE
+
+
+# === CBAM (Channel-Spatial Attention Module) === #CHANGE HERE
+class CBAM(nn.Module):  # CHANGE HERE
+    def __init__(self, channels, reduction=16):  # CHANGE HERE
+        super(CBAM, self).__init__()  # CHANGE HERE
+        # Channel Attention  # CHANGE HERE
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)  # CHANGE HERE
+        self.max_pool = nn.AdaptiveMaxPool2d(1)  # CHANGE HERE
+        self.fc1 = nn.Conv2d(channels, channels // reduction, kernel_size=1, bias=False)  # CHANGE HERE
+        self.relu = nn.ReLU()  # CHANGE HERE
+        self.fc2 = nn.Conv2d(channels // reduction, channels, kernel_size=1, bias=False)  # CHANGE HERE
+        self.sigmoid_channel = nn.Sigmoid()  # CHANGE HERE
+
+        # Spatial Attention  # CHANGE HERE
+        self.conv_spatial = nn.Conv2d(2, 1, kernel_size=7, padding=3, bias=False)  # CHANGE HERE
+        self.sigmoid_spatial = nn.Sigmoid()  # CHANGE HERE
+
+    def forward(self, x):  # CHANGE HERE
+        # Channel Attention  # CHANGE HERE
+        avg_out = self.fc2(self.relu(self.fc1(self.avg_pool(x))))  # CHANGE HERE
+        max_out = self.fc2(self.relu(self.fc1(self.max_pool(x))))  # CHANGE HERE
+        channel_out = self.sigmoid_channel(avg_out + max_out)  # CHANGE HERE
+        x = x * channel_out  # CHANGE HERE
+
+        # Spatial Attention  # CHANGE HERE
+        avg_out = torch.mean(x, dim=1, keepdim=True)  # CHANGE HERE
+        max_out, _ = torch.max(x, dim=1, keepdim=True)  # CHANGE HERE
+        spatial_out = self.sigmoid_spatial(self.conv_spatial(torch.cat([avg_out, max_out], dim=1)))  # CHANGE HERE
+        x = x * spatial_out  # CHANGE HERE
+        return x  # CHANGE HERE
+
+
 class FeatureFusionModule(torch.nn.Module):
-    # **FeatureFusionModule.__init__**. This is the constructor method. It initializes the layers needed for 
-    # feature fusion, including a `ConvBlock` (with stride 1), 1x1 convolutions, ReLU, Sigmoid, and adaptive 
-    # average pooling. `in_channels` is set to be the sum of the channels from the expected inputs.
     def __init__(self, num_classes, in_channels):
         super().__init__()
-        # self.in_channels = input_1.channels + input_2.channels
-        # resnet101 3328 = 256(from spatial path) + 1024(from context path) + 2048(from context path)
-        # resnet18  1024 = 256(from spatial path) + 256(from context path) + 512(from context path)
         self.in_channels = in_channels
-
         self.convblock = ConvBlock(in_channels=self.in_channels, out_channels=num_classes, stride=1)
+
+        # === AGGIUNGI CBAM per migliorare l'attenzione === #CHANGE HERE
+        self.cbam = CBAM(num_classes)  # CHANGE HERE
+
         self.conv1 = nn.Conv2d(num_classes, num_classes, kernel_size=1)
-        #self.relu = nn.ReLU() # nn.leakyReLU(negative_slope=0.1, inplace=True)
-        self.relu = nn.LeakyReLU(negative_slope=0.1, inplace=True) # nn.ReLU(inplace=True)
+        self.relu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
         self.conv2 = nn.Conv2d(num_classes, num_classes, kernel_size=1)
         self.sigmoid = nn.Sigmoid()
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
 
-    # **FeatureFusionModule.forward**. This method defines the forward pass for fusion. It concatenates the two 
-    # input feature maps along the channel dimension, passes them through the `ConvBlock`, applies global average 
-    # pooling, processes through the 1x1 conv/relu/conv/sigmoid sequence to get attention, multiplies this with 
-    # the `ConvBlock` output (`feature`), and adds this result back to the `feature`.
     def forward(self, input_1, input_2):
         x = torch.cat((input_1, input_2), dim=1)
         assert self.in_channels == x.size(1), 'in_channels of ConvBlock should be {}'.format(x.size(1))
         feature = self.convblock(x)
-        x = self.avgpool(feature)
 
+        # Applica CBAM per affinare la fusione #CHANGE HERE
+        feature = self.cbam(feature)  # CHANGE HERE
+
+        x = self.avgpool(feature)
         x = self.relu(self.conv1(x))
         x = self.sigmoid(self.conv2(x))
         x = torch.mul(feature, x)
@@ -150,49 +155,33 @@ class FeatureFusionModule(torch.nn.Module):
         return x
 
 
-# **BiSeNet**. This is the main class implementing the BiSeNet architecture for semantic segmentation. It combines 
-# a Spatial Path (`Spatial_path`) to preserve spatial details and a Context Path (`build_contextpath` output) to 
-# capture global semantic information. It uses Attention Refinement Modules (ARM) to refine context features and 
-# a Feature Fusion Module (FFM) to combine features from both paths.
 class BiSeNet(torch.nn.Module):
-    # **BiSeNet.__init__**. This is the constructor method. It initializes the `Spatial_path`, the chosen 
-    # `Context_path` (based on the `context_path` argument), the two `AttentionRefinementModule`s, two supervision 
-    # layers (typically used during training), and the `FeatureFusionModule`. It also initializes the final 1x1
-    #  convolution and calls the `init_weight` method to initialize weights. It populates a list `self.mul_lr` with 
-    # modules for potential differentiated learning rate configuration.
     def __init__(self, num_classes, context_path):
         super().__init__()
-        # build spatial path
         self.saptial_path = Spatial_path()
-
-        # build context path
         self.context_path = build_contextpath(name=context_path)
 
-        # build attention refinement module  for resnet 101
         if context_path == 'resnet101':
             self.attention_refinement_module1 = AttentionRefinementModule(1024, 1024)
             self.attention_refinement_module2 = AttentionRefinementModule(2048, 2048)
-            # supervision block
             self.supervision1 = nn.Conv2d(in_channels=1024, out_channels=num_classes, kernel_size=1)
             self.supervision2 = nn.Conv2d(in_channels=2048, out_channels=num_classes, kernel_size=1)
-            # build feature fusion module
             self.feature_fusion_module = FeatureFusionModule(num_classes, 3328)
 
         elif context_path == 'resnet18':
-            # build attention refinement module  for resnet 18
             self.attention_refinement_module1 = AttentionRefinementModule(256, 256)
             self.attention_refinement_module2 = AttentionRefinementModule(512, 512)
-            # supervision block
             self.supervision1 = nn.Conv2d(in_channels=256, out_channels=num_classes, kernel_size=1)
             self.supervision2 = nn.Conv2d(in_channels=512, out_channels=num_classes, kernel_size=1)
-            self.dropout = nn.Dropout(p=0.3) # dropout AUMENTA P    
-            # build feature fusion module
+            self.dropout = nn.Dropout(p=0.3)
             self.feature_fusion_module = FeatureFusionModule(num_classes, 1024)
         else:
             print('Error: unspport context_path network \n')
 
-        # build final convolution
         self.conv = nn.Conv2d(in_channels=num_classes, out_channels=num_classes, kernel_size=1)
+
+        # === AGGIUNGI ASPP alla fine del context path === #CHANGE HERE
+        self.aspp = ASPP(512, 512) if context_path == 'resnet18' else ASPP(2048, 2048)  # CHANGE HERE
 
         self.init_weight()
 
@@ -204,10 +193,8 @@ class BiSeNet(torch.nn.Module):
         self.mul_lr.append(self.supervision2)
         self.mul_lr.append(self.feature_fusion_module)
         self.mul_lr.append(self.conv)
+        self.mul_lr.append(self.aspp)  # CHANGE HERE
 
-    # **BiSeNet.init_weight**. This custom method initializes the weights of the convolutional and batch 
-    # normalization layers within this model, specifically *excluding* the layers that belong to the 
-    # `context_path`. It uses Kaiming initialization for convolutions and constant initialization for batch norm.
     def init_weight(self):
         for name, m in self.named_modules():
             if 'context_path' not in name:
@@ -219,22 +206,16 @@ class BiSeNet(torch.nn.Module):
                     nn.init.constant_(m.weight, 1)
                     nn.init.constant_(m.bias, 0)
 
-    # **BiSeNet.forward**. This method defines the forward pass of the entire BiSeNet model. It processes the 
-    # input through the spatial path and the context path, applies ARMs to context features, upsamples and 
-    # concatenates them. It then passes the spatial path output and concatenated context features through the FFM. 
-    # The FFM output is upsampled to the original input size and processed by the final convolution layer. 
-    # During training (`self.training == True`), it also computes and returns outputs from supervision layers 
-    # applied to intermediate context features before fusion.
     def forward(self, input):
-        # output of spatial path
         sx = self.saptial_path(input)
-
-        # output of context path
         cx1, cx2, tail = self.context_path(input)
         cx1 = self.attention_refinement_module1(cx1)
         cx2 = self.attention_refinement_module2(cx2)
+
+        # === Applica ASPP sul context finale === #CHANGE HERE
+        cx2 = self.aspp(cx2)  # CHANGE HERE
+
         cx2 = torch.mul(cx2, tail)
-        # upsampling
         cx1 = torch.nn.functional.interpolate(cx1, size=sx.size()[-2:], mode='bilinear')
         cx2 = torch.nn.functional.interpolate(cx2, size=sx.size()[-2:], mode='bilinear')
         cx = torch.cat((cx1, cx2), dim=1)
@@ -245,12 +226,8 @@ class BiSeNet(torch.nn.Module):
             cx1_sup = torch.nn.functional.interpolate(cx1_sup, size=input.size()[-2:], mode='bilinear')
             cx2_sup = torch.nn.functional.interpolate(cx2_sup, size=input.size()[-2:], mode='bilinear')
 
-        # output of feature fusion module
         result = self.feature_fusion_module(sx, cx)
-
         result = self.dropout(result)
-
-        # upsampling
         result = torch.nn.functional.interpolate(result, scale_factor=8, mode='bilinear')
         result = self.conv(result)
 
@@ -258,8 +235,3 @@ class BiSeNet(torch.nn.Module):
             return result, cx1_sup, cx2_sup
 
         return result
-
-
-#DROPCONNECT
-#CUTOUT
-#BATCHNORMALIZATION
