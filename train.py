@@ -39,7 +39,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     print(f"Training on {len(dataloader_train)} batches")
     
     # 4. Loop on the batches of the dataset
-    accumulation_steps = 2  # o 1 se non vuoi accumulation
+    accumulation_steps = 1  # o 1 se non vuoi accumulation
     optimizer.zero_grad()
 
     for batch_idx, (inputs, targets, _) in enumerate(dataloader_train):
