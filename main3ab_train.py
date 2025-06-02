@@ -168,7 +168,7 @@ if __name__ == "__main__":
     # 6) one of 2 best comb of color + best comb of weather
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent OKK
     # 7) one of 3(!) best comb of color + best comb of weather
-    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent OK going from 43
+    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent OK val
 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent forse non ha senso farla...
 
