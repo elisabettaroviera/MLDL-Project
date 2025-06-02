@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
             # Defintion of the loss function CombinedLoss_All
             print("Definition of the loss") 
-            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=4, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
+            loss = CombinedLoss_All(num_classes=num_classes, alpha=0.5, beta=0, gamma=0, theta=0, delta=0.5, focal_gamma=3, ignore_index=255, class_weights=class_weights) # CHANGE HERE THE LOSS
             # alpha   - CrossEntropy
         # beta    - Lovász
         # gamma   - Tversky

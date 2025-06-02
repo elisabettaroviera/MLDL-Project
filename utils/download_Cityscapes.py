@@ -1,3 +1,4 @@
+
 import requests
 from zipfile import ZipFile
 from io import BytesIO
@@ -22,3 +23,24 @@ gdown.download(cityscapes_url, cityscapes_output, quiet=False) # Download the fi
 with ZipFile("cityscapes.zip", "r") as zip_ref:
     zip_ref.extractall('./datasets')
 print('Download of the dataset Cityscapes and extraction complete!')
+
+"""
+import requests
+import os
+from zipfile import ZipFile
+
+# Percorso al file zip caricato su Kaggle (adatta il nome se necessario!)
+zip_path = '/kaggle/input/cityscapes_dataset/cityscapes.zip'  # ⚠️ controlla che questo sia corretto!
+
+# Cartella di destinazione dove estrarre
+extract_dir = './datasets/cityscapes'
+
+# Crea la cartella di destinazione se non esiste
+os.makedirs(extract_dir, exist_ok=True)
+
+# Estrai lo zip
+with ZipFile(zip_path, 'r') as zip_ref:
+    zip_ref.extractall(extract_dir)
+
+print(f'Estrazione completata! Dataset disponibile in: {extract_dir}')
+"""
