@@ -30,7 +30,7 @@ import os
 from zipfile import ZipFile
 
 # Percorso al file zip caricato su Kaggle (adatta il nome se necessario!)
-zip_path = '/kaggle/input/cityscapes_dataset/cityscapes.zip'  # ⚠️ controlla che questo sia corretto!
+zip_path = '/kaggle/input/cityscapes-dataset/Cityscapes'  # ⚠️ controlla che questo sia corretto!
 
 # Cartella di destinazione dove estrarre
 extract_dir = './datasets/cityscapes'
