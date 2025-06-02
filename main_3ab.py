@@ -107,11 +107,11 @@ if __name__ == "__main__":
     # Auro - wheather
     # Betta - geometric
     type_aug = 'wheather'
-    gta_train = GTA5('/kaggle/input/gta5-dataset', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = type_aug)
+    gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = type_aug)
     print("Load the GTA5 dataset")
     # Union of the dataset
     #gta_train = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
-
+    # /kaggle/input/gta5-dataset/GTA5/images
     print("MODEL BISENET")
     batch_size = 4 # chatgpt also suggested to try with 8 (nel paper usano 16)
     learning_rate = 0.00625 # Learning rate for the optimizer - 1e-4
