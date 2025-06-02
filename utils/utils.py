@@ -385,7 +385,44 @@ class CombinedLoss_All(nn.Module):
                 f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
                 f"theta={self.theta}, delta={self.delta})")
 """
-                
+
+class OHEMLoss(nn.Module):
+    def __init__(self, thresh=0.7, min_kept=100000, ignore_index=255):
+        """
+        :param thresh: Soglia per la loss dei pixel difficili.
+        :param min_kept: Numero minimo di pixel da mantenere.
+        :param ignore_index: Classe da ignorare.
+        """
+        super().__init__()
+        self.thresh = thresh
+        self.min_kept = min_kept
+        self.ignore_index = ignore_index
+        self.criteria = nn.CrossEntropyLoss(reduction='none', ignore_index=ignore_index)
+
+    def forward(self, pred, target):
+        """
+        :param pred: (B, C, H, W) logits
+        :param target: (B, H, W) ground truth
+        """
+        n, c, h, w = pred.shape
+        loss = self.criteria(pred, target).view(-1)
+
+        # Maschera ignore_index
+        mask = (target.view(-1) != self.ignore_index)
+        loss = loss[mask]
+
+        # Seleziona i pixel difficili
+        if self.min_kept > loss.numel():
+            kept_loss = loss
+        else:
+            loss, idx = loss.sort(descending=True)
+            kept_loss = loss[:self.min_kept]
+            if loss[self.min_kept - 1] > self.thresh:
+                kept_loss = loss[loss > self.thresh]
+
+        return kept_loss.mean()
+
+"""                
 class CombinedLoss_All(nn.Module):
     def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, focal_gamma=2.0, ignore_index=255, class_weights=None):
         super().__init__()
@@ -440,5 +477,66 @@ class CombinedLoss_All(nn.Module):
                 f"theta={self.theta}, delta={self.delta})")
     
 
-    
+"""
+
+class CombinedLoss_All(nn.Module):
+    def __init__(self, num_classes, alpha=0.4, beta=0.1, gamma=0.4, theta=0.1, delta=0.0, epsilon=0.0,
+                 focal_gamma=2.0, ignore_index=255, class_weights=None):
+        super().__init__()
+        self.alpha, self.beta, self.gamma, self.theta, self.delta, self.epsilon = alpha, beta, gamma, theta, delta, epsilon
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+        self.class_weights = class_weights
+
+        if alpha != 0:
+            if class_weights is not None:
+                self.ce_loss = nn.CrossEntropyLoss(weight=class_weights, ignore_index=ignore_index)
+            else:
+                self.ce_loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+
+        if beta != 0:
+            from utils.lovasz_losses import lovasz_softmax
+            self.lovasz_softmax = lovasz_softmax
+
+        if gamma != 0:
+            self.tversky_loss = MaskedTverskyLoss(num_classes, ignore_index)
+
+        if theta != 0:
+            self.dice_loss = MaskedDiceLoss(num_classes, ignore_index)
+
+        if delta != 0:
+            self.focal_loss = FocalLoss(gamma=focal_gamma, ignore_index=ignore_index)
+
+        if epsilon != 0:
+            self.ohem_loss = OHEMLoss(ignore_index=ignore_index)
+
+    def forward(self, outputs, targets):
+        total_loss = 0.0
+
+        if self.alpha != 0:
+            total_loss += self.alpha * self.ce_loss(outputs, targets)
+
+        if self.beta != 0:
+            probs = torch.softmax(outputs, dim=1)
+            total_loss += self.beta * self.lovasz_softmax(probs, targets, ignore=self.ignore_index)
+
+        if self.gamma != 0:
+            total_loss += self.gamma * self.tversky_loss(outputs, targets)
+
+        if self.theta != 0:
+            total_loss += self.theta * self.dice_loss(outputs, targets)
+
+        if self.delta != 0:
+            total_loss += self.delta * self.focal_loss(outputs, targets)
+
+        if self.epsilon != 0:
+            total_loss += self.epsilon * self.ohem_loss(outputs, targets)
+
+        return total_loss
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_classes={self.num_classes}, "
+                f"alpha={self.alpha}, beta={self.beta}, gamma={self.gamma}, "
+                f"theta={self.theta}, delta={self.delta}, epsilon={self.epsilon})")
+
 
