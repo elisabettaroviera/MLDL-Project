@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     # Load the datasets (Cityspaces)
     print("Load the Cityscapes dataset")
-    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
     
     # Load the datasets (GTA5)
     print("Load the GTA5 dataset")
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # Auro - wheather
     # Betta - geometric
     type_aug = 'wheather'
-    gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = type_aug)
+    gta_train = GTA5('/kaggle/input/gta5-dataset', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = type_aug)
 
     # Union of the dataset
     #gta_train = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
