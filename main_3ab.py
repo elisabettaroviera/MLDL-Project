@@ -94,11 +94,11 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     # Load the datasets (Cityspaces)
-    print("Load the Cityscapes dataset")
-    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
     
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    print("Load the Cityscapes dataset")
     # Load the datasets (GTA5)
-    print("Load the GTA5 dataset")
+    
     #gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = None)
 
     # augemented dataset: circa 50% has been changed with type_aug augmentation
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     # Betta - geometric
     type_aug = 'wheather'
     gta_train = GTA5('/kaggle/input/gta5-dataset', transform_gta_dataset, target_transform_gta, augmentation = True, type_aug = type_aug)
-
+    print("Load the GTA5 dataset")
     # Union of the dataset
     #gta_train = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
 
