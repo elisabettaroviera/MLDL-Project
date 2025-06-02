@@ -86,7 +86,7 @@ if __name__ == "__main__":
     num_epochs = 50 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 43 #CHECK BEFORE RUNNING
+    start_epoch = 1 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -168,7 +168,9 @@ if __name__ == "__main__":
     # 6) one of 2 best comb of color + best comb of weather
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent OKK
     # 7) one of 3(!) best comb of color + best comb of weather
-    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent OK val
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent OK val
+    # 8) one of 4(!) best comb of color + best comb of weather
+    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_5_comb_100_percent 
 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent forse non ha senso farla...
 
@@ -211,7 +213,7 @@ if __name__ == "__main__":
     wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     ################################ IN THIS BRANCH USE AURO TEAM : API 2bc32b7d4d8f8601d9a93be55631ae9e18f78690 ###################################
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
+        project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_5_comb_100_percent" #CHECK BEFORE RUNNING________________________________________HERE
         entity = "s281401-politecnico-di-torino" #new team auro
         # "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
