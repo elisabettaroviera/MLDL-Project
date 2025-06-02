@@ -76,8 +76,8 @@ if __name__ == "__main__":
     cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
     print("Access CITYSCAPES dataset")
 
-    cs_train_gta = CityScapes('/kaggle/input/gta5-dataset/GTA5', 'train', transform, target_transform)
-    cs_val_gta = CityScapes('', 'val', transform, target_transform)
+    cs_train_gta = CityScapes('/kaggle/input/gta5-dataset', 'train', transform, target_transform)
+    cs_val_gta = CityScapes('/kaggle/input/gta5-dataset', 'val', transform, target_transform)
     print("Access GTA dataset")
 
 
@@ -100,6 +100,7 @@ if __name__ == "__main__":
     # Define the dataloaders
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    dataloader_cs_train_gta, dataloader_cs_val_gta = dataloader(cs_train_gta, cs_val_gta, batch_size, True, True)
 
     # Take a subset of the dataloader
     # dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.25, batch_size=batch_size)
