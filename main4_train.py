@@ -164,13 +164,13 @@ if __name__ == "__main__":
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            artifact = wandb.use_artifact(f"{project_name}/discriminator_1_epoch{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"{project_name}/discriminator_1_epoch_{epoch-1}:latest", type="model")
             checkpoint_path = artifact.download()
             checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
             discriminator_1.load_state_dict(checkpoint['model_state_dict'])
             optimizer_d1.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            artifact = wandb.use_artifact(f"{project_name}/discriminator_2_epoch{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"{project_name}/discriminator_2_epoch_{epoch-1}:latest", type="model")
             checkpoint_path = artifact.download()
             checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
             discriminator_2.load_state_dict(checkpoint['model_state_dict'])
