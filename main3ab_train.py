@@ -97,7 +97,8 @@ if __name__ == "__main__":
     }
     """
 
-    type_aug = {} # CHANGE HERE!!!
+    # 2 a caso di color o tutte e 3 le migliori di weather (g h i)
+    type_aug = {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # CHANGE HERE!!!
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want

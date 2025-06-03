@@ -76,71 +76,50 @@ def transform_gta_mask():
     return transform
 
 
+#3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent
 def augmentation_transform(image, mask, type_aug):
     """
-    Applica trasformazioni basate su un dizionario con chiavi tra 'color', 'weather', 'geometric'
-    e valori come lista dei nomi delle trasformazioni da applicare.
-    Le trasformazioni vengono applicate con probabilità del 50%.
-    Chiama definendo type_aug del tipo 
+    Con probabilità 0.5 applica:
+    - 2 trasformazioni casuali dalla lista 'color' di type_aug
+    Oppure:
+    - Tutte e 3 le trasformazioni atmosferiche: RandomFog, RandomRain, ISONoise
+    
+    Le trasformazioni vengono applicate con p=1.0.
+    
+    type_aug deve essere del tipo:
     type_aug = {
-    'color': ['HueSaturationValue', 'RGBShift'],
-    'weather': ['RandomRain'],
-    'geometric': ['Affine', 'Perspective']
+        'color': ['HueSaturationValue', 'RGBShift', 'CLAHE', ...]
     }
     """
-    
-    def get_selected_transforms(transform_dict, selected_names):
-        return [transform_dict[name] for name in selected_names if name in transform_dict]
-    
-    all_transforms = []
-
-    # --- COLOR ---
+    # Trasformazioni di colore disponibili
     color_transforms = {
-        'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0), #a)
-        'CLAHE': A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0), #b)
-        'GaussNoise': A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0), #c)
-        'RGBShift': A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0), #d)
-        'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0) #e)
+        'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
+        'CLAHE': A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
+        'GaussNoise': A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0),
+        'RGBShift': A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=1.0),
+        'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
     }
 
-    # --- WEATHER ---
-    weather_transforms = {
-        'RandomShadow': A.RandomShadow(shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=1, num_shadows_upper=2, p=1.0), #f)
-        'RandomFog': A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
-        'RandomRain': A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
-        'ISONoise': A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0), #i)
-        'GaussianBlur': A.GaussianBlur(blur_limit=(3, 5), sigma_limit=0.5, p=1.0) #l)
-    }
+    # Trasformazioni "weather"
+    weather_transforms = [
+        A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
+        A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
+        A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0)] #i)]
 
-    # --- GEOMETRIC ---
-    geometric_transforms = {
-        'RandomCrop': A.RandomCrop(height=720, width=1280, p=1.0), #m)
-        'Affine': A.Affine(scale=(0.95, 1.05), translate_percent=(0.02, 0.05), rotate=(-5, 5), shear=(-2, 2), p=1.0), #n)
-        'Perspective': A.Perspective(scale=(0.02, 0.05), keep_size=True, p=1.0) #o)
-    }
+    use_color = random.random() < 0.5  # 50% di probabilità
 
-    if 'color' in type_aug:
-        selected = get_selected_transforms(color_transforms, type_aug['color'])
-        if selected:
-            all_transforms.append(A.SomeOf(selected, n=len(selected), replace=False, p=1.0))
+    if use_color:
+        selected_names = [name for name in type_aug.get('color', []) if name in color_transforms]
+        if len(selected_names) < 2:
+            raise ValueError("Servono almeno 2 trasformazioni di colore valide.")
+        chosen_color = random.sample(selected_names, 2)
+        selected_transforms = [color_transforms[name] for name in chosen_color]
+    else:
+        selected_transforms = weather_transforms  # tutte e 3
 
-    if 'weather' in type_aug:
-        selected = get_selected_transforms(weather_transforms, type_aug['weather'])
-        if selected:
-            all_transforms.append(A.SomeOf(selected, n=len(selected), replace=False, p=1.0))
-
-    if 'geometric' in type_aug:
-        selected = get_selected_transforms(geometric_transforms, type_aug['geometric'])
-        if selected:
-            all_transforms.append(A.SomeOf(selected, n=len(selected), replace=False, p=1.0))
-
-    if not all_transforms:
-        all_transforms = [A.NoOp()]
-
-    # Applica tutto!! perché dopo nel main prendo con probabilità 50%"
-    aug_transform = A.Compose(all_transforms, p=1.0)
-
-    augmented = aug_transform(image=image, mask=mask)
+    # Componi e applica le trasformazioni
+    transform = A.Compose(selected_transforms, p=1.0)
+    augmented = transform(image=image, mask=mask)
     return augmented
 
     '''
