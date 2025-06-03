@@ -215,7 +215,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     model.train() 
     # --------------------------- TRAINING LOOP -------------------------------------- #
     for batch_idx, (inputs_src, targets_src, file_names) in enumerate(dataloader_source_train): 
-        if batch_idx % 100 == 0: # Print every 100 batches
+        if batch_idx % 1 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_source_train)}")
 
         # ------------------- TRAINING BISENET WITH ADVERSARIAL LOSS ------------------- #
