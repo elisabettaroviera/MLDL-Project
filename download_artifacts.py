@@ -9,12 +9,12 @@ os.environ["WANDB_API_KEY"] = "a99b701251206c5e11379d8f1674d044e02abf5d"
 api = wandb.Api()
 
 entity = "s325951-politecnico-di-torino-mldl"
-project = "3b_GTA5_to_CITY_augmented_color_1_random_tranform_color_plus_1_from_g_h_i_100_percent"
+project = "3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent"
 #3b_GTA5_to_CITY_augmented_color_2_random_tranforms_color_+_1_from_g_h_i_100_percent0
 #3b_GTA5_to_CITY_augmented_color_1_random_tranform_color_plus_1_from_g_h_i_100_percent
 
 # Percorso locale di download
-output_dir = Path(r"C:\Users\auron\OneDrive - Politecnico di Torino\Desktop\università\machine learning & deep learning\progetto\artifacts_and_csv")
+output_dir = Path(r"C:\Users\auron\OneDrive - Politecnico di Torino\Desktop\università\machine learning & deep learning\progetto\artifacts_and_csv\3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent")
 output_dir.mkdir(parents=True, exist_ok=True)
 
 # Raggruppamento per run + epoca
