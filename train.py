@@ -196,7 +196,11 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
                          criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas): # criterion == loss function
    
     # --------------------------- BASIC DEFINITIONS -------------------------------------- #
-    var_model = os.environ['MODEL'] 
+    try:
+        var_model = os.environ['MODEL'] 
+    except KeyError:
+        print("Environment variable 'MODEL' not set. Using default model 'BiSeNet'.")
+        var_model = "BiSeNet"
     model = old_model     
     running_loss = 0.0 
     mean_loss = 0.0
