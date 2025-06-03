@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "4_Adv_Domain_Adapt_2_random_color_or_g_h_i_weather" #CHECK BEFORE RUNNING
+        project_name = "4NEWDATALOEADER__Adv_Domain_Adapt_2_random_color_or_g_h_i_weather" #CHECK BEFORE RUNNING
         entity = "s281401-politecnico-di-torino" # New new entity Auro
         # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
