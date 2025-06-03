@@ -24,6 +24,17 @@ def dataloader(dataset_train, dataset_val, batch_size, shuffle_train=True, shuff
         dataloader_train = DataLoader(dataset_train, shuffle=shuffle_train, **kwargs)
         dataloader_val = DataLoader(dataset_val, shuffle=shuffle_val, **kwargs)
         return dataloader_train, dataloader_val
+    
+
+    """| Parametro            | Cosa fa                                             |
+| -------------------- | --------------------------------------------------- |
+| `num_workers`        | Carica i dati in parallelo con più processi         |
+| `persistent_workers` | Tiene vivi i worker tra le epoche → meno overhead   |
+| `pin_memory`         | Sposta i dati in memoria pinned (più veloce su GPU) |
+
+"""
+
+
 """
 
 # Create a DataLoader
