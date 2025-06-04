@@ -11,60 +11,48 @@ from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 
-"""   
-
-    DEFINION OF THE METRICS
-    1. mIoU% --> compute_miou
-    2. Latency & FPS --> compute_latency_and_fps
-    3. FLOPs --> compute_flops
-
-"""
+ 
+# DEFINION OF THE METRICS
+# 1. mIoU% --> compute_miou
+# 2. Latency & FPS --> compute_latency_and_fps
+# 3. FLOPs --> compute_flops
 
 # 1. mIoU% 
 # Function to compute the mean Intersection over Union (mIoU) for a given set of predictions and targets
-# gt_images := the ground truth images (masks)
-# pred_images := the predicted images (masks)
-# num_classes := number of classes in the dataset
-# with return_raw = True also return the count of per class intersections and unions for the batch
-# NB: useful to compute iou for the entire train/val set 
-# with reurn_raw = False only return the miou and iou per class
-# NB: useful to compute the metrics for the single batch of images
 def compute_miou(gt_images, pred_images, num_classes, return_raw=True):
+    # return_raw = True --> return the count of per class intersections and unions for the batch, useful to compute iou for the ENTIRE train/val set 
+    # reurn_raw = False --> only return the miou and iou per class, useful to compute the metrics for the SINGLE batch of images
+
     intersections = np.zeros(num_classes)
     unions = np.zeros(num_classes)
     eps = 1e-10  # Small epsilon to avoid division by zero
     
-    # for every couple of gt_image and pred_image in the current batch
+    # For every couple of gt_image and pred_image in the current batch
     for gt, pred in zip(gt_images, pred_images):
-        # for every class
+        # For every class
         for class_id in range(num_classes):
-            # compute intersection of gt and pred
+            # Compute intersection of gt and pred
             inter = np.logical_and(gt == class_id, pred == class_id).sum()
-            # compute union of gt and pred
+            # Compute union of gt and pred
             union = np.logical_or(gt == class_id, pred == class_id).sum()
-            # accumulate intersections
+            # Accumulate intersections
             intersections[class_id] += inter
-            # accumulate unions
+            # Accumulate unions
             unions[class_id] += union
-    # compute iou per class of current batch
+
+    # Compute iou per class of current batch
     iou_per_class = (intersections / (unions + eps)) * 100
-    # compute mean iou (discarting nan)
+
+    # Compute mean iou (discarting nan)
     mean_iou = np.nanmean(iou_per_class)
 
-    # if return_raw = True also return the raw sum of intersections and unions
     if return_raw:
         return mean_iou, iou_per_class, intersections, unions
-    # else only return the batch mean_iou and iou_per_class
     else:
         return mean_iou, iou_per_class
 
 # 2. Latency & FPS
 # Function to compute the latency and FPS of a model on a given input size
-# model := the model to be evaluated
-# height := the height of the input image
-# width := the width of the input image
-# iterations := number of iterations to compute the latency and FPS
-
 def compute_latency_and_fps(model, height=512, width=1024, iterations=1000, warmup_runs=10):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
@@ -103,11 +91,6 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000, warm
 
 # 3. FLOPs
 # Function to compute the FLOPs of a model on a given input size
-# model := the model to be evaluated
-# height := the height of the input image
-# width := the width of the input image
-# iterations := number of iterations to compute the FLOPs
-
 def compute_flops(model, height=512, width=1024):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     image = torch.zeros((1, 3, height, width), device=device)

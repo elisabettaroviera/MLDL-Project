@@ -3,24 +3,10 @@ import os
 from PIL import Image
 import numpy as np
 
-# TODO: implement here your custom dataset class for Cityscapes
-
-# FIRST PROBLEM: What we have to do HERE?? 
-# 1. Upload the dataset?
-# 2. Modify it in order to use it?
-
-"""
-Method       | What it does                                               | When it is called
-__init__     | Prepares the dataset (paths, file lists, transformations)  | Once, when the dataset object is created
-__getitem__  | Returns the image and corresponding mask at a given index  | Every time the DataLoader requests a batch
-__len__      | Returns the total number of samples in the dataset         | At the beginning and during epoch creation
-
-"""
-
 class CityScapes(Dataset):
+
     def __init__(self, root_dir, split='train', transform=None, target_transform=None):
         super(CityScapes, self).__init__()
-
         self.images = []
         self.masks = []
         self.transform = transform
@@ -60,11 +46,12 @@ class CityScapes(Dataset):
                     self.images.append(img_path)
                     self.masks.append(mask_path)
 
-
         print(f"Loaded {len(self.images)} images and {len(self.masks)} masks from {split} set.")
+
 
     def __len__(self):
         return len(self.images)
+
 
     def __getitem__(self, idx):
         image = Image.open(self.images[idx]).convert('RGB')
@@ -76,8 +63,15 @@ class CityScapes(Dataset):
         if self.target_transform:
             mask = self.target_transform(mask)
             
-
         filename = os.path.basename(self.images[idx])
 
         # Return the image, mask and filename
         return image, mask, filename
+
+
+
+# DETAIL ON THE CLASS STRUCTION
+# Method       | What it does                                               | When it is called
+# __init__     | Prepares the dataset (paths, file lists, transformations)  | Once, when the dataset object is created
+# __getitem__  | Returns the image and corresponding mask at a given index  | Every time the DataLoader requests a batch
+# __len__      | Returns the total number of samples in the dataset         | At the beginning and during epoch creation

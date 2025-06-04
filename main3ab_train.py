@@ -1,5 +1,3 @@
-# main_train.py
-
 import os
 import torch
 import wandb

@@ -1,10 +1,8 @@
-"""
-Lovasz-Softmax and Jaccard hinge loss in PyTorch
-Maxim Berman 2018 ESAT-PSI KU Leuven (MIT License)
-"""
+# Lovasz-Softmax and Jaccard hinge loss in PyTorch
+# Maxim Berman 2018 ESAT-PSI KU Leuven (MIT License)
+
 
 from __future__ import print_function, division
-
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
@@ -73,7 +71,6 @@ def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
 
 
 # --------------------------- BINARY LOSSES ---------------------------
-
 
 def lovasz_hinge(logits, labels, per_image=True, ignore=None):
     """
@@ -148,7 +145,6 @@ def binary_xloss(logits, labels, ignore=None):
 
 
 # --------------------------- MULTICLASS LOSSES ---------------------------
-
 
 def lovasz_softmax(probas, labels, classes='present', per_image=False, ignore=None):
     """
