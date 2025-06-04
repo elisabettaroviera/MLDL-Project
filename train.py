@@ -13,6 +13,7 @@ from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, 
 from utils.utils import poly_lr_scheduler
 import wandb
 import gc
+import time
 
 bce_loss = torch.nn.BCEWithLogitsLoss(reduction="mean")
 softmax = torch.nn.functional.softmax
@@ -213,6 +214,9 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
 
     model.train() 
+
+    start_time = time.time()
+
     # --------------------------- TRAINING LOOP -------------------------------------- #
     for batch_idx, (inputs_src, targets_src, file_names) in enumerate(dataloader_source_train): 
         if batch_idx % 100 == 0: # Print every 100 batches
@@ -261,6 +265,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         # Convert model outputs to predicted class labels
 
         # ------------------- TRAINING DISCRIMINATORS ------------------- #
+        discriminator_start = time.time()
         lock_model(model) # Lock the model parameters to avoid training them
         for discriminator in discriminators:
             unlock_model(discriminator)
@@ -296,6 +301,9 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
             disc_optimizer.step()
 
         unlock_model(model) # Unlock the model parameters to allow training
+        discriminator_end = time.time()
+
+        print(f"Discriminator training time: {discriminator_end - discriminator_start:.2f} seconds")
 
         preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
         gts = targets_src.detach().cpu().numpy()
@@ -346,7 +354,9 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         mean_fps = -1
         std_fps = -1
 
-
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Training completed in {elapsed_time:.2f} seconds")
 
     # 6. Save the parameter of the model 
     print("Saving the model")
