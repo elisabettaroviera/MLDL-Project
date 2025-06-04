@@ -11,8 +11,8 @@ cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct t
 #cityscapes_id = '10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI'  # Google Drive file ID
 #cityscapes_id = '1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J' # quello di betta di cui è gelosa
 #cityscapes_id = '11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb'
-cityscapes_id = '1xLzraNdr-8nmoi-mSyI6_tFuG6kEVKu7' 
-#cityscapes_id = '1cnGfLZftckgvsL-OyBSZhx0GYDSK4UvC' #newissimo luci --> nat
+#cityscapes_id = '1xLzraNdr-8nmoi-mSyI6_tFuG6kEVKu7' 
+cityscapes_id = '1cnGfLZftckgvsL-OyBSZhx0GYDSK4UvC' #newissimo luci --> nat
 cityscapes_url = f'https://drive.google.com/uc?id={cityscapes_id}' # Construct the download URL
 
 
