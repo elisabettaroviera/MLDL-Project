@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = to_obtain_id(project_name)
-
+    wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
