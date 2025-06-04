@@ -1,14 +1,10 @@
 import os
 import torch
-from torchvision.datasets import ImageFolder
 from datasets.transform_datasets import *
-from data.dataloader import dataloader
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
-from datasets.cityscapes import CityScapes
 from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
 from utils.utils import poly_lr_scheduler
 import wandb
@@ -202,6 +198,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     except KeyError:
         print("Environment variable 'MODEL' not set. Using default model 'BiSeNet'.")
         var_model = "BiSeNet"
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = old_model.to(device) 
     running_loss = 0.0 
@@ -277,8 +274,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         softmax_src = softmax(outputs_source[0], dim=1).detach()
         softmax_tgt = softmax(outputs_target[0], dim=1).detach()
 
-        for i, discriminator in enumerate(discriminators):
-            disc_optimizer = discriminator_optimizers[i]
+        for discriminator, disc_optimizer in zip(discriminators, discriminator_optimizers):
             disc_optimizer.zero_grad()
 
             # SOURCE: discriminator deve dire "source_label"
@@ -313,9 +309,9 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         total_intersections += inters
         total_unions += unions
 
-        del outputs, outputs_target, softmax_src, softmax_tgt, preds
-        torch.cuda.empty_cache()
-        gc.collect()
+    del outputs, outputs_target, softmax_src, softmax_tgt, preds
+    torch.cuda.empty_cache()
+    gc.collect()
 
         
     # --------------------------- END OF TRAINING LOOP -------------------------------------- #
