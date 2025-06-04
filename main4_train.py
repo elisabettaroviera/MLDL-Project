@@ -83,7 +83,7 @@ if __name__ == "__main__":
     num_epochs = 50 
     num_classes = 19
     ignore_index = 255
-    start_epoch = 15 #CHECK BEFORE RUNNING
+    start_epoch = 1 #CHECK BEFORE RUNNING
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
     
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
     """
     alpha   # CrossEntropy
     beta    # Lovász
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "4_Adversarial_Domain_Adaptation_base" #CHECK BEFORE RUNNING
+        project_name = "4_Adversarial_Domain_Adaptation_base_only_ce" #CHECK BEFORE RUNNING
         entity = "s281401-politecnico-di-torino" # New new entity Auro
         # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
