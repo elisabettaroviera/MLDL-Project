@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     lambdas = [0.1, 0.1]  # Lambda values for the adversarial loss
 
-
+    wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     for epoch in range(start_epoch, num_epochs + 1):
         project_name = "4_Adversarial_Domain_Adaptation_base_only_ce" #CHECK BEFORE RUNNING
         entity = "s281401-politecnico-di-torino" # New new entity Auro
