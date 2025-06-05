@@ -79,6 +79,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, l
             print(f"Batch {batch_idx}/{len(dataloader_train)}")
 
         iteration += 1 # Increment the iteration counter
+        print('iteration is ', iteration)
 
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
 

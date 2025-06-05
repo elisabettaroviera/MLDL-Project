@@ -80,7 +80,7 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 50 #changed bc doing smaller runs
+    num_epochs = 50 
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
@@ -97,13 +97,12 @@ if __name__ == "__main__":
     'geometric': ['RandomCrop', 'Affine', 'Perspective']
     }
     """
-   
+
     # 2 a caso di color o tutte e 3 le migliori di weather (g h i)
     type_aug = {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} # CHANGE HERE!!!
     gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5' ,transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
-
     # Choose with probability 0.5 the augmented images
     num_augmented = int(0.5 * len(gta_train_aug))
     indices = random.sample(range(len(gta_train_aug)), num_augmented)
@@ -114,9 +113,10 @@ if __name__ == "__main__":
     
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
-    #in teroai prende solo il train cosi
     full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
-
+    # Take a subset of the dataloader
+    #dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
+    
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "4NEWDATALOEADER__Adv_Domain_Adapt_2_random_color_or_g_h_i_weather" #CHECK BEFORE RUNNING
+        project_name = "4_Adv_Domain_Adapt_2_random_color_or_g_h_i_weather" #CHECK BEFORE RUNNING
         entity = "s281401-politecnico-di-torino" # New new entity Auro
         # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
