@@ -438,7 +438,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
 
         # Convert model outputs to predicted class labels
-        preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
+        preds = outputs_up.argmax(dim=1).detach().cpu().numpy()
         gts = targets.detach().cpu().numpy()
         
         # Accumulate intersections and unions per class
