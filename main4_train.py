@@ -186,7 +186,7 @@ if __name__ == "__main__":
             compute_mIoU = False
 
         metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, full_dataloader_gta_train, full_dataloader_cityscapes_train, loss, optimizer, discriminators_optimizers, iter_curr,
-                                                        learning_rate, num_classes, max_iter, lambdas)
+                                                        learning_rate, num_classes, max_iter, lambdas, compute_mIoU)
         end_train = time.time()
         print(f"Time for training: {(end_train - start_train)/60:.2f} min")
 
