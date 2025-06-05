@@ -6,6 +6,7 @@ import albumentations as A
 import torchvision.transforms as T
 from albumentations.pytorch import ToTensorV2
 from datasets.transform_datasets import augmentation_transform
+import torch
 
 
 class GTA5(Dataset):
@@ -48,29 +49,34 @@ class GTA5(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-        # --- Lettura immagine ---
         if self.cache:
             image = self.images_data[idx]
             mask = self.labels_data[idx]
+            image_path = self.images[idx]
         else:
-            image = np.array(Image.open(self.images[idx]).convert('RGB'))
-            mask = np.array(Image.open(self.labels[idx]))
-
-        # --- Albumentations ---
-        if self.augmentation:
+            image_path = self.images[idx]
+            label_path = self.labels[idx]
+            image = np.array(Image.open(image_path).convert('RGB'))
+            mask = np.array(Image.open(label_path))
+    
+        if self.augmentation and self.type_aug:
             augmented = augmentation_transform(image=image, mask=mask, type_aug=self.type_aug)
             image = augmented['image']
-            mask = augmented['mask'].long()
+            mask = augmented['mask']
+    
+            # Se augmentation_transform NON include ToTensorV2:
+            image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
+            mask = torch.from_numpy(mask).long()
+    
         else:
-            # fallback su torchvision
             image = Image.fromarray(image)
             mask = Image.fromarray(mask)
+    
             if self.transform:
                 image = self.transform(image)
             if self.target_transform:
                 mask = self.target_transform(mask)
-            if isinstance(mask, Image.Image):  # converto se non trasformato
-                mask = T.PILToTensor()(mask).squeeze().long()
-
-        filename = os.path.basename(self.images[idx])
+    
+        filename = os.path.basename(image_path)
         return image, mask, filename
+
