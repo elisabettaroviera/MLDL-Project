@@ -1,82 +1,82 @@
 from torch.utils.data import Dataset
 import os
 from PIL import Image
-import random
-import albumentations as A
 import numpy as np
+import albumentations as A
+import torchvision.transforms as T
+from albumentations.pytorch import ToTensorV2
 from datasets.transform_datasets import augmentation_transform
-import time
+
 
 class GTA5(Dataset):
-
-    def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False, type_aug = None):
-        super(GTA5, self).__init__()
-        
-        # Initialize lists to store image and label paths
-        self.images = []
-        self.masks = []
+    def __init__(self, root_dir, transform=None, target_transform=None,
+                 augmentation=False, type_aug=None, cache=False, debug=False):
+        super().__init__()
+        self.image_dir = os.path.join(root_dir, 'images')
+        self.label_dir = os.path.join(root_dir, 'labels')
         self.transform = transform
         self.target_transform = target_transform
         self.augmentation = augmentation
         self.type_aug = type_aug
+        self.cache = cache
+        self.debug = debug
 
-        # Define image and label directories
-        image_dir = os.path.join(root_dir, 'images')
-        label_dir = os.path.join(root_dir, 'labels')
+        # Caricamento e ordinamento dei path
+        self.images = []
+        self.labels = []
+        for fname in sorted(os.listdir(self.image_dir)):
+            if fname.endswith(('.png', '.jpg', '.jpeg')):
+                img_path = os.path.join(self.image_dir, fname)
+                label_path = os.path.join(self.label_dir, fname)
+                if os.path.exists(label_path):
+                    self.images.append(img_path)
+                    self.labels.append(label_path)
 
-        # Check if the directories exist
-        if not os.path.exists(image_dir):
-            raise FileNotFoundError(f"Image directory not found: {image_dir}")
-        if not os.path.exists(label_dir):
-            raise FileNotFoundError(f"Label directory not found: {label_dir}")
+        if self.debug:
+            print(f"[DEBUG] Loaded {len(self.images)} image-label pairs.")
 
-        # Iterate over all image files
-        for img_name in os.listdir(image_dir):
-            # Only consider common image formats (all images are png actually)
-            if img_name.endswith(('.png', '.jpg', '.jpeg')):
-                img_path = os.path.join(image_dir, img_name)
-                label_path = os.path.join(label_dir, img_name)  # Assume same filename for label
+        # Caching in memoria (opzionale)
+        self.images_data = None
+        self.labels_data = None
+        if self.cache:
+            self.images_data = [np.array(Image.open(p).convert('RGB')) for p in self.images]
+            self.labels_data = [np.array(Image.open(p)) for p in self.labels]
+            if self.debug:
+                print("[DEBUG] Cached images and masks.")
 
-                # Skip if the corresponding label does not exist
-                if not os.path.exists(label_path):
-                    print(f"Warning: label not found for image {img_name}")
-                    continue
-
-                # Store the valid image-label pair paths
-                self.images.append(img_path)
-                self.masks.append(label_path)
-
-        print(f"Loaded {len(self.images)} images and {len(self.masks)} masks.")
-
+        # Setup augmentation
+        if self.augmentation:
+            self.aug_transform = augmentation_transform(type_aug=self.type_aug)
+        else:
+            self.aug_transform = None
 
     def __len__(self):
-            # Return total number of samples
-            return len(self.images)
-
+        return len(self.images)
 
     def __getitem__(self, idx):
-        start_retrieve = time.time()
-        image_path = self.images[idx]
-        image = Image.open(image_path).convert('RGB')
-        label = Image.open(self.masks[idx])
-        end_retrieve = time.time()
-        print(f"Time to retrieve image {idx}: {end_retrieve - start_retrieve:.4f} seconds")
+        # --- Lettura immagine ---
+        if self.cache:
+            image = self.images_data[idx]
+            mask = self.labels_data[idx]
+        else:
+            image = np.array(Image.open(self.images[idx]).convert('RGB'))
+            mask = np.array(Image.open(self.labels[idx]))
 
-        
-        #if self.augmentation:
-        #    # Apply the Augmentation to all the image
-        #    augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
-        #    image = Image.fromarray(augmented['image'])
-        #    label = Image.fromarray(augmented['mask'])
+        # --- Albumentations ---
+        if self.aug_transform is not None:
+            augmented = self.aug_transform(image=image, mask=mask)
+            image = augmented['image']
+            mask = augmented['mask'].long()
+        else:
+            # fallback su torchvision
+            image = Image.fromarray(image)
+            mask = Image.fromarray(mask)
+            if self.transform:
+                image = self.transform(image)
+            if self.target_transform:
+                mask = self.target_transform(mask)
+            if isinstance(mask, Image.Image):  # converto se non trasformato
+                mask = T.PILToTensor()(mask).squeeze().long()
 
-        # Apply standard transformation such as resize
-        start_transform = time.time()
-        if self.transform:
-            image = self.transform(image)
-        if self.target_transform:
-            label = self.target_transform(label)
-        end_transform = time.time()
-        print(f"Time to transform image {idx}: {end_transform - start_transform:.4f} seconds")
-
-        filename = os.path.basename(image_path)
-        return image, label, filename
+        filename = os.path.basename(self.images[idx])
+        return image, mask, filename
