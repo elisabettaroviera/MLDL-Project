@@ -44,12 +44,6 @@ class GTA5(Dataset):
             if self.debug:
                 print("[DEBUG] Cached images and masks.")
 
-        # Setup augmentation
-        if self.augmentation:
-            self.aug_transform = augmentation_transform(type_aug=self.type_aug)
-        else:
-            self.aug_transform = None
-
     def __len__(self):
         return len(self.images)
 
@@ -63,8 +57,8 @@ class GTA5(Dataset):
             mask = np.array(Image.open(self.labels[idx]))
 
         # --- Albumentations ---
-        if self.aug_transform is not None:
-            augmented = self.aug_transform(image=image, mask=mask)
+        if self.augmentation:
+            augmented = self.aug_transform(image=image, mask=mask, type_aug=self.type_aug)
             image = augmented['image']
             mask = augmented['mask'].long()
         else:
