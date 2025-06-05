@@ -58,7 +58,7 @@ class GTA5(Dataset):
 
         # --- Albumentations ---
         if self.augmentation:
-            augmented = self.aug_transform(image=image, mask=mask, type_aug=self.type_aug)
+            augmented = augmentation_transform(image=image, mask=mask, type_aug=self.type_aug)
             image = augmented['image']
             mask = augmented['mask'].long()
         else:
