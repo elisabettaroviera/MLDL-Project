@@ -79,7 +79,6 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, l
             print(f"Batch {batch_idx}/{len(dataloader_train)}")
 
         iteration += 1 # Increment the iteration counter
-        print('iteration is ', iteration)
 
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
 
@@ -202,26 +201,27 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     except KeyError:
         print("Environment variable 'MODEL' not set. Using default model 'BiSeNet'.")
         var_model = "BiSeNet"
-    model = old_model     
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = old_model.to(device) 
     running_loss = 0.0 
     mean_loss = 0.0
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
     target_label = 0
     source_label = 1
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     target_iter = iter(dataloader_target_train) # Create an iterator for the target dataset
 
 
     model.train() 
     # --------------------------- TRAINING LOOP -------------------------------------- #
     for batch_idx, (inputs_src, targets_src, file_names) in enumerate(dataloader_source_train): 
-        if batch_idx % 1 == 0: # Print every 100 batches
+        if batch_idx % 100 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_source_train)}")
 
         # ------------------- TRAINING BISENET WITH ADVERSARIAL LOSS ------------------- #
         for discriminator in discriminators:
-            lock_model(discriminator) # Lock the discriminator parameters to avoid training them
+            lock_model(discriminator.to(device)) # Lock the discriminator parameters to avoid training them
+
 
         iteration += 1 # Increment the iteration counter
         inputs_src, targets_src = inputs_src.to(device), targets_src.to(device) # GPU
