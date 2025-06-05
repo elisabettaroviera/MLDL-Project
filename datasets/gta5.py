@@ -58,11 +58,12 @@ class GTA5(Dataset):
         image = Image.open(image_path).convert('RGB')
         label = Image.open(self.masks[idx])
 
-        if self.augmentation:
-            # Apply the Augmentation to all the image
-            augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
-            image = Image.fromarray(augmented['image'])
-            label = Image.fromarray(augmented['mask'])
+        
+        #if self.augmentation:
+        #    # Apply the Augmentation to all the image
+        #    augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+        #    image = Image.fromarray(augmented['image'])
+        #    label = Image.fromarray(augmented['mask'])
 
         # Apply standard transformation such as resize
         if self.transform:
