@@ -203,8 +203,8 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     model = old_model.to(device) 
     running_loss = 0.0 
     mean_loss = 0.0
-    total_intersections = np.zeros(num_classes)
-    total_unions = np.zeros(num_classes)
+    total_intersections = torch.zeros(num_classes, dtype=torch.float64, device=device)
+    total_unions = torch.zeros(num_classes, dtype=torch.float64, device=device)
     target_label = 0
     source_label = 1
     target_iter = iter(dataloader_target_train) # Create an iterator for the target dataset
@@ -337,7 +337,8 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     start_metrics = time.time()
 
     iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
-    iou_non_zero = np.array(iou_per_class)
+    iou_per_class_np = iou_per_class.detach().cpu().numpy()
+    iou_non_zero = np.array(iou_per_class_np)
     iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
 
     # Compute the mean without considering NaN value
