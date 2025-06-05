@@ -249,18 +249,27 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         inputs_target = inputs_target.to(device)
 
         # Compute the output of the target dataset
+        start_model = time.time()
         outputs_target = model(inputs_target)
+        end_model = time.time()
+        print(f"Model inference time: {end_model - start_model:.2f} seconds")
 
         # Compute the adversarial loss
+        start_adversarial = time.time()
         adv_loss = adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas)
         # Combine the losses
         loss += adv_loss
+        end_adversarial = time.time()
+        print(f"Adversarial loss computation time: {end_adversarial - start_adversarial:.2f} seconds")
 
+        start_learning = time.time()
         # Backpropagation
         optimizer = backpropagate(optimizer, loss)
 
         # Compute the learning rate
         lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        end_learning = time.time()
+        print(f"Learning rate computation time: {end_learning - start_learning:.2f} seconds")
 
         # Update the running loss
         running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
