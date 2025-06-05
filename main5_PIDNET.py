@@ -122,12 +122,14 @@ if __name__ == "__main__":
     # Definition of the parameters for CITYSCAPES 
         # Constant value
     learning_rate = 0.00625
+    learning_rate = 0.00025
     momentum = 0.9
     weight_decay = 1e-4
     num_epochs = 50#changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 4 #CHECK BEFORE RUNNING
+    start_epoch = 1
+     #CHECK BEFORE RUNNING
     iter_curr = 0 # Initialize the iteration counter
     max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
 
@@ -153,7 +155,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
-        project_name = f"5_PIDNET_ce_100_percent"
+        project_name = f"5_PIDNET_ce_lr_0.00025_100__percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
