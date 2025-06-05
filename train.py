@@ -210,7 +210,9 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     target_iter = iter(dataloader_target_train) # Create an iterator for the target dataset
 
 
-    model.train() 
+    model.train()
+    for discriminator in discriminators:
+        discriminator.train()
     bisenet_accumulator = 0.0
     discriminator_accumulator = 0.0
     statistics_accumulator = 0.0
