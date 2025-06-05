@@ -48,8 +48,7 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
 
 if __name__ == "__main__":
-    # Ambient variable
-    var_model = os.environ['MODEL'] #'DeepLabV2' OR 'BiSeNet' # CHOOSE the model to train
+
 
     set_seed(23)  # Set a seed for reproducibility
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -58,7 +57,7 @@ if __name__ == "__main__":
     ################################################## STEP 2 ##################################################
     ############################################################################################################
 
-    print(f"************ STEP 2 : TRAINING {var_model} ON CITYSCAPES ***************")
+    print(f"************ STEP 2 : TRAINING PIDNET ON CITYSCAPES ***************")
     
     # Define transformations
     print("Define transformations")
@@ -71,7 +70,6 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
 
 
-    var_model = 'PIDNET' # CHANGE HERE THE MODEL TO TRAIN
     # 1. Definisci il modello: pidnet s
     model = PIDNet(m=2, n=3, num_classes=19, augment=False) #pretrained è false anceh perche non abbiamo i pesi pre-addestrati
     model = model.to(device)
