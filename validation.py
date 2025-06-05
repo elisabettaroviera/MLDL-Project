@@ -181,17 +181,6 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
 
     print(f"Validating on {len(val_loader)} batches") 
     
-    # Make sure the cartella outputs exists
-    save_dir = f'./outputs/PIDNET_outputs'
-    os.makedirs(save_dir, exist_ok=True)
-    flag_save = 0
-
-    # Image which we want to save the predicted masks of
-    # frankfurt_000001_054640_gtFine_color.png
-    file_name_1 = "frankfurt_000001_054640_leftImg8bit.png"
-    # frankfurt_000001_062016_gtFine_color.png
-    file_name_2 = "frankfurt_000001_062016_leftImg8bit.png"
-    
 
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
@@ -217,9 +206,6 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             total_intersections += inters
             total_unions += unions
 
-            # Only enter the loop if we haven't saved both images    
-            if flag_save < 2:
-                flag_save = save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
 
 
     # 5. Compute the metrics for the validation set 
