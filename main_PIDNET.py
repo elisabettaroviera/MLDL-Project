@@ -116,7 +116,7 @@ if __name__ == "__main__":
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
     # Select a random fraction of the training dataset (25% of the original dataset)
-    dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.25, batch_size=batch_size)
+    #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.25, batch_size=batch_size)
 
     # Definition of the parameters for CITYSCAPES 
         # Constant value
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
-        project_name = f"5_Prova_PIDNET"
+        project_name = f"5_PIDNET_ce_100_percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
