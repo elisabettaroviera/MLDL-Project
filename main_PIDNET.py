@@ -66,6 +66,9 @@ if __name__ == "__main__":
 
     # Load the datasets (Cityspaces)
     print("Load the datasets")
+    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
+
 
 
     # 1. Definisci il modello: pidnet s
@@ -112,7 +115,7 @@ if __name__ == "__main__":
     # Define the dataloaders
     batch_size = 4
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
     # Select a random fraction of the training dataset (25% of the original dataset)
     #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.25, batch_size=batch_size)
 
