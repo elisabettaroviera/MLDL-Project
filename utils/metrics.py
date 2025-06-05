@@ -109,3 +109,41 @@ def compute_parameters(model):
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
     return tot_params, trainable_params
+
+def compute_miou_torch(gt_tensor, pred_tensor, num_classes, device=None, return_raw=True):
+    """
+    Computes mean IoU and per-class IoU using PyTorch tensors.
+
+    Args:
+        gt_tensor (Tensor): Ground truth tensor (B, H, W), type long.
+        pred_tensor (Tensor): Predicted tensor (B, H, W), type long.
+        num_classes (int): Number of classes.
+        device (optional): Device to compute on (default: gt_tensor.device).
+        return_raw (bool): Whether to return intersections and unions.
+
+    Returns:
+        mean_iou (float), iou_per_class (Tensor), [optional: intersections, unions]
+    """
+    if device is None:
+        device = gt_tensor.device
+
+    intersections = torch.zeros(num_classes, dtype=torch.float64, device=device)
+    unions = torch.zeros(num_classes, dtype=torch.float64, device=device)
+
+    for cls in range(num_classes):
+        pred_mask = (pred_tensor == cls)
+        gt_mask = (gt_tensor == cls)
+
+        intersection = (pred_mask & gt_mask).sum().double()
+        union = (pred_mask | gt_mask).sum().double()
+
+        intersections[cls] += intersection
+        unions[cls] += union
+
+    iou_per_class = (intersections / (unions + 1e-10)) * 100.0
+    mean_iou = torch.nanmean(iou_per_class)
+
+    if return_raw:
+        return mean_iou.item(), iou_per_class, intersections, unions
+    else:
+        return mean_iou.item(), iou_per_class

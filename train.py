@@ -5,7 +5,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import torchvision.transforms.functional as TF
-from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
+from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters, compute_miou_torch
 from utils.utils import poly_lr_scheduler
 import wandb
 import gc
@@ -225,7 +225,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         # ------------------- TRAINING BISENET WITH ADVERSARIAL LOSS ------------------- #w
         bisenet_start = time.time()
         for discriminator in discriminators:
-            lock_model(discriminator.to(device)) # Lock the discriminator parameters to avoid training them
+            lock_model(discriminator) # Lock the discriminator parameters to avoid training them
 
 
         iteration += 1 # Increment the iteration counter
@@ -311,11 +311,11 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
 
         start_statistics = time.time()
-        preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
-        gts = targets_src.detach().cpu().numpy()
+        preds = outputs[0].argmax(dim=1)
+        gts = targets_src.detach()
 
         # Accumulate intersections and unions per class
-        _, _, inters, unions = compute_miou(gts, preds, num_classes)
+        _, _, inters, unions = compute_miou_torch(gts, preds, num_classes)
         total_intersections += inters
         total_unions += unions
 
