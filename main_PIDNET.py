@@ -17,7 +17,7 @@ from datasets.cityscapes import CityScapes
 import random
 from train import train_pidnet
 from utils.utils import CombinedLoss_All, poly_lr_scheduler, save_metrics_on_wandb
-from validation import validate
+from validation import validate_pidnet
 from utils.metrics import compute_miou
 from PIDNET import PIDNet
 from torch.utils.data import ConcatDataset, Subset
