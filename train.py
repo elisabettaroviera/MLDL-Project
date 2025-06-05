@@ -211,6 +211,9 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
 
     model.train() 
+    bisenet_accumulator = 0.0
+    discriminator_accumulator = 0.0
+    statistics_accumulator = 0.0
 
     start_time = time.time()
 
@@ -263,6 +266,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         # Convert model outputs to predicted class labels
         bisenet_end = time.time()
         print(f"BiSeNet training time: {bisenet_end - bisenet_start:.2f} seconds")
+        bisenet_accumulator += (bisenet_end - bisenet_start)
 
         # ------------------- TRAINING DISCRIMINATORS ------------------- #
         discriminator_start = time.time()
@@ -303,7 +307,10 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         discriminator_end = time.time()
 
         print(f"Discriminator training time: {discriminator_end - discriminator_start:.2f} seconds")
+        discriminator_accumulator += (discriminator_end - discriminator_start)
 
+
+        start_statistics = time.time()
         preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
         gts = targets_src.detach().cpu().numpy()
 
@@ -311,6 +318,10 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         _, _, inters, unions = compute_miou(gts, preds, num_classes)
         total_intersections += inters
         total_unions += unions
+
+        end_statistics = time.time()
+        print(f"Statistics computation time: {end_statistics - start_statistics:.2f} seconds")
+        statistics_accumulator += (end_statistics - start_statistics)
 
     del outputs, outputs_target, softmax_src, softmax_tgt, preds
     torch.cuda.empty_cache()
@@ -322,6 +333,8 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     # 5. Compute the metrics for the training set 
     # 5.a Compute the standard metrics for all the epochs
     print("Computing the metrics for the training set...")
+
+    start_metrics = time.time()
 
     iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
     iou_non_zero = np.array(iou_per_class)
@@ -395,5 +408,12 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         'num_flops' : num_flops,
         'trainable_params': trainable_params
     }
+
+    end_metrics = time.time()
+    print(f"Metrics computation time: {end_metrics - start_metrics:.2f} seconds")
+    print(f"Total BiSeNet training time: {bisenet_accumulator:.2f} seconds")
+    print(f"Total Discriminator training time: {discriminator_accumulator:.2f} seconds")
+    print(f"Total Statistics computation time: {statistics_accumulator:.2f} seconds")
+    print(f"Total training time: {end_time - start_time:.2f} seconds")
 
     return metrics, iteration
