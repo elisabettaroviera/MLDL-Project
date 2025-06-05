@@ -85,6 +85,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, l
         # Compute output of the train
         outputs = model(inputs)   
         print(f'outputs shape: {outputs.shape}') # Debugging line to check the output shape
+        print(f'targets shape: {targets.shape}') # Debugging line to check the target shape
 
         # Compute the loss
         # DeepLabV2 returns for training the output, None, None
