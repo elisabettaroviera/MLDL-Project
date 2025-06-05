@@ -15,7 +15,7 @@ from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 import random
-from train import train
+from train import train_pidnet
 from utils.utils import CombinedLoss_All, poly_lr_scheduler, save_metrics_on_wandb
 from validation import validate
 from utils.metrics import compute_miou
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         print("Training step")
 
         start_train = time.time()
-        metrics_train, iter_curr = train(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr = train_pidnet(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
         end_train = time.time()
 
         print(f"Time taken for training step: {(end_train - start_train)/60:.2f} minutes")
