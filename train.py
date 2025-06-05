@@ -30,13 +30,19 @@ def unlock_model(model):
         param.requires_grad = True
     return model
 
-def backpropagate(optimizer, loss):
+def backpropagate(optimizer, loss, scaler = None):
     """
     Perform backpropagation and optimization step.
     """
-    optimizer.zero_grad()  # Zero the gradients
-    loss.backward()        # Backpropagate the loss
-    optimizer.step()       # Update the model parameters
+    if scaler is not None:
+        optimizer.zero_grad()  # Zero the gradients
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)  # Update the model parameters
+        scaler.update()
+    else:
+        optimizer.zero_grad()  # Zero the gradients
+        loss.backward()        # Backpropagate the loss
+        optimizer.step()       # Update the model parameters
     return optimizer
 
 def adversarial_loss(discriminators, outputs, target_label, source_label, device, lambdas):
@@ -208,7 +214,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     target_label = 0
     source_label = 1
     target_iter = iter(dataloader_target_train) # Create an iterator for the target dataset
-
+    scaler = torch.cuda.amp.GradScaler()
 
     model.train()
     for discriminator in discriminators:
@@ -235,11 +241,12 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
         # Compute output of the train
         strat_compute_loss = time.time()
-        outputs = model(inputs_src)        
-        loss = criterion(outputs[0], targets_src)
+        with torch.cuda.amp.autocast():
+            outputs = model(inputs_src)        
+            loss = criterion(outputs[0], targets_src)
         
-        alpha = 1 # In the paper they use 1
-        loss +=  alpha * criterion(outputs[1], targets_src) + alpha *  criterion(outputs[2], targets_src)
+            alpha = 1 # In the paper they use 1
+            loss +=  alpha * criterion(outputs[1], targets_src) + alpha *  criterion(outputs[2], targets_src)
         end_compute_loss = time.time()
         print(f"Loss computation time: {end_compute_loss - strat_compute_loss:.2f} seconds")
 
@@ -262,7 +269,8 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
         # Compute the adversarial loss
         start_adversarial = time.time()
-        adv_loss = adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas)
+        with torch.cuda.amp.autocast():
+            adv_loss = adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas)
         # Combine the losses
         loss += adv_loss
         end_adversarial = time.time()
@@ -270,7 +278,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
         start_learning = time.time()
         # Backpropagation
-        optimizer = backpropagate(optimizer, loss)
+        optimizer = backpropagate(optimizer, loss, scaler)
 
         # Compute the learning rate
         lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
