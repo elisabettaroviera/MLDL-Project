@@ -112,7 +112,7 @@ if __name__ == "__main__":
     gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
     
     # Create dataloader
-    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
+    full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
     full_dataloader_cityscapes_train, _ = dataloader(CityScapes('./datasets/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
     # Take a subset of the dataloader
     #dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
