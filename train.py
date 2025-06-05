@@ -234,19 +234,25 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         inputs_src, targets_src = inputs_src.to(device), targets_src.to(device) # GPU
 
         # Compute output of the train
+        strat_compute_loss = time.time()
         outputs = model(inputs_src)        
         loss = criterion(outputs[0], targets_src)
         
         alpha = 1 # In the paper they use 1
         loss +=  alpha * criterion(outputs[1], targets_src) + alpha *  criterion(outputs[2], targets_src)
+        end_compute_loss = time.time()
+        print(f"Loss computation time: {end_compute_loss - strat_compute_loss:.2f} seconds")
 
-        # Get the next batch from the target dataset   
+        # Get the next batch from the target dataset
+        start_get_target = time.time()
         try:
             inputs_target, _, _ = next(target_iter)
         except StopIteration:
             target_iter = iter(dataloader_target_train)
             inputs_target, _, _ = next(target_iter)
         inputs_target = inputs_target.to(device)
+        end_get_target = time.time()
+        print(f"Target dataset batch retrieval time: {end_get_target - start_get_target:.2f} seconds")
 
         # Compute the output of the target dataset
         start_model = time.time()
