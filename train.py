@@ -310,18 +310,16 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         discriminator_accumulator += (discriminator_end - discriminator_start)
 
 
-        start_statistics = time.time()
-        preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
-        gts = targets_src.detach().cpu().numpy()
-
-        # Accumulate intersections and unions per class
-        _, _, inters, unions = compute_miou(gts, preds, num_classes)
-        total_intersections += inters
-        total_unions += unions
-
-        end_statistics = time.time()
-        print(f"Statistics computation time: {end_statistics - start_statistics:.2f} seconds")
-        statistics_accumulator += (end_statistics - start_statistics)
+    start_statistics = time.time()
+    preds = outputs[0].argmax(dim=1).detach().cpu().numpy()
+    gts = targets_src.detach().cpu().numpy()
+    # Accumulate intersections and unions per class
+    _, _, inters, unions = compute_miou(gts, preds, num_classes)
+    total_intersections += inters
+    total_unions += unions
+    end_statistics = time.time()
+    print(f"Statistics computation time: {end_statistics - start_statistics:.2f} seconds")
+    statistics_accumulator += (end_statistics - start_statistics)
 
     del outputs, outputs_target, softmax_src, softmax_tgt, preds
     torch.cuda.empty_cache()
