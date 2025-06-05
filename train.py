@@ -313,6 +313,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         start_statistics = time.time()
         preds = outputs[0].argmax(dim=1)
         gts = targets_src.detach()
+        end_statistics = time.time()
 
         # Accumulate intersections and unions per class
         # _, _, inters, unions = compute_miou_torch(gts, preds, num_classes) ## Loops
@@ -320,7 +321,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         total_intersections += inters
         total_unions += unions
 
-        end_statistics = time.time()
+        
         print(f"Statistics computation time: {end_statistics - start_statistics:.2f} seconds")
         statistics_accumulator += (end_statistics - start_statistics)
 
