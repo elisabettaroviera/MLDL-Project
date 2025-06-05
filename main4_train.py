@@ -83,7 +83,8 @@ if __name__ == "__main__":
     num_epochs = 50 
     num_classes = 19
     ignore_index = 255
-    start_epoch = 15 #CHECK BEFORE RUNNING
+    start_epoch = 1 #CHECK BEFORE RUNNING
+    compute_mIoU = False # If True, compute mIoU at the end of each epoch
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -178,6 +179,11 @@ if __name__ == "__main__":
 
         print(f"\nEpoch {epoch}")
         start_train = time.time()
+
+        if epoch % 10 == 0:
+            compute_mIoU = True
+        else:
+            compute_mIoU = False
 
         metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, full_dataloader_gta_train, full_dataloader_cityscapes_train, loss, optimizer, discriminators_optimizers, iter_curr,
                                                         learning_rate, num_classes, max_iter, lambdas)

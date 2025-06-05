@@ -196,7 +196,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, l
 
 
 def train_with_adversary(epoch, old_model, discriminators, dataloader_source_train, dataloader_target_train, 
-                         criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas): # criterion == loss function
+                         criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas, compute_mIoU = False): # criterion == loss function
    
     # --------------------------- BASIC DEFINITIONS -------------------------------------- #
     try:
@@ -334,21 +334,22 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         print(f"Discriminator training time: {discriminator_end - discriminator_start:.2f} seconds")
         discriminator_accumulator += (discriminator_end - discriminator_start)
 
+        if compute_mIoU:
+            start_statistics = time.time()
+            preds = outputs[0].argmax(dim=1)
+            gts = targets_src.detach()
+            
 
-        start_statistics = time.time()
-        preds = outputs[0].argmax(dim=1)
-        gts = targets_src.detach()
-        end_statistics = time.time()
-
-        # Accumulate intersections and unions per class
-        # _, _, inters, unions = compute_miou_torch(gts, preds, num_classes) ## Loops
-        _, _, inters, unions = compute_miou_torch_vectorized(gts, preds, num_classes, device) ## Vectorized
-        total_intersections += inters
-        total_unions += unions
+            # Accumulate intersections and unions per class
+            # _, _, inters, unions = compute_miou_torch(gts, preds, num_classes) ## Loops
+            _, _, inters, unions = compute_miou_torch_vectorized(gts, preds, num_classes, device) ## Vectorized
+            total_intersections += inters
+            total_unions += unions
+            end_statistics = time.time()
 
         
-        print(f"Statistics computation time: {end_statistics - start_statistics:.2f} seconds")
-        statistics_accumulator += (end_statistics - start_statistics)
+            print(f"Statistics computation time: {end_statistics - start_statistics:.2f} seconds")
+            statistics_accumulator += (end_statistics - start_statistics)
 
     del outputs, outputs_target, softmax_src, softmax_tgt, preds
     torch.cuda.empty_cache()
@@ -361,44 +362,45 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     # 5.a Compute the standard metrics for all the epochs
     print("Computing the metrics for the training set...")
 
-    start_metrics = time.time()
+    if compute_mIoU:
+        start_metrics = time.time()
 
-    iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
-    iou_per_class_np = iou_per_class.detach().cpu().numpy()
-    iou_non_zero = np.array(iou_per_class_np)
-    iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
+        iou_per_class = (total_intersections / (total_unions + 1e-10)) * 100
+        iou_per_class_np = iou_per_class.detach().cpu().numpy()
+        iou_non_zero = np.array(iou_per_class_np)
+        iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
 
-    # Compute the mean without considering NaN value
-    mean_iou = np.nanmean(iou_non_zero) 
-    mean_loss = running_loss / len(dataloader_source_train)    
+        # Compute the mean without considering NaN value
+        mean_iou = np.nanmean(iou_non_zero) 
+        mean_loss = running_loss / len(dataloader_source_train)    
 
-    # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
-    if epoch == 50:
-            print("Computing the computation metrics...")
+        # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
+        if epoch == 50:
+                print("Computing the computation metrics...")
 
-            mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
-            print(f"Latency: {mean_latency:.2f} ± {std_latency:.2f} ms | FPS: {mean_fps:.2f} ± {std_fps:.2f}")
+                mean_latency, std_latency, mean_fps, std_fps = compute_latency_and_fps(model, height=512, width=1024, iterations=1000)
+                print(f"Latency: {mean_latency:.2f} ± {std_latency:.2f} ms | FPS: {mean_fps:.2f} ± {std_fps:.2f}")
 
-            num_flops = compute_flops(model, height=512, width=1024)
-            print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
+                num_flops = compute_flops(model, height=512, width=1024)
+                print(f"Total numer of FLOPS: {num_flops} GigaFLOPs")
 
-            tot_params, trainable_params = compute_parameters(model)
-            print(f"Total Params: {tot_params}, Trainable: {trainable_params}")
+                tot_params, trainable_params = compute_parameters(model)
+                print(f"Total Params: {tot_params}, Trainable: {trainable_params}")
 
-    else:
-        # NB: metric = -1 means we have not computed it (we compute only at the last epoch)
-        mean_latency = -1
-        std_latency = -1
-        num_flops = -1
-        trainable_params = -1
-        mean_fps = -1
-        std_fps = -1
+        else:
+            # NB: metric = -1 means we have not computed it (we compute only at the last epoch)
+            mean_latency = -1
+            std_latency = -1
+            num_flops = -1
+            trainable_params = -1
+            mean_fps = -1
+            std_fps = -1
 
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"Training completed in {elapsed_time:.2f} seconds")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Training completed in {elapsed_time:.2f} seconds")
 
-    # 6. Save the parameter of the model 
+        # 6. Save the parameter of the model 
     print("Saving the model")
 
     wandb.log({
@@ -424,18 +426,19 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     wandb.log_artifact(artifact)
     print(f"Model saved for epoch {epoch}")
 
-    # 7. Return all the metrics
-    metrics = {
-        'mean_loss': mean_loss,
-        'mean_iou': mean_iou,
-        'iou_per_class': iou_per_class,
-        'mean_latency' : mean_latency,
-        'std_latency' : std_latency,
-        'mean_fps' : mean_fps,
-        'std_fps' : std_fps,
-        'num_flops' : num_flops,
-        'trainable_params': trainable_params
-    }
+    if compute_mIoU:
+        # 7. Return all the metrics
+        metrics = {
+            'mean_loss': mean_loss,
+            'mean_iou': mean_iou,
+            'iou_per_class': iou_per_class,
+            'mean_latency' : mean_latency,
+            'std_latency' : std_latency,
+            'mean_fps' : mean_fps,
+            'std_fps' : std_fps,
+            'num_flops' : num_flops,
+            'trainable_params': trainable_params
+        }
 
     end_metrics = time.time()
     print(f"Metrics computation time: {end_metrics - start_metrics:.2f} seconds")
