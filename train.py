@@ -5,7 +5,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import torchvision.transforms.functional as TF
-from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters, compute_miou_torch
+from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters, compute_miou_torch, compute_miou_torch_vectorized
 from utils.utils import poly_lr_scheduler
 import wandb
 import gc
@@ -315,7 +315,8 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         gts = targets_src.detach()
 
         # Accumulate intersections and unions per class
-        _, _, inters, unions = compute_miou_torch(gts, preds, num_classes)
+        # _, _, inters, unions = compute_miou_torch(gts, preds, num_classes) ## Loops
+        _, _, inters, unions = compute_miou_torch_vectorized(gts, preds, num_classes, device) ## Vectorized
         total_intersections += inters
         total_unions += unions
 
