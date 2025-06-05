@@ -168,7 +168,7 @@ if __name__ == "__main__":
     # 7) one of 3(!) best comb of color + best comb of weather
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_4_comb_100_percent OK val
     # 8) one of 4(!) best comb of color + best comb of weather
-    type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_5_comb_100_percent to val
+    #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_5_comb_100_percent to val
 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_100_percent forse non ha senso farla...
 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_25_percent OKK 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_geo_oneof_3_comb_25_percent OKK 
     #type_aug = None # 3b_GTA5_to_CITY_aug_color_weather_rc_oneof_3_comb_25_percent OKK
-
+    type_aug = None
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
