@@ -219,7 +219,8 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         if batch_idx % 100 == 0: # Print every 100 batches
             print(f"Batch {batch_idx}/{len(dataloader_source_train)}")
 
-        # ------------------- TRAINING BISENET WITH ADVERSARIAL LOSS ------------------- #
+        # ------------------- TRAINING BISENET WITH ADVERSARIAL LOSS ------------------- #w
+        bisenet_start = time.time()
         for discriminator in discriminators:
             lock_model(discriminator.to(device)) # Lock the discriminator parameters to avoid training them
 
@@ -260,6 +261,8 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
 
         # Convert model outputs to predicted class labels
+        bisenet_end = time.time()
+        print(f"BiSeNet training time: {bisenet_end - bisenet_start:.2f} seconds")
 
         # ------------------- TRAINING DISCRIMINATORS ------------------- #
         discriminator_start = time.time()
