@@ -191,7 +191,7 @@ if __name__ == "__main__":
         print("Validation step")
 
         start_val = time.time()
-        metrics_val = validate(epoch, model, dataloader_cs_val, loss, num_classes) 
+        metrics_val = validate_pidnet(epoch, model, dataloader_cs_val, loss, num_classes) 
         end_val = time.time()
 
         print(f"Time taken for validation step: {(end_val - start_val)/60:.2f} minutes")
