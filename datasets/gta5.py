@@ -5,6 +5,7 @@ import random
 import albumentations as A
 import numpy as np
 from datasets.transform_datasets import augmentation_transform
+import time
 
 class GTA5(Dataset):
 
@@ -54,9 +55,12 @@ class GTA5(Dataset):
 
 
     def __getitem__(self, idx):
+        start_retrieve = time.time()
         image_path = self.images[idx]
         image = Image.open(image_path).convert('RGB')
         label = Image.open(self.masks[idx])
+        end_retrieve = time.time()
+        print(f"Time to retrieve image {idx}: {end_retrieve - start_retrieve:.4f} seconds")
 
         
         #if self.augmentation:
@@ -66,10 +70,13 @@ class GTA5(Dataset):
         #    label = Image.fromarray(augmented['mask'])
 
         # Apply standard transformation such as resize
+        start_transform = time.time()
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
+        end_transform = time.time()
+        print(f"Time to transform image {idx}: {end_transform - start_transform:.4f} seconds")
 
         filename = os.path.basename(image_path)
         return image, label, filename
