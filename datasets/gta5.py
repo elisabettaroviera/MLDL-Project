@@ -6,8 +6,9 @@ import albumentations as A
 import numpy as np
 from datasets.transform_datasets import augmentation_transform, augmentation_transform_oneof, augmentation_transform_oneof_col2_wea, augmentation_transform_oneof_col_geo, augmentation_transform_oneof_col_wea_geo, augmentation_transform_oneof_col3_wea, augmentation_transform_oneof_col4_wea
 
-class GTA5(Dataset):
 
+# GTA5 dataset class
+class GTA5(Dataset):
     def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False, type_aug = None):
         super(GTA5, self).__init__()
         
@@ -31,10 +32,11 @@ class GTA5(Dataset):
 
         # Iterate over all image files
         for img_name in os.listdir(image_dir):
-            # Only consider common image formats (all images are png actually)
+            # Only consider common image formats
+            # all images are png actually
             if img_name.endswith(('.png', '.jpg', '.jpeg')):
                 img_path = os.path.join(image_dir, img_name)
-                label_path = os.path.join(label_dir, img_name)  # Assume same filename for label
+                label_path = os.path.join(label_dir, img_name)  # assume same filename for label
 
                 # Skip if the corresponding label does not exist
                 if not os.path.exists(label_path):
@@ -60,11 +62,11 @@ class GTA5(Dataset):
 
         if self.augmentation:
             # Apply the Augmentation to all the image
-            augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+            #augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+            augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label))
             image = Image.fromarray(augmented['image'])
             label = Image.fromarray(augmented['mask'])
-            image = Image.fromarray(augmented['image'])
-
+            
         # Apply standard transformation such as resize
         if self.transform:
             image = self.transform(image)

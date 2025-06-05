@@ -98,7 +98,7 @@ if __name__ == "__main__":
     }
     """
 
-    type_aug = {} # CHANGE HERE!!!
+    type_aug = None # CHANGE HERE!!!
     gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "4_Adversarial_Domain_Adaptation_base_only_ce" #CHECK BEFORE RUNNING
+        project_name = "4_Adversarial_Domain_Adaptation_base_only_ce_aug_oneof_col3_wea" #CHECK BEFORE RUNNING
         entity = "s281401-politecnico-di-torino" # New new entity Auro
         # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
         # entity="s328422-politecnico-di-torino" # old team Betta
