@@ -83,7 +83,8 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, l
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
 
         # Compute output of the train
-        outputs = model(inputs)        
+        outputs = model(inputs)   
+        print(f'outputs shape: {outputs.shape}') # Debugging line to check the output shape
 
         # Compute the loss
         # DeepLabV2 returns for training the output, None, None
