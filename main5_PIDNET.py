@@ -123,6 +123,7 @@ if __name__ == "__main__":
         # Constant value
     learning_rate = 0.00625
     learning_rate = 0.00025
+    learning_rate = 0.0005 # Changed to 0.00025 for PIDNet
     momentum = 0.9
     weight_decay = 1e-4
     num_epochs = 50#changed bc doing smaller runs
@@ -155,7 +156,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
-        project_name = f"5_PIDNET_ce_lr_0.00025_100__percent"
+        project_name = f"5_PIDNET_ce_lr_0.0005_100__percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
