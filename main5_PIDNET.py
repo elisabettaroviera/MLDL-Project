@@ -145,7 +145,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function: usano cross entropy nel apper
     print("Definition of the loss")
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) # CHANGE HERE THE LOSS
     # in realta in train e validation la ridefinisco 
     # alpha   - CrossEntropy
     # beta    - Lovász
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_07ce_03tv_lr_0.00625_totloss_100_percent"
+        project_name = f"5_PIDNET_1ce_lr_0.00625_totloss_100_percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
