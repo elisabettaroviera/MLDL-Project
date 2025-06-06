@@ -76,8 +76,11 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
     
     # 2. Initialize the metrics variables    
     print("Initializing the metrics variables...")
-    mean_loss = 0
-    running_loss = 0.0
+    running_loss_total = 0.0
+    running_loss_aux = 0.0
+    running_loss_bce = 0.0
+    running_loss_main = 0.0
+    running_loss_boundary_ce = 0.0
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
 
@@ -103,10 +106,14 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             boundaries = get_boundary_map(targets)
 
             loss, loss_dict = compute_pidnet_loss(x_p_up, x_final_up, x_d_up, targets, boundaries)
-            print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
-            
-            # Update the running loss
-            running_loss += loss.item()
+            #print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
+
+            # Update running losses
+            running_loss_total += loss.item()
+            running_loss_aux += loss_dict['loss_aux']
+            running_loss_bce += loss_dict['loss_bce']
+            running_loss_main += loss_dict['loss_main']
+            running_loss_boundary_ce += loss_dict['loss_boundary_ce']
 
             # Convert model outputs to predicted class labels
             preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
@@ -127,8 +134,13 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
     iou_non_zero = np.array(iou_per_class)
     iou_non_zero = iou_non_zero[np.nonzero(iou_non_zero)]
     
-    mean_iou = np.nanmean(iou_non_zero) # Compute mIoU without considering the NaN value       
-    mean_loss = running_loss / len(val_loader)
+    # Compute the mean without considering NaN value
+    mean_iou = np.nanmean(iou_non_zero) 
+    mean_loss_total = running_loss_total / len(val_loader)  
+    mean_loss_aux = running_loss_aux / len(val_loader)
+    mean_loss_bce = running_loss_bce / len(val_loader)
+    mean_loss_main = running_loss_main / len(val_loader)
+    mean_loss_boundary_ce = running_loss_boundary_ce / len(val_loader)  
     
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
@@ -153,7 +165,11 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
 
     # 6. Return all the metrics
     metrics = {
-        'mean_loss': mean_loss,
+        'mean_loss': mean_loss_total,
+        'mean_loss_aux': mean_loss_aux,
+        'mean_loss_bce': mean_loss_bce,
+        'mean_loss_main': mean_loss_main,
+        'mean_loss_boundary_ce': mean_loss_boundary_ce, 
         'mean_iou': mean_iou,
         'iou_per_class': iou_per_class,
         'mean_latency' : mean_latency,
@@ -165,4 +181,3 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
     }
 
     return metrics
-

@@ -77,8 +77,11 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
     # 2. Initialize the metrics variables and hyperparameters
     print("Initializing the metrics variables...")
     
-    running_loss = 0.0 
-    mean_loss = 0.0
+    running_loss_total = 0.0
+    running_loss_aux = 0.0
+    running_loss_bce = 0.0
+    running_loss_main = 0.0
+    running_loss_boundary_ce = 0.0
     total_intersections = np.zeros(num_classes)
     total_unions = np.zeros(num_classes)
 
@@ -104,7 +107,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         boundaries = get_boundary_map(targets)
 
         loss, loss_dict = compute_pidnet_loss(x_p_up, x_final_up, x_d_up, targets, boundaries)
-        print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
+        #print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
@@ -113,8 +116,12 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         # Compute the learning rate
         lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
 
-        # Update the running loss
-        running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
+         # Update running losses
+        running_loss_total += loss.item()
+        running_loss_aux += loss_dict['loss_aux']
+        running_loss_bce += loss_dict['loss_bce']
+        running_loss_main += loss_dict['loss_main']
+        running_loss_boundary_ce += loss_dict['loss_boundary_ce']
 
         # Convert model outputs to predicted class labels
         preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
@@ -135,7 +142,11 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
 
     # Compute the mean without considering NaN value
     mean_iou = np.nanmean(iou_non_zero) 
-    mean_loss = running_loss / len(dataloader_train)    
+    mean_loss_total = running_loss_total / len(dataloader_train)  
+    mean_loss_aux = running_loss_aux / len(dataloader_train)
+    mean_loss_bce = running_loss_bce / len(dataloader_train)
+    mean_loss_main = running_loss_main / len(dataloader_train)
+    mean_loss_boundary_ce = running_loss_boundary_ce / len(dataloader_train)  
 
     # 5.b Compute the computation metrics, i.e. FLOPs, latency, number of parameters (only at the last epoch)
     if epoch == 50:
@@ -166,7 +177,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
 
     wandb.log({
         "epoch": epoch,
-        "loss": mean_loss,
+        "loss": mean_loss_total,
         "lr": lr
     })
 
@@ -176,7 +187,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
-        'loss': mean_loss,
+        'loss': mean_loss_total,
     }, model_save_path)
 
     # Create a new artefact for the current epoch
@@ -189,7 +200,11 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
 
     # 7. Return all the metrics
     metrics = {
-        'mean_loss': mean_loss,
+        'mean_loss': mean_loss_total,
+        'mean_loss_aux': mean_loss_aux,
+        'mean_loss_bce': mean_loss_bce,
+        'mean_loss_main': mean_loss_main,
+        'mean_loss_boundary_ce': mean_loss_boundary_ce, 
         'mean_iou': mean_iou,
         'iou_per_class': iou_per_class,
         'mean_latency' : mean_latency,
