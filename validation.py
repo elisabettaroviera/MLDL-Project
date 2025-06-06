@@ -109,7 +109,7 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             running_loss += loss.item()
 
             # Convert model outputs to predicted class labels
-            preds = outputs_up.argmax(dim=1).detach().cpu().numpy()
+            preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
             
             # Accumulate intersections and unions per class
