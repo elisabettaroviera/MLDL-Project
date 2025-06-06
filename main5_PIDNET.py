@@ -78,8 +78,8 @@ if __name__ == "__main__":
     cfg.MODEL = type('', (), {})()
     cfg.DATASET = type('', (), {})()
 
-    cfg.MODEL.NAME = 'pidnet_l'
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-l-imagenet-pretrained-tar/PIDNet_L_ImageNet.pth.tar'
+    cfg.MODEL.NAME = 'pidnet_s'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-s-imagenet-pretrained-tar/PIDNet_S_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
     # Serve cosi chiamo pesi preaddestrati su ImageNet
     model = get_seg_model(cfg, imgnet_pretrained=True)
@@ -96,8 +96,6 @@ if __name__ == "__main__":
     # Definition of the parameters for CITYSCAPES 
         # Constant value
     learning_rate = 0.00625
-    #learning_rate = 0.00025
-    #learning_rate = 0.0005 # Changed to 0.00025 for PIDNet
     momentum = 0.9
     weight_decay = 5e-4 #sul paper usa questo batch size 12
     num_epochs = 50#changed bc doing smaller runs
@@ -131,7 +129,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_L_1ce_0.00625_totloss_samepaper_100_percent"
+        project_name = f"5_PIDNET_S_1ce_0.00625_totloss_samepaper_100_percent"
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
