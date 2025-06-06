@@ -27,24 +27,24 @@ def get_boundary_map(target, kernel_size=3):
     return boundary  # shape (B,1,H,W)
 
 
-def compute_pidnet_loss(x_extra_p, x_main, x_extra_d, target, boundary,
+def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
                         lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1):
     # L0: aux CE loss sulla P branch
-    loss_aux = F.cross_entropy(x_extra_p, target, ignore_index=255)
+    loss_aux = criterion(x_extra_p, target, ignore_index=255)
 
     # L1: Binary Cross Entropy sulla D branch (bordi)
     x_boundary = torch.sigmoid(x_extra_d)
     loss_bce = F.binary_cross_entropy(x_boundary, boundary)
 
     # L2: main CE loss finale
-    loss_main = F.cross_entropy(x_main, target, ignore_index=255)
+    loss_main = criterion(x_main, target, ignore_index=255)
 
     # L3: CE loss focalizzata sui bordi
     boundary_mask = (boundary.squeeze(1) > 0.5)
     masked_target = target[boundary_mask]
     valid_mask = (masked_target != 255)
     if valid_mask.any():
-        loss_boundary_ce = F.cross_entropy(
+        loss_boundary_ce = criterion(
             x_main.permute(0,2,3,1)[boundary_mask][valid_mask],
             masked_target[valid_mask]
         )
@@ -105,7 +105,7 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
 
             boundaries = get_boundary_map(targets)
 
-            loss, loss_dict = compute_pidnet_loss(x_p_up, x_final_up, x_d_up, targets, boundaries)
+            loss, loss_dict = compute_pidnet_loss(criterion,x_p_up, x_final_up, x_d_up, targets, boundaries)
             #print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
 
             # Update running losses
