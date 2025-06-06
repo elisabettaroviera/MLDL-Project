@@ -139,7 +139,7 @@ if __name__ == "__main__":
     optimizer_d2 = torch.optim.Adam(discriminator_2.parameters(), lr=0.0001, betas=(0.9, 0.99))
     discriminators_optimizers = [optimizer_d1, optimizer_d2]
 
-    lambdas = [0.1, 0.1]  # Lambda values for the adversarial loss
+    lambdas = [0.1, 0.1]  # Lambda values for the adversarial loss 
 
     wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     for epoch in range(start_epoch, num_epochs + 1):

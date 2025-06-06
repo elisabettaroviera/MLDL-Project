@@ -37,7 +37,8 @@ def print_metrics(title, metrics):
 
 def to_obtain_id(project=""):
     # Configurazione del tuo progetto wandb
-    entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
+    entity = "s281401-politecnico-di-torino" # New new entity Auro
+    #entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
     # entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, shuffle_train=False, shuffle_val=False)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
-
+    wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     project_name = "4_Adversarial_Domain_Adaptation_base" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
@@ -105,8 +106,9 @@ if __name__ == "__main__":
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
+            entity = "s281401-politecnico-di-torino", # New new entity Auro
             # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
-            entity="s328422-politecnico-di-torino",
+            #entity="s328422-politecnico-di-torino",
             name=f"epoch_{epoch}",
             id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
             resume="allow"
