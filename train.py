@@ -98,7 +98,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
 
         # Compute output of the train
         outputs = model(inputs)   
-        outputs_up = F.interpolate(outputs, size=targets.shape[1:], mode='bilinear', align_corners=False)
+        outputs_up = F.interpolate(outputs[1], size=targets.shape[1:], mode='bilinear', align_corners=False)
         boundaries = get_boundary_map(targets)
         loss, loss_dict = compute_pidnet_loss(*outputs_up, targets, boundaries)
         print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
