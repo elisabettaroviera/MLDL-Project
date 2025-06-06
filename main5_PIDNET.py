@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
 
     # 1. Definisci il modello: pidnet s
-    model = PIDNet(m=2, n=3, num_classes=19, augment=False) #pretrained è false anceh perche non abbiamo i pesi pre-addestrati
+    model = PIDNet(m=2, n=3, num_classes=19, augment=True) #pretrained è false anceh perche non abbiamo i pesi pre-addestrati
     model = model.to(device)
 
     """inutili<. mi amnca boundary mask
