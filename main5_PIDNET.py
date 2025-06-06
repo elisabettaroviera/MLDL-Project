@@ -79,7 +79,7 @@ if __name__ == "__main__":
     cfg.DATASET = type('', (), {})()
 
     cfg.MODEL.NAME = 'pidnet_m'
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m-imagenet-pretrained-tar/PIDNet_S_ImageNet.pth.tar'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m-imagenet-pretrained-tar/PIDNet_M_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
 
     model = get_seg_model(cfg, imgnet_pretrained=True)
