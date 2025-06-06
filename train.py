@@ -41,7 +41,8 @@ def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundar
     loss_main = criterion(x_main, target)
 
     # L3: CE loss focalizzata sui bordi
-    boundary_mask = (boundary.squeeze(1) > 0.5)
+   # boundary_mask = (boundary.squeeze(1) > 0.5)
+    boundary_mask = (boundary.squeeze(1) > 0.8) #sul paper
     masked_target = target[boundary_mask]
     valid_mask = (masked_target != 255)
     if valid_mask.any():
