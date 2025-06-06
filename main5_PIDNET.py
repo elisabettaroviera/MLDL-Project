@@ -19,7 +19,7 @@ from train import train_pidnet
 from utils.utils import CombinedLoss_All, poly_lr_scheduler, save_metrics_on_wandb
 from validation import validate_pidnet
 from utils.metrics import compute_miou
-from PIDNET import PIDNet
+from PIDNET import PIDNet, get_seg_model
 from torch.utils.data import ConcatDataset, Subset
 import torch.nn.functional as F
 
@@ -71,7 +71,18 @@ if __name__ == "__main__":
     cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)
     cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
 
+    class CFG:
+        pass
 
+    cfg = CFG()
+    cfg.MODEL = type('', (), {})()
+    cfg.DATASET = type('', (), {})()
+
+    cfg.MODEL.NAME = 'pidnet_s'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-s-pretrained-imagenet/PIDNet_S_ImageNet.pth'
+    cfg.DATASET.NUM_CLASSES = 19
+
+    model = get_seg_model(cfg, imgnet_pretrained=True)
 
     # 1. Definisci il modello: pidnet s
     model = PIDNet(m=2, n=3, num_classes=19, augment=True) #pretrained è false anceh perche non abbiamo i pesi pre-addestrati
@@ -145,7 +156,7 @@ if __name__ == "__main__":
     
     # Defintion of the loss function: usano cross entropy nel apper
     print("Definition of the loss")
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) # CHANGE HERE THE LOSS
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) # CHANGE HERE THE LOSS
     # in realta in train e validation la ridefinisco 
     # alpha   - CrossEntropy
     # beta    - Lovász
@@ -159,7 +170,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_1ce_lr_0.00625_totloss_100_percent"
+        project_name = f"5_PIDNET_07ce_03tv_lr_0.00625_totloss_100_percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
