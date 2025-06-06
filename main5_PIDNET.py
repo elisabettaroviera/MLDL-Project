@@ -78,7 +78,7 @@ if __name__ == "__main__":
     cfg.MODEL = type('', (), {})()
     cfg.DATASET = type('', (), {})()
 
-    cfg.MODEL.NAME = 'pidnet_s'
+    cfg.MODEL.NAME = 'pidnet_m'
     cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-s-imagenet-pretrained-tar/PIDNet_S_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
 
@@ -88,42 +88,6 @@ if __name__ == "__main__":
     model = PIDNet(m=2, n=3, num_classes=19, augment=True) #pretrained è false anceh perche non abbiamo i pesi pre-addestrati
     model = model.to(device)
 
-    """inutili<. mi amnca boundary mask
-    # 3. I pesi lambda e soglia (come da paper)
-    loss_weights = {
-        'lambda0': 0.4,
-        'lambda1': 20,
-        'lambda2': 1,
-        'lambda3': 1,
-        'threshold': 0.8,
-    }
-
-    # 4. Funzione loss definita prima
-    def pidnet_loss(outputs, target_semantic, target_boundary, weight_boundary, weights):
-        x_extra_p, x_main, x_extra_d = outputs
-        lambda0 = weights['lambda0']
-        lambda1 = weights['lambda1']
-        lambda2 = weights['lambda2']
-        lambda3 = weights['lambda3']
-        threshold = weights['threshold']
-
-        # l0: semantic loss sul ramo P
-        l0 = torch.nn.functional.cross_entropy(x_extra_p, target_semantic)
-
-        # l1: weighted binary cross entropy per boundary
-        l1 = torch.nn.functional.binary_cross_entropy_with_logits(x_extra_d, target_boundary.float(), weight=weight_boundary)
-
-        # l2: semantic loss sul ramo principale
-        l2 = torch.nn.functional.cross_entropy(x_main, target_semantic)
-
-        # l3: boundary-aware CE loss, calcolata solo sui pixel di confine
-        mask = (torch.sigmoid(x_extra_d) > threshold).float()
-        ce_per_pixel = torch.nn.functional.cross_entropy(x_main, target_semantic, reduction='none')
-        l3 = (ce_per_pixel * mask).sum() / (mask.sum() + 1e-6)  # evita divisione per zero
-
-        loss = lambda0 * l0 + lambda1 * l1 + lambda2 * l2 + lambda3 * l3
-        return loss
-    """
 
     # Define the dataloaders
     batch_size = 4
@@ -170,7 +134,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_1ce_0.00625_totloss_100_percent"
+        project_name = f"5_PIDNET_M__1ce_0.00625_totloss_100_percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
