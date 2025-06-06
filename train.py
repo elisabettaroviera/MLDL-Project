@@ -27,14 +27,15 @@ def get_boundary_map(target, kernel_size=3):
     boundary = (boundary > 0).float()  # binarizza
 
     return boundary  # shape (B,1,H,W)
+"""def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
+                        lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=1.0):"""
 
-"""
+
 def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
-                        lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):"""
+                        lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):
     #perche prima usavo t:0.5
     #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
-def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
-                        lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=1.0):
+
     # L0: aux CE loss sulla P branch
     loss_aux = criterion(x_extra_p, target)
 
@@ -47,7 +48,7 @@ def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundar
 
     # L3: CE loss focalizzata sui bordi
    # boundary_mask = (boundary.squeeze(1) > 0.5)
-    boundary_mask = (boundary.squeeze(1) > 0.5) #sul paper
+    boundary_mask = (boundary.squeeze(1) > 0.8) #sul paper
     masked_target = target[boundary_mask]
     valid_mask = (masked_target != 255)
     if valid_mask.any():
