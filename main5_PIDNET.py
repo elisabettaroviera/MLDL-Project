@@ -21,6 +21,7 @@ from validation import validate_pidnet
 from utils.metrics import compute_miou
 from PIDNET import PIDNet
 from torch.utils.data import ConcatDataset, Subset
+import torch.nn.functional as F
 
 def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
     assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
@@ -37,6 +38,7 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
     subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True) # Drop of the last batch
 
     return subset_dataloader
+
 
 # This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
@@ -117,15 +119,15 @@ if __name__ == "__main__":
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
     # Select a random fraction of the training dataset (25% of the original dataset)
-    #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.25, batch_size=batch_size)
+    dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.5, batch_size=batch_size)
 
     # Definition of the parameters for CITYSCAPES 
         # Constant value
     learning_rate = 0.00625
-    learning_rate = 0.00025
-    learning_rate = 0.0005 # Changed to 0.00025 for PIDNet
+    #learning_rate = 0.00025
+    #learning_rate = 0.0005 # Changed to 0.00025 for PIDNet
     momentum = 0.9
-    weight_decay = 1e-4
+    weight_decay = 5e-4 #sul paper usa questo batch size 12
     num_epochs = 50#changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
@@ -144,6 +146,7 @@ if __name__ == "__main__":
     # Defintion of the loss function: usano cross entropy nel apper
     print("Definition of the loss")
     loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) # CHANGE HERE THE LOSS
+    # in realta in train e validation la ridefinisco 
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
@@ -155,8 +158,8 @@ if __name__ == "__main__":
 
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
-        entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
-        project_name = f"5_PIDNET_ce_lr_0.0005_100__percent"
+        entity = "s281401-politecnico-di-torino" # New entity  Auro
+        project_name = f"5_PIDNET_ce_lr_0.00625_50_totloss_percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 

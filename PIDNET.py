@@ -175,6 +175,9 @@ class PIDNet(nn.Module):
         x_ = self.final_layer(self.dfm(x_, x, x_d))
 
         if self.augment: 
+            """x_extra_p: predizione dalla P branch
+                x_extra_d: output dalla D branch (per boundary loss)
+                x_: output finale"""
             x_extra_p = self.seghead_p(temp_p)
             x_extra_d = self.seghead_d(temp_d)
             return [x_extra_p, x_, x_extra_d]
