@@ -78,12 +78,11 @@ if __name__ == "__main__":
     cfg.MODEL = type('', (), {})()
     cfg.DATASET = type('', (), {})()
 
-    cfg.MODEL.NAME = 'pidnet_m'
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m-imagenet-pretrained-tar/PIDNet_M_ImageNet.pth.tar'
+    cfg.MODEL.NAME = 'pidnet_l'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-l-imagenet-pretrained-tar/PIDNet_L_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
-
+    # Serve cosi chiamo pesi preaddestrati su ImageNet
     model = get_seg_model(cfg, imgnet_pretrained=True)
-
     model = model.to(device)
 
 
@@ -132,7 +131,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_M_1ce_0.00625_totloss_100_percent"
+        project_name = f"5_PIDNET_L_1ce_0.00625_totloss_100_percent"
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
