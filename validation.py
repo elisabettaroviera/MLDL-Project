@@ -94,8 +94,6 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             if batch_idx % 100 == 0: # Print every 100 batches
                 print(f"Batch {batch_idx}/{len(val_loader)}")
 
-            iteration += 1 # Increment the iteration counter
-
             inputs, targets = inputs.cuda(), targets.cuda() # GPU
             x_p, x_final, x_d = model(inputs)
             x_p_up = F.interpolate(x_p, size=targets.shape[1:], mode='bilinear', align_corners=False)
@@ -111,7 +109,7 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             running_loss += loss.item()
 
             # Convert model outputs to predicted class labels
-            preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
+            preds = outputs_up.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
             
             # Accumulate intersections and unions per class
