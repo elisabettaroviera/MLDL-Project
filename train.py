@@ -95,14 +95,15 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         iteration += 1 # Increment the iteration counter
 
         inputs, targets = inputs.cuda(), targets.cuda() # GPU
+        x_p, x_final, x_d = model(inputs)
+        x_p_up = F.interpolate(x_p, size=targets.shape[1:], mode='bilinear', align_corners=False)
+        x_final_up = F.interpolate(x_final, size=targets.shape[1:], mode='bilinear', align_corners=False)
+        x_d_up = F.interpolate(x_d, size=targets.shape[1:], mode='bilinear', align_corners=False)
 
-        # Compute output of the train
-        outputs = model(inputs)   
-        outputs_up = F.interpolate(outputs[1], size=targets.shape[1:], mode='bilinear', align_corners=False)
         boundaries = get_boundary_map(targets)
-        loss, loss_dict = compute_pidnet_loss(*outputs_up, targets, boundaries)
-        print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
 
+        loss, loss_dict = compute_pidnet_loss(x_p_up, x_final_up, x_d_up, targets, boundaries)
+        print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
