@@ -101,7 +101,7 @@ if __name__ == "__main__":
     num_epochs = 50#changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 1
+    start_epoch = 46
      #CHECK BEFORE RUNNING
     iter_curr = 0 # Initialize the iteration counter
     max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_M_1ce_0.00625_totloss_samepaper_100_percent"
+        project_name = f"5_PIDNET_M_1ce_0.00625_totloss_100_percent"
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 

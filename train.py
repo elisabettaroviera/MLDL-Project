@@ -28,9 +28,13 @@ def get_boundary_map(target, kernel_size=3):
 
     return boundary  # shape (B,1,H,W)
 
-
+"""
 def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
-                        lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):
+                        lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):"""
+    #perche prima usavo t:0.5
+    #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
+def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
+                        lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=1.0):
     # L0: aux CE loss sulla P branch
     loss_aux = criterion(x_extra_p, target)
 
