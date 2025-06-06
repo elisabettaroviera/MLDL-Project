@@ -30,21 +30,24 @@ def get_boundary_map(target, kernel_size=3):
 def compute_pidnet_loss(x_extra_p, x_main, x_extra_d, target, boundary,
                         lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1):
     # L0: aux CE loss sulla P branch
-    loss_aux = F.cross_entropy(x_extra_p, target)
+    loss_aux = F.cross_entropy(x_extra_p, target, ignore_index=255)
 
     # L1: Binary Cross Entropy sulla D branch (bordi)
     x_boundary = torch.sigmoid(x_extra_d)
     loss_bce = F.binary_cross_entropy(x_boundary, boundary)
 
     # L2: main CE loss finale
-    loss_main = F.cross_entropy(x_main, target)
+    loss_main = F.cross_entropy(x_main, target, ignore_index=255)
 
     # L3: CE loss focalizzata sui bordi
-    # Maschera binaria: dove boundary == 1
     boundary_mask = (boundary.squeeze(1) > 0.5)
-    if boundary_mask.any():
-        loss_boundary_ce = F.cross_entropy(x_main.permute(0,2,3,1)[boundary_mask],
-                                           target[boundary_mask])
+    masked_target = target[boundary_mask]
+    valid_mask = (masked_target != 255)
+    if valid_mask.any():
+        loss_boundary_ce = F.cross_entropy(
+            x_main.permute(0,2,3,1)[boundary_mask][valid_mask],
+            masked_target[valid_mask]
+        )
     else:
         loss_boundary_ce = torch.tensor(0.0, device=target.device)
 
@@ -87,12 +90,12 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
 
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
-        for batch_idx, (inputs, targets, file_names) in enumerate(val_loader):
+        for batch_idx, (inputs, targets, file_names) in enumerate(val_loader): 
             if batch_idx % 100 == 0: # Print every 100 batches
                 print(f"Batch {batch_idx}/{len(val_loader)}")
-            inputs, targets = inputs.cuda(), targets.cuda()
 
-            # Compute output of the model
+            iteration += 1 # Increment the iteration counter
+
             inputs, targets = inputs.cuda(), targets.cuda() # GPU
             x_p, x_final, x_d = model(inputs)
             x_p_up = F.interpolate(x_p, size=targets.shape[1:], mode='bilinear', align_corners=False)
@@ -103,12 +106,12 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
 
             loss, loss_dict = compute_pidnet_loss(x_p_up, x_final_up, x_d_up, targets, boundaries)
             print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
-
+            
             # Update the running loss
             running_loss += loss.item()
 
             # Convert model outputs to predicted class labels
-            preds = outputs_up.argmax(dim=1).detach().cpu().numpy()
+            preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
             
             # Accumulate intersections and unions per class

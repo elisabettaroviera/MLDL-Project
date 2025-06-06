@@ -180,9 +180,6 @@ class PIDNet(nn.Module):
                 x_: output finale"""
             x_extra_p = self.seghead_p(temp_p)
             x_extra_d = self.seghead_d(temp_d)
-            print("x_ shape:", x_.shape)   # dovrebbe essere [B, C, H, W]
-            print("x shape:", x.shape)
-            print("x_d shape:", x_d.shape)
 
             return [x_extra_p, x_, x_extra_d]
         else:

@@ -28,25 +28,27 @@ def get_boundary_map(target, kernel_size=3):
 
     return boundary  # shape (B,1,H,W)
 
-
 def compute_pidnet_loss(x_extra_p, x_main, x_extra_d, target, boundary,
                         lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1):
     # L0: aux CE loss sulla P branch
-    loss_aux = F.cross_entropy(x_extra_p, target)
+    loss_aux = F.cross_entropy(x_extra_p, target, ignore_index=255)
 
     # L1: Binary Cross Entropy sulla D branch (bordi)
     x_boundary = torch.sigmoid(x_extra_d)
     loss_bce = F.binary_cross_entropy(x_boundary, boundary)
 
     # L2: main CE loss finale
-    loss_main = F.cross_entropy(x_main, target)
+    loss_main = F.cross_entropy(x_main, target, ignore_index=255)
 
     # L3: CE loss focalizzata sui bordi
-    # Maschera binaria: dove boundary == 1
     boundary_mask = (boundary.squeeze(1) > 0.5)
-    if boundary_mask.any():
-        loss_boundary_ce = F.cross_entropy(x_main.permute(0,2,3,1)[boundary_mask],
-                                           target[boundary_mask])
+    masked_target = target[boundary_mask]
+    valid_mask = (masked_target != 255)
+    if valid_mask.any():
+        loss_boundary_ce = F.cross_entropy(
+            x_main.permute(0,2,3,1)[boundary_mask][valid_mask],
+            masked_target[valid_mask]
+        )
     else:
         loss_boundary_ce = torch.tensor(0.0, device=target.device)
 
@@ -64,7 +66,6 @@ def compute_pidnet_loss(x_extra_p, x_main, x_extra_d, target, boundary,
         "loss_main": loss_main.item(),
         "loss_boundary_ce": loss_boundary_ce.item()
     }
-
 
 # TRAIN LOOP
 def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, iteration, learning_rate, num_classes, max_iter): # criterion == loss function
@@ -116,7 +117,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         running_loss += loss.item() # Update of the loss == contain the total loss of the epoch
 
         # Convert model outputs to predicted class labels
-        preds = outputs_up.argmax(dim=1).detach().cpu().numpy()
+        preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
         gts = targets.detach().cpu().numpy()
         
         # Accumulate intersections and unions per class
