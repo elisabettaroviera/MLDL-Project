@@ -38,8 +38,6 @@ class GTA5(Dataset):
 
     def __getitem__(self, idx):
         toPil = ToPILImage()
-        if self._enableProbability:
-            idx = self.__get_image_indexProb()
         
         image = decode_image(self._images[idx][0]).to(dtype=torch.uint8)
         mask =  decode_image(self._images[idx][1]).to(dtype=torch.uint8)
