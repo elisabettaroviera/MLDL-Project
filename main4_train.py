@@ -81,7 +81,16 @@ def generate_discriminators(num, num_classes, device='CPU'):
     Returns:
         list: A list of discriminator instances.
     """
-    return [FCDiscriminator(num_classes=num_classes).to(device) for _ in range(num)], [torch.optim.Adam(FCDiscriminator(num_classes=num_classes).to(device), lr=0.0001, betas=(0.9, 0.99)).to_device(device) for _ in range(num)]
+    discriminators = []
+    discriminators_optimizers = []
+
+    for _ in range(num):
+        discriminator = FCDiscriminator(num_classes=num_classes).to(device)
+        optimizer = torch.optim.Adam(discriminator.parameters(), lr=0.0001, betas=(0.9, 0.99)).to(device)
+        discriminators.append(discriminator)
+        discriminators_optimizers.append(optimizer)
+
+    return discriminators, discriminators_optimizers
 
 
 if __name__ == "__main__":
