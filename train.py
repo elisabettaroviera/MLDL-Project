@@ -47,11 +47,12 @@ def backpropagate(optimizer, loss, scaler = None):
 
 def adversarial_loss(discriminators, outputs, target_label, source_label, device, lambdas):
     total_adv_loss = 0.0
-    for i, discriminator in enumerate(discriminators):
-        disc_pred = discriminator(softmax(outputs[i], dim=1).detach())
-        target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype)
-        adv_loss = bce_loss(disc_pred, target_tensor)
-        total_adv_loss += lambdas[i]*adv_loss
+    with torch.cuda.amp.autocast():
+        for i, discriminator in enumerate(discriminators):
+            disc_pred = discriminator(softmax(outputs[i], dim=1).detach())
+            target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype)
+            adv_loss = bce_loss(disc_pred, target_tensor)
+            total_adv_loss += lambdas[i]*adv_loss
     return total_adv_loss
 
 # TRAIN LOOP
