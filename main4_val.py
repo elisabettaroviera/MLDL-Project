@@ -78,7 +78,7 @@ if __name__ == "__main__":
     transform_cityscapes_dataset = transform_cityscapes()
     target_transform_cityscapes = transform_cityscapes_mask()
 
-    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
 
     batch_size = 4
     num_epochs = 50
