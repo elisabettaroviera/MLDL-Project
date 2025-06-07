@@ -39,8 +39,8 @@ class GTA5(Dataset):
     def __getitem__(self, idx):
         toPil = ToPILImage()
         
-        image = decode_image(self._images[idx][0]).to(dtype=torch.uint8)
-        mask =  decode_image(self._images[idx][1]).to(dtype=torch.uint8)
+        image = decode_image(self.images[idx][0]).to(dtype=torch.uint8)
+        mask =  decode_image(self.images[idx][1]).to(dtype=torch.uint8)
 
         if self.augmentation and self.type_aug:
             augmented = augmentation_transform(image=toPil(image), mask=toPil(mask), type_aug=self.type_aug)
