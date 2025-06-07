@@ -106,7 +106,7 @@ if __name__ == "__main__":
         run = wandb.init(
             project=project_name,
             # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
-            entity="s328422-politecnico-di-torino",
+            entity="s281401-politecnico-di-torino",
             name=f"epoch_{epoch}",
             id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
             resume="allow"
