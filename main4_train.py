@@ -69,6 +69,21 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     return subset_dataloader
 
+def generate_discriminators(num, num_classes):
+    """
+    Generates a list of discriminators based on the number of classes.
+    Each discriminator is an instance of FCDiscriminator.
+    
+    Args:
+        num (int): Number of discriminators to generate.
+        num_classes (int): Number of classes for the discriminators.
+        
+    Returns:
+        list: A list of discriminator instances.
+    """
+    return [FCDiscriminator(num_classes=num_classes) for _ in range(num)], [torch.optim.Adam(FCDiscriminator(num_classes=num_classes).parameters(), lr=0.0001, betas=(0.9, 0.99)) for _ in range(num)]
+
+
 if __name__ == "__main__":
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -133,50 +148,40 @@ if __name__ == "__main__":
     max_iter = num_epochs * len(full_dataloader_gta_train)
     iter_curr = 0
 
-    discriminator_1 = FCDiscriminator(num_classes=num_classes).to(device)
-    discriminator_2 = FCDiscriminator(num_classes=num_classes).to(device)
-    discriminators = [discriminator_1, discriminator_2]
-    optimizer_d1 = torch.optim.Adam(discriminator_1.parameters(), lr=0.0001, betas=(0.9, 0.99))
-    optimizer_d2 = torch.optim.Adam(discriminator_2.parameters(), lr=0.0001, betas=(0.9, 0.99))
-    discriminators_optimizers = [optimizer_d1, optimizer_d2]
+    discriminators, discriminators_optimizers = generate_discriminators(1, num_classes) # Generate 1 discriminator
 
-    lambdas = [0.1, 0.1]  # Lambda values for the adversarial loss
+    lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
+
+    project_name = "4_Adversarial_Domain_Adaptation_base" #CHECK BEFORE RUNNING
+    entity = "s281401-politecnico-di-torino" # New new entity Auro
+    # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
+    # entity="s328422-politecnico-di-torino" # old team Betta
+    run = wandb.init(project=project_name, entity=entity, name=f"epoch_{start_epoch}", reinit=True)
+    wandb.config.update({
+        "batch_size": batch_size,
+        "learning_rate": learning_rate,
+        "momentum": momentum,
+        "weight_decay": weight_decay,
+        "num_epochs": num_epochs,
+        "num_classes": num_classes
+    })
+    
+    
+    if start_epoch > 1:
+        artifact = wandb.use_artifact(f"{project_name}/model_epoch_{start_epoch-1}:latest", type="model")
+        checkpoint_path = artifact.download()
+        checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{start_epoch-1}.pt"))
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        for i, discriminator in enumerate(discriminators):
+            artifact = wandb.use_artifact(f"{project_name}/discriminator_{i+1}_epoch_{start_epoch-1}:latest", type="model")
+            checkpoint_path = artifact.download()
+            checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_{i+1}_epoch_{start_epoch-1}.pt"))
+            discriminator.load_state_dict(checkpoint['model_state_dict'])
+            discriminators_optimizers[i].load_state_dict(checkpoint['optimizer_state_dict'])
 
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "4_Adversarial_Domain_Adaptation_base" #CHECK BEFORE RUNNING
-        entity = "s281401-politecnico-di-torino" # New new entity Auro
-        # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
-        # entity="s328422-politecnico-di-torino" # old team Betta
-        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
-        wandb.config.update({
-            "batch_size": batch_size,
-            "learning_rate": learning_rate,
-            "momentum": momentum,
-            "weight_decay": weight_decay,
-            "num_epochs": num_epochs,
-            "num_classes": num_classes
-        })
-
-        if epoch > 1:
-            artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch-1}:latest", type="model")
-            checkpoint_path = artifact.download()
-            checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
-            model.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-
-            artifact = wandb.use_artifact(f"{project_name}/discriminator_1_epoch_{epoch-1}:latest", type="model")
-            checkpoint_path = artifact.download()
-            checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_1_epoch_{epoch-1}.pt"))
-            discriminator_1.load_state_dict(checkpoint['model_state_dict'])
-            optimizer_d1.load_state_dict(checkpoint['optimizer_state_dict'])
-
-            artifact = wandb.use_artifact(f"{project_name}/discriminator_2_epoch_{epoch-1}:latest", type="model")
-            checkpoint_path = artifact.download()
-            checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_2_epoch_{epoch-1}.pt"))
-            discriminator_2.load_state_dict(checkpoint['model_state_dict'])
-            optimizer_d2.load_state_dict(checkpoint['optimizer_state_dict'])
-
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
@@ -206,28 +211,20 @@ if __name__ == "__main__":
         run.log_artifact(artifact)
         os.remove(save_path)
 
-        checkpoint = {
-            'epoch': epoch,
-            'model_state_dict': discriminator_1.state_dict(),
-            'optimizer_state_dict': optimizer_d1.state_dict()
-        }
-        save_path_model = f"discriminator_1_epoch_{epoch}.pt"
-        torch.save(checkpoint, save_path_model)
-        artifact = wandb.Artifact(f"discriminator_1_epoch_{epoch}", type="model")
-        artifact.add_file(save_path_model)
-        run.log_artifact(artifact)
-        os.remove(save_path_model)
+        for i, (discriminator, optimizer_d) in enumerate(zip(discriminators, discriminators_optimizers)):
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': discriminator.state_dict(),
+                'optimizer_state_dict': optimizer_d.state_dict()
+            }
+            save_path_model = f"discriminator_{i+1}_epoch_{epoch}.pt"
+            torch.save(checkpoint, save_path_model)
+            artifact = wandb.Artifact(f"discriminator_{i+1}_epoch_{epoch}", type="model")
+            artifact.add_file(save_path_model)
+            run.log_artifact(artifact)
+            os.remove(save_path_model)
 
-        checkpoint = {
-            'epoch': epoch,
-            'model_state_dict': discriminator_2.state_dict(),
-            'optimizer_state_dict': optimizer_d2.state_dict()
-        }
-        save_path_model = f"discriminator_2_epoch_{epoch}.pt"
-        torch.save(checkpoint, save_path_model)
-        artifact = wandb.Artifact(f"discriminator_2_epoch_{epoch}", type="model")
-        artifact.add_file(save_path_model)
-        run.log_artifact(artifact)
-        os.remove(save_path_model)
+        wandb.finish()
+        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
 
-    wandb.finish()
+        

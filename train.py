@@ -48,7 +48,7 @@ def backpropagate(optimizer, loss, scaler = None):
 def adversarial_loss(discriminators, outputs, target_label, source_label, device, lambdas):
     total_adv_loss = 0.0
     for i, discriminator in enumerate(discriminators):
-        disc_pred = discriminator(softmax(outputs[0], dim=1).detach())
+        disc_pred = discriminator(softmax(outputs[i], dim=1).detach())
         target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype)
         adv_loss = bce_loss(disc_pred, target_tensor)
         total_adv_loss += lambdas[i]*adv_loss
@@ -206,7 +206,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         var_model = "BiSeNet"
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = old_model.to(device) 
+    model = old_model
     running_loss = 0.0 
     mean_loss = 0.0
     total_intersections = torch.zeros(num_classes, dtype=torch.float64, device=device)
@@ -303,11 +303,14 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
             outputs_source = model(inputs_src)
             outputs_target = model(inputs_target)
         
-        softmax_src = softmax(outputs_source[0], dim=1).detach()
-        softmax_tgt = softmax(outputs_target[0], dim=1).detach()
 
-        for discriminator, disc_optimizer in zip(discriminators, discriminator_optimizers):
+
+        for i, (discriminator, disc_optimizer) in enumerate(zip(discriminators, discriminator_optimizers)):
             disc_optimizer.zero_grad()
+            
+            # Compute the softmax outputs for source and target
+            softmax_src = softmax(outputs_source[i], dim=1).detach()
+            softmax_tgt = softmax(outputs_target[i], dim=1).detach()
 
             # SOURCE: discriminator deve dire "source_label"
             disc_pred_src = discriminator(softmax_src)
