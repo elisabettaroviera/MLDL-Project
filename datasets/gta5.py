@@ -1,17 +1,16 @@
 from torch.utils.data import Dataset
+from torchvision.io import decode_image
+from torchvision.transforms import ToPILImage
 import os
 from PIL import Image
 import numpy as np
-import albumentations as A
-import torchvision.transforms as T
 from albumentations.pytorch import ToTensorV2
 from datasets.transform_datasets import augmentation_transform
 import torch
 
-
 class GTA5(Dataset):
     def __init__(self, root_dir, transform=None, target_transform=None,
-                 augmentation=False, type_aug=None, cache=False, debug=False):
+                 augmentation=False, type_aug=None, debug=False):
         super().__init__()
         self.image_dir = os.path.join(root_dir, 'images')
         self.label_dir = os.path.join(root_dir, 'labels')
@@ -19,10 +18,8 @@ class GTA5(Dataset):
         self.target_transform = target_transform
         self.augmentation = augmentation
         self.type_aug = type_aug
-        self.cache = cache
         self.debug = debug
 
-        # Caricamento e ordinamento dei path
         self.images = []
         self.labels = []
         for fname in sorted(os.listdir(self.image_dir)):
@@ -36,47 +33,28 @@ class GTA5(Dataset):
         if self.debug:
             print(f"[DEBUG] Loaded {len(self.images)} image-label pairs.")
 
-        # Caching in memoria (opzionale)
-        self.images_data = None
-        self.labels_data = None
-        if self.cache:
-            self.images_data = [np.array(Image.open(p).convert('RGB')) for p in self.images]
-            self.labels_data = [np.array(Image.open(p)) for p in self.labels]
-            if self.debug:
-                print("[DEBUG] Cached images and masks.")
-
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
-        if self.cache:
-            image = self.images_data[idx]
-            mask = self.labels_data[idx]
-            image_path = self.images[idx]
-        else:
-            image_path = self.images[idx]
-            label_path = self.labels[idx]
-            image = np.array(Image.open(image_path).convert('RGB'))
-            mask = np.array(Image.open(label_path))
-    
+        toPil = ToPILImage()
+        if self._enableProbability:
+            idx = self.__get_image_indexProb()
+        
+        image = decode_image(self._images[idx][0]).to(dtype=torch.uint8)
+        mask =  decode_image(self._images[idx][1]).to(dtype=torch.uint8)
+
         if self.augmentation and self.type_aug:
-            augmented = augmentation_transform(image=image, mask=mask, type_aug=self.type_aug)
+            augmented = augmentation_transform(image=toPil(image), mask=toPil(mask), type_aug=self.type_aug)
             image = augmented['image']
             mask = augmented['mask']
-    
-            # Se augmentation_transform NON include ToTensorV2:
-            image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
-            mask = torch.from_numpy(mask).long()
-    
+            # If ToTensorV2 is not included in augmentation_transform, uncomment below:
+            # image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
+            # mask = torch.from_numpy(mask).long()
         else:
-            image = Image.fromarray(image)
-            mask = Image.fromarray(mask)
-    
             if self.transform:
-                image = self.transform(image)
+                image = self.transform(toPil(image))
             if self.target_transform:
-                mask = self.target_transform(mask)
-    
-        filename = os.path.basename(image_path)
+                mask = self.target_transform(toPil(mask))
+        filename = ""
         return image, mask, filename
-

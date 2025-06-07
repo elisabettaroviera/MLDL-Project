@@ -233,8 +233,11 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
         # ------------------- TRAINING BISENET WITH ADVERSARIAL LOSS ------------------- #w
         bisenet_start = time.time()
+        locking_start = time.time()
         for discriminator in discriminators:
             lock_model(discriminator) # Lock the discriminator parameters to avoid training them
+        locking_end = time.time()
+        print(f"Discriminator locking time: {locking_end - locking_start:.2f} seconds")
 
 
         iteration += 1 # Increment the iteration counter
