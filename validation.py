@@ -43,7 +43,8 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
 
             # Store the colored target mask
             gt_file_name = file_name.replace("leftImg8bit", "gtFine_color")
-            gt_path = os.path.join("/kaggle/input/cityscapes-dataset/Cityscapes/Cityspaces/images/val/frankfurt", gt_file_name)
+            gt_path = os.path.join("/kaggle/input/cityscapes-dataset/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name)
+            # non funziona con kaggle
             color_target_img = Image.open(gt_path).convert('RGB')
             resized_target = resize_transform(color_target_img)
             resized_target.save(f"{save_dir}/{file_name}_color_target.png")
@@ -109,8 +110,8 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             total_unions += unions
 
             # Only enter the loop if we haven't saved both images    
-            if flag_save < 2:
-                flag_save = save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
+            #if flag_save < 2:
+            #   flag_save = save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
 
 
     # 5. Compute the metrics for the validation set 
