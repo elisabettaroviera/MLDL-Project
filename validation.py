@@ -29,7 +29,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
             flag_save += 1
 
             # Store the original image from 'inputs' in tensor form
-            original_img_path = os.path.join("./datasets/Cityscapes/Cityspaces/images/val/frankfurt", file_name)
+            original_img_path = os.path.join("/kaggle/input/cityscapes-dataset/Cityscapes/Cityspaces/images/val/frankfurt", file_name)
             original_img = Image.open(original_img_path).convert('RGB')
 
             # Resize the image
@@ -43,7 +43,7 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
 
             # Store the colored target mask
             gt_file_name = file_name.replace("leftImg8bit", "gtFine_color")
-            gt_path = os.path.join("./datasets/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name)
+            gt_path = os.path.join("/kaggle/input/cityscapes-dataset/Cityscapes/Cityspaces/images/val/frankfurt", gt_file_name)
             color_target_img = Image.open(gt_path).convert('RGB')
             resized_target = resize_transform(color_target_img)
             resized_target.save(f"{save_dir}/{file_name}_color_target.png")
