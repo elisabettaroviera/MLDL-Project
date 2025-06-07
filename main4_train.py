@@ -69,7 +69,7 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     return subset_dataloader
 
-def generate_discriminators(num, num_classes):
+def generate_discriminators(num, num_classes, device='CPU'):
     """
     Generates a list of discriminators based on the number of classes.
     Each discriminator is an instance of FCDiscriminator.
@@ -81,7 +81,7 @@ def generate_discriminators(num, num_classes):
     Returns:
         list: A list of discriminator instances.
     """
-    return [FCDiscriminator(num_classes=num_classes) for _ in range(num)], [torch.optim.Adam(FCDiscriminator(num_classes=num_classes).parameters(), lr=0.0001, betas=(0.9, 0.99)) for _ in range(num)]
+    return [FCDiscriminator(num_classes=num_classes).to_device(device) for _ in range(num)], [torch.optim.Adam(FCDiscriminator(num_classes=num_classes).parameters(), lr=0.0001, betas=(0.9, 0.99)).to_device(device) for _ in range(num)]
 
 
 if __name__ == "__main__":
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     max_iter = num_epochs * len(full_dataloader_gta_train)
     iter_curr = 0
 
-    discriminators, discriminators_optimizers = generate_discriminators(1, num_classes) # Generate 1 discriminator
+    discriminators, discriminators_optimizers = generate_discriminators(1, num_classes, device) # Generate 1 discriminator
 
     lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
 
