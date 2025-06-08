@@ -58,3 +58,8 @@ class GTA5(Dataset):
                 mask = self.target_transform(toPil(mask))
         filename = ""
         return image, mask, filename
+
+
+
+
+

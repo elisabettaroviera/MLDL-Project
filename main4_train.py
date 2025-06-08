@@ -125,9 +125,9 @@ if __name__ == "__main__":
     """
 
     type_aug = {} # CHANGE HERE!!!
-    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
+    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
-    gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
+    gta_train_aug = GTA5('/kaggle/input/gta5-dataset', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
 
     # Choose with probability 0.5 the augmented images
     num_augmented = int(0.5 * len(gta_train_aug))
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
-    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('./datasets/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
+    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
     # Take a subset of the dataloader
     #dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
     #dataloader_cityscapes_train = select_random_fraction_of_dataset(full_dataloader_cityscapes_train, fraction=1, batch_s.0ize=batch_size)
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
     
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
     """
     alpha   # CrossEntropy
     beta    # Lovász
@@ -160,13 +160,13 @@ if __name__ == "__main__":
     ########## PROVE ##########
     # Current Best Baseline (Control Trial 0) : 
     | Trial ID | Segmentation Loss          | Adversarial Loss | λ<sub>adv</sub> Strategy |
-    | T0       | 0.7 \* CE + 0.3 \* Tversky | BCE              | Fixed 0.001              |
+    | T0       | 0.7 * CE + 0.3 * Tversky | BCE              | Fixed 0.001              |
 
     num_epochs = 25, fract_dataset = 100 % 
     | Trial | L_seg                | L_adv / L_d                     | L_adv Strategy           | Project Name
     | ----- | -------------------- | ------------------------------- | ------------------------ | -----------------
-    | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed)
-    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup
+    | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed) --> dovremmo averlo salvato(?)
+    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup --> partito, vediamo se va
     | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_mse_rampup
     | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence
     | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     # === Step 1: Add global config for trials in the main training script ===
     trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
-     
+
     project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
