@@ -5,6 +5,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import torchvision.transforms.functional as TF
+import torch.nn.functional as F
 from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters, compute_miou_torch, compute_miou_torch_vectorized
 from utils.utils import poly_lr_scheduler
 import wandb
@@ -66,9 +67,9 @@ def adversarial_loss(discriminators, outputs_target, target_label, source_label,
         if trial_type.startswith("hinge"):
             loss = -pred.mean()  # Hinge loss: maximize D output
         elif trial_type.startswith("mse"):
-            loss = TF.mse_loss(pred, torch.full_like(pred, source_label, device=device))
+            loss = F.mse_loss(pred, torch.full_like(pred, source_label, device=device))
         elif trial_type.startswith("bce"):
-            loss = TF.binary_cross_entropy_with_logits(pred, torch.full_like(pred, source_label, device=device))
+            loss = F.binary_cross_entropy_with_logits(pred, torch.full_like(pred, source_label, device=device))
         else:
             raise ValueError(f"Unsupported trial_type: {trial_type}")
 
@@ -377,11 +378,11 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
                 loss_d_src = torch.relu(1.0 - disc_pred_src).mean()
                 loss_d_tgt = torch.relu(1.0 + disc_pred_tgt).mean()
             elif trial_type.startswith("mse"):
-                loss_d_src = TF.mse_loss(disc_pred_src, torch.full_like(disc_pred_src, float(source_label), device=device))
-                loss_d_tgt = TF.mse_loss(disc_pred_tgt, torch.full_like(disc_pred_tgt, float(target_label), device=device))
+                loss_d_src = F.mse_loss(disc_pred_src, torch.full_like(disc_pred_src, float(source_label), device=device))
+                loss_d_tgt = F.mse_loss(disc_pred_tgt, torch.full_like(disc_pred_tgt, float(target_label), device=device))
             else:
-                loss_d_src = TF.binary_cross_entropy_with_logits(disc_pred_src, torch.full_like(disc_pred_src, float(source_label), device=device))
-                loss_d_tgt = TF.binary_cross_entropy_with_logits(disc_pred_tgt, torch.full_like(disc_pred_tgt, float(target_label), device=device))
+                loss_d_src = F.binary_cross_entropy_with_logits(disc_pred_src, torch.full_like(disc_pred_src, float(source_label), device=device))
+                loss_d_tgt = F.binary_cross_entropy_with_logits(disc_pred_tgt, torch.full_like(disc_pred_tgt, float(target_label), device=device))
         
 
             # Media delle due loss
