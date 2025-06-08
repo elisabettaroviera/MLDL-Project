@@ -124,10 +124,10 @@ if __name__ == "__main__":
     }
     """
 
-    type_aug = {} # CHANGE HERE!!!
-    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
+    type_aug = {} # CHANGE HERE!!! 
+    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
-    gta_train_aug = GTA5('/kaggle/input/gta5-dataset', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
+    gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
 
     # Choose with probability 0.5 the augmented images
     num_augmented = int(0.5 * len(gta_train_aug))
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
-    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
+    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes/Cityspaces', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
     # Take a subset of the dataloader
     #dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
     #dataloader_cityscapes_train = select_random_fraction_of_dataset(full_dataloader_cityscapes_train, fraction=1, batch_s.0ize=batch_size)
