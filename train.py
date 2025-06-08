@@ -18,7 +18,7 @@ softmax = torch.nn.functional.softmax
 def get_lambda_adv(iteration, max_iters, trial_type):
     if trial_type in ["hinge_rampup", "mse_rampup"]:
         # Linear ramp-up
-        return min(0.001, 0.001 * (iteration / (0.4 * max_iters)))
+        return min(0.001, 0.001 * (iteration / (0.4 * max_iters))) # ---> domanda: se si rompe tutto, si ricorda di dove era arrivato??
     elif trial_type == "bce_confidence":
         return None  # Will be computed dynamically based on discriminator confidence
     return 0.001  # Default fixed lambda ---> can be changed to 0.002
@@ -467,13 +467,15 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
     wandb.log({
         "epoch": epoch,
         "loss": mean_loss,
-        "lr": lr
+        "lr": lr,
+        "lambda_adv": lambdas
     })
 
     # Save the model weight at each epoch
     model_save_path = f"model_epoch_{epoch}.pt"
     torch.save({
         'epoch': epoch,
+        'iteration': iteration,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': mean_loss,
