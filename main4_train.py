@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
     #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup (), mse_rampup, bce_confidence,  #NB add hinge_fixed
+    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
 
     project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup" #CHECK BEFORE RUNNING
@@ -223,7 +223,7 @@ if __name__ == "__main__":
         if epoch % 10 == 0:
             compute_mIoU = True
         else:
-            compute_mIoU = False
+            compute_mIoU = True
 
         metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, full_dataloader_gta_train, full_dataloader_cityscapes_train, loss, optimizer, discriminators_optimizers, iter_curr,
                                                         learning_rate, num_classes, max_iter, lambdas, compute_mIoU, trial_type)
