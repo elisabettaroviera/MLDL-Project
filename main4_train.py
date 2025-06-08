@@ -166,7 +166,7 @@ if __name__ == "__main__":
     | Trial | L_seg                | L_adv / L_d                     | L_adv Strategy           | Project Name
     | ----- | -------------------- | ------------------------------- | ------------------------ | -----------------
     | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed) --> dovremmo averlo salvato(?)
-    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup --> partito, vediamo se va
+    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup --> partito
     | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_mse_rampup
     | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence
     | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed
@@ -182,10 +182,10 @@ if __name__ == "__main__":
 
     #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    trial_type = "mse_rampup"  # Options: bce_fixed (base), hinge_rampup (), mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
 
-    project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_mse_rampup" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
@@ -206,6 +206,7 @@ if __name__ == "__main__":
         checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{start_epoch-1}.pt"))
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        iter_curr = checkpoint.get('iteration', 0)  # fallback a 0 se non esiste
         for i, discriminator in enumerate(discriminators):
             artifact = wandb.use_artifact(f"{project_name}/discriminator_{i+1}_epoch_{start_epoch-1}:latest", type="model")
             checkpoint_path = artifact.download()
