@@ -109,3 +109,82 @@ def compute_parameters(model):
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
     return tot_params, trainable_params
+
+def compute_miou_torch(gt_tensor, pred_tensor, num_classes, device=None, return_raw=True):
+    """
+    Computes mean IoU and per-class IoU using PyTorch tensors.
+
+    Args:
+        gt_tensor (Tensor): Ground truth tensor (B, H, W), type long.
+        pred_tensor (Tensor): Predicted tensor (B, H, W), type long.
+        num_classes (int): Number of classes.
+        device (optional): Device to compute on (default: gt_tensor.device).
+        return_raw (bool): Whether to return intersections and unions.
+
+    Returns:
+        mean_iou (float), iou_per_class (Tensor), [optional: intersections, unions]
+    """
+    if device is None:
+        device = gt_tensor.device
+
+    intersections = torch.zeros(num_classes, dtype=torch.float64, device=device)
+    unions = torch.zeros(num_classes, dtype=torch.float64, device=device)
+
+    for cls in range(num_classes):
+        pred_mask = (pred_tensor == cls)
+        gt_mask = (gt_tensor == cls)
+
+        intersection = (pred_mask & gt_mask).sum().double()
+        union = (pred_mask | gt_mask).sum().double()
+
+        intersections[cls] += intersection
+        unions[cls] += union
+
+    iou_per_class = (intersections / (unions + 1e-10)) * 100.0
+    mean_iou = torch.nanmean(iou_per_class)
+
+    if return_raw:
+        return mean_iou.item(), iou_per_class, intersections, unions
+    else:
+        return mean_iou.item(), iou_per_class
+    
+def compute_miou_torch_vectorized(gt_tensor, pred_tensor, num_classes, device=None, return_raw=True):
+    """
+    Compute mean IoU and per-class IoU in a fully vectorized way.
+
+    Args:
+        gt_tensor (Tensor): (B, H, W) tensor of ground truth labels.
+        pred_tensor (Tensor): (B, H, W) tensor of predicted labels.
+        num_classes (int): number of classes.
+        device (optional): device to compute on (default: gt_tensor.device).
+        return_raw (bool): whether to return intersections and unions.
+
+    Returns:
+        mean_iou (float), iou_per_class (Tensor), [optional: intersections, unions]
+    """
+    if device is None:
+        device = gt_tensor.device
+
+    # Flatten all predictions and ground truth
+    gt = gt_tensor.view(-1)
+    pred = pred_tensor.view(-1)
+
+    # Create confusion matrix
+    mask = (gt >= 0) & (gt < num_classes)  # valid pixels
+    conf_matrix = torch.bincount(
+        num_classes * gt[mask] + pred[mask],
+        minlength=num_classes ** 2
+    ).reshape(num_classes, num_classes).to(torch.float64)
+
+    # Compute intersection and union
+    intersections = torch.diag(conf_matrix)
+    unions = conf_matrix.sum(1) + conf_matrix.sum(0) - intersections
+
+    # IoU per class
+    iou_per_class = (intersections / (unions + 1e-10)) * 100.0
+    mean_iou = torch.nanmean(iou_per_class)
+
+    if return_raw:
+        return mean_iou.item(), iou_per_class, intersections, unions
+    else:
+        return mean_iou.item(), iou_per_class
