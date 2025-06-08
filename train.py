@@ -230,7 +230,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, l
 
 
 def train_with_adversary(epoch, old_model, discriminators, dataloader_source_train, dataloader_target_train, 
-                         criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas, compute_mIoU = False, trial_type = "bce_fixed"): # criterion == loss function
+                         criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas, compute_mIoU = True, trial_type = "bce_fixed"): # criterion == loss function
    
     # --------------------------- BASIC DEFINITIONS -------------------------------------- #
     try:
