@@ -235,6 +235,7 @@ if __name__ == "__main__":
         # Save model checkpoint as wandb artifact
         checkpoint = {
             'epoch': epoch,
+            'iteration': iter_curr,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict()
         }
