@@ -180,11 +180,12 @@ if __name__ == "__main__":
 
     discriminators, discriminators_optimizers = generate_discriminators(1, num_classes, device) # Generate 1 discriminator
 
-    lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
+    #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
     trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
-
-    project_name = "4_Adversarial_Domain_Adaptation_base" #CHECK BEFORE RUNNING
+    lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
+     
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
