@@ -93,6 +93,7 @@ def generate_discriminators(num, num_classes, device='CPU'):
     return discriminators, discriminators_optimizers
 
 
+
 if __name__ == "__main__":
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -104,7 +105,7 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 50 
+    num_epochs = 25
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
@@ -140,8 +141,9 @@ if __name__ == "__main__":
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
     full_dataloader_cityscapes_train, _ = dataloader(CityScapes('./datasets/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
     # Take a subset of the dataloader
-    #dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
-    
+    #dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
+    #dataloader_cityscapes_train = select_random_fraction_of_dataset(full_dataloader_cityscapes_train, fraction=1, batch_s.0ize=batch_size)
+
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
@@ -154,12 +156,33 @@ if __name__ == "__main__":
     theta   # Dice
     """
 
+    """
+    ########## PROVE ##########
+    # Current Best Baseline (Control Trial 0) : 
+    | Trial ID | Segmentation Loss          | Adversarial Loss | λ<sub>adv</sub> Strategy |
+    | T0       | 0.7 \* CE + 0.3 \* Tversky | BCE              | Fixed 0.001              |
+
+    num_epochs = 25, fract_dataset = 100 % 
+    | Trial | L_seg                | L_adv / L_d                     | L_adv Strategy           | Project Name
+    | ----- | -------------------- | ------------------------------- | ------------------------ | -----------------
+    | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed)
+    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup
+    | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_mse_rampup
+    | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence
+    | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed
+
+    """
+
+
+
     max_iter = num_epochs * len(full_dataloader_gta_train)
     iter_curr = 0
 
     discriminators, discriminators_optimizers = generate_discriminators(1, num_classes, device) # Generate 1 discriminator
 
     lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
+    # === Step 1: Add global config for trials in the main training script ===
+    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
 
     project_name = "4_Adversarial_Domain_Adaptation_base" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
@@ -201,7 +224,7 @@ if __name__ == "__main__":
             compute_mIoU = False
 
         metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, full_dataloader_gta_train, full_dataloader_cityscapes_train, loss, optimizer, discriminators_optimizers, iter_curr,
-                                                        learning_rate, num_classes, max_iter, lambdas, compute_mIoU)
+                                                        learning_rate, num_classes, max_iter, lambdas, compute_mIoU, trial_type)
         end_train = time.time()
         print(f"Time for training: {(end_train - start_train)/60:.2f} min")
 

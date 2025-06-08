@@ -14,6 +14,15 @@ import time
 bce_loss = torch.nn.BCEWithLogitsLoss(reduction="mean")
 softmax = torch.nn.functional.softmax
 
+# Lambda scheduler function
+def get_lambda_adv(iteration, max_iters, trial_type):
+    if trial_type in ["hinge_rampup", "mse_rampup"]:
+        # Linear ramp-up
+        return min(0.001, 0.001 * (iteration / (0.4 * max_iters)))
+    elif trial_type == "bce_confidence":
+        return None  # Will be computed dynamically based on discriminator confidence
+    return 0.001  # Default fixed lambda ---> can be changed to 0.002
+
 def lock_model(model):
     """
     Lock the model parameters to avoid training them.
@@ -45,13 +54,37 @@ def backpropagate(optimizer, loss, scaler = None):
         optimizer.step()       # Update the model parameters
     return optimizer
 
-def adversarial_loss(discriminators, outputs, target_label, source_label, device, lambdas):
+# === Step 2: Update adversarial_loss function (or create it if not defined) ===
+# === Step 2: Update adversarial_loss function (or create it if not defined) ===
+def adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas, trial_type):
+    loss_total = 0.0
+    for i, discriminator in enumerate(discriminators):
+        # Compute softmax
+        softmax_output = torch.softmax(outputs_target[i], dim=1)
+        pred = discriminator(softmax_output)
+
+        if trial_type.startswith("hinge"):
+            loss = -pred.mean()  # Hinge loss: maximize D output
+        elif trial_type.startswith("mse"):
+            loss = TF.mse_loss(pred, torch.full_like(pred, source_label, device=device))
+        elif trial_type.startswith("bce"):
+            loss = TF.binary_cross_entropy_with_logits(pred, torch.full_like(pred, source_label, device=device))
+        else:
+            raise ValueError(f"Unsupported trial_type: {trial_type}")
+
+        lambda_adv = lambdas[i] if lambdas[i] is not None else 0.001  # fallback
+        loss_total += lambda_adv * loss
+
+    return loss_total
+
+
+def adversarial_loss_base(discriminators, outputs, target_label, source_label, device, lambdas):
     total_adv_loss = 0.0
     with torch.cuda.amp.autocast():
         for i, discriminator in enumerate(discriminators):
             disc_pred = discriminator(softmax(outputs[i], dim=1).detach())
             target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype)
-            adv_loss = bce_loss(disc_pred, target_tensor)
+            adv_loss = bce_loss(disc_pred, target_tensor) 
             total_adv_loss += lambdas[i]*adv_loss
     return total_adv_loss
 
@@ -197,7 +230,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iteration, l
 
 
 def train_with_adversary(epoch, old_model, discriminators, dataloader_source_train, dataloader_target_train, 
-                         criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas, compute_mIoU = False): # criterion == loss function
+                         criterion, optimizer, discriminator_optimizers, iteration, learning_rate, num_classes, max_iter, lambdas, compute_mIoU = False, trial_type = "bce_fixed"): # criterion == loss function
    
     # --------------------------- BASIC DEFINITIONS -------------------------------------- #
     try:
@@ -274,7 +307,14 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         # Compute the adversarial loss
         start_adversarial = time.time()
         with torch.cuda.amp.autocast():
-            adv_loss = adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas)
+            #adv_loss = adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas)
+            lambda_dynamic = get_lambda_adv(iteration, max_iter, trial_type)
+            if trial_type == "bce_confidence":
+                with torch.no_grad():
+                    D_out = discriminators[0](torch.softmax(outputs_target[0], dim=1))
+                    lambda_dynamic = 0.001 * (1 - torch.sigmoid(D_out).mean().item())
+            lambdas = [lambda_dynamic for _ in discriminators]
+            adv_loss = adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas, trial_type)
         # Combine the losses
         loss += adv_loss
         end_adversarial = time.time()
@@ -318,17 +358,31 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
 
             # SOURCE: discriminator deve dire "source_label"
             disc_pred_src = discriminator(softmax_src)
+            # TARGET: discriminator deve dire "target_label"
+            disc_pred_tgt = discriminator(softmax_tgt)
+            
+            '''
             loss_d_src = torch.nn.functional.binary_cross_entropy_with_logits(
                 disc_pred_src,
                 torch.full(disc_pred_src.shape, float(source_label), device=device)
             )
 
-            # TARGET: discriminator deve dire "target_label"
-            disc_pred_tgt = discriminator(softmax_tgt)
             loss_d_tgt = torch.nn.functional.binary_cross_entropy_with_logits(
                 disc_pred_tgt,
                 torch.full(disc_pred_tgt.shape, float(target_label), device=device)
             )
+            '''
+
+            if trial_type.startswith("hinge"):
+                loss_d_src = torch.relu(1.0 - disc_pred_src).mean()
+                loss_d_tgt = torch.relu(1.0 + disc_pred_tgt).mean()
+            elif trial_type.startswith("mse"):
+                loss_d_src = TF.mse_loss(disc_pred_src, torch.full_like(disc_pred_src, float(source_label), device=device))
+                loss_d_tgt = TF.mse_loss(disc_pred_tgt, torch.full_like(disc_pred_tgt, float(target_label), device=device))
+            else:
+                loss_d_src = TF.binary_cross_entropy_with_logits(disc_pred_src, torch.full_like(disc_pred_src, float(source_label), device=device))
+                loss_d_tgt = TF.binary_cross_entropy_with_logits(disc_pred_tgt, torch.full_like(disc_pred_tgt, float(target_label), device=device))
+        
 
             # Media delle due loss
             loss_d = 0.5 * (loss_d_src + loss_d_tgt)
