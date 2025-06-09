@@ -86,8 +86,8 @@ if __name__ == "__main__":
     model = model.to(device)
 
 
-    # Define the dataloaders
-    batch_size = 10
+    # Define the data loaders
+    batch_size = 8
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
     # Select a random fraction of the training dataset (25% of the original dataset)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_S_1ce_0.00625_totloss_samepaper_batch_10_100_percent"
+        project_name = f"5_PIDNET_S_1ce_0.00625_totloss_samepaper_batch_8_100_percent"
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
