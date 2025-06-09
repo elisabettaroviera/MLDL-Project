@@ -173,7 +173,7 @@ if __name__ == "__main__":
     | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_hinge_fixed --> okk fino a 25
     | T5    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_hinge_rampup_smaller --> ok sta andando
     | T6    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_mse_rampup_smaller --> ok sta andando
-    | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_bce_fixed_0002 --> ok sta andando
+    | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_bce_fixed_0002 --> 
     | T8    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed_0002 --> 
 
     """
