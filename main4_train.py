@@ -96,6 +96,7 @@ def generate_discriminators(num, num_classes, device='CPU'):
 
 if __name__ == "__main__":
     set_seed(23)
+    wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print("************ TRAINING BiSeNet ON GTA5 ***************")
@@ -166,7 +167,7 @@ if __name__ == "__main__":
     | Trial | L_seg                | L_adv / L_d                     | L_adv Strategy           | Project Name
     | ----- | -------------------- | ------------------------------- | ------------------------ | -----------------
     | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed) --> dovremmo averlo salvato(?)
-    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup --> ok fino a 25
+    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup --> ok fino a 25 ma lambda non parte da zero grrr
     | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_mse_rampup --> ok fino a 25 
     | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence
     | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.001(try 0.002)   | 4_Adversarial_Domain_Adaptation_hinge_fixed --> ok fino a 25
@@ -214,7 +215,6 @@ if __name__ == "__main__":
             discriminators_optimizers[i].load_state_dict(checkpoint['optimizer_state_dict'])
 
 
-    wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     for epoch in range(start_epoch, num_epochs + 1):
         print(f"\nEpoch {epoch}")
         start_train = time.time()
@@ -259,7 +259,7 @@ if __name__ == "__main__":
             run.log_artifact(artifact)
             os.remove(save_path_model)
 
-        wandb.finish()
-        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
+    wandb.finish()
+        #run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
 
         
