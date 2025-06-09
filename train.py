@@ -185,6 +185,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
     wandb.log({
         "epoch": epoch,
         'mean_loss': mean_loss_total,
+        'mean_loss_boundary_ce': mean_loss_boundary_ce,
         'mean_loss_aux': mean_loss_aux,
         'mean_loss_bce': mean_loss_bce,
         'mean_loss_main': mean_loss_main,
