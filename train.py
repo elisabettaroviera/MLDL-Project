@@ -14,12 +14,18 @@ import time
 
 bce_loss = torch.nn.BCEWithLogitsLoss(reduction="mean")
 softmax = torch.nn.functional.softmax
-
 # Lambda scheduler function
 def get_lambda_adv(iteration, max_iters, trial_type):
     if trial_type in ["hinge_rampup", "mse_rampup"]:
-        # Linear ramp-up
-        return min(0.001, 0.001 * (iteration / (0.4 * max_iters))) # ---> domanda: se si rompe tutto, si ricorda di dove era arrivato?? forse ora sì
+        lambda_start = 1e-6
+        lambda_max = 0.001
+        ramp_up_iters = 0.4 * max_iters
+    # the formula is min(0.001, 0.001 * (iteration / (0.4 * max_iters))) but i want it to start from a small value like 1e-6
+        if iteration >= ramp_up_iters:
+            return lambda_max
+        else:
+            progress = (iteration - 1) / (ramp_up_iters - 1)
+            return lambda_start + progress * (lambda_max - lambda_start)
     elif trial_type == "bce_confidence":
         return None  # Will be computed dynamically based on discriminator confidence
     return 0.001  # Default fixed lambda ---> can be changed to 0.002
@@ -469,7 +475,7 @@ def train_with_adversary(epoch, old_model, discriminators, dataloader_source_tra
         "epoch": epoch,
         "loss": mean_loss,
         "lr": lr,
-        "lambda_adv": lambdas
+        "lambda_adv": lambdas[0]
     })
 
     # Save the model weight at each epoch
