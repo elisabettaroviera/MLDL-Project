@@ -19,7 +19,7 @@ softmax = torch.nn.functional.softmax
 def get_lambda_adv(iteration, max_iters, trial_type):
     if trial_type in ["hinge_rampup", "mse_rampup"]:
         # Linear ramp-up
-        return min(0.001, 0.001 * (iteration / (0.4 * max_iters))) # ---> domanda: se si rompe tutto, si ricorda di dove era arrivato??
+        return min(0.001, 0.001 * (iteration / (0.4 * max_iters))) # ---> domanda: se si rompe tutto, si ricorda di dove era arrivato?? forse ora sì
     elif trial_type == "bce_confidence":
         return None  # Will be computed dynamically based on discriminator confidence
     return 0.001  # Default fixed lambda ---> can be changed to 0.002
