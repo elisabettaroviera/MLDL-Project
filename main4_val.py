@@ -81,9 +81,9 @@ if __name__ == "__main__":
     target_transform_cityscapes = transform_cityscapes_mask()
     
     #if datsets are not saved on kaggle
-    #cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
-    # if datasets are saved on kaggle
-    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    # if datasets are saved on kaggle --> actually it doesn't work since its saving the images
+    #cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
 
     batch_size = 4
