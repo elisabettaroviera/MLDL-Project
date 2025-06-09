@@ -166,11 +166,16 @@ if __name__ == "__main__":
     num_epochs = 25, fract_dataset = 100 % 
     | Trial | L_seg                | L_adv / L_d                     | L_adv Strategy           | Project Name
     | ----- | -------------------- | ------------------------------- | ------------------------ | -----------------
-    | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed) --> dovremmo averlo salvato(?)
-    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_hinge_rampup --> ok fino a 25 ma lambda non parte da zero grrr
-    | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0 → 0.001)      | 4_Adversarial_Domain_Adaptation_mse_rampup --> ok fino a 25 
-    | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence
-    | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.001(try 0.002)   | 4_Adversarial_Domain_Adaptation_hinge_fixed --> ok fino a 25
+    | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed) --> 
+    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0.0001 → 0.001) | 4_Adversarial_Domain_Adaptation_hinge_rampup --> okK fino a 25
+    | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0.0001 → 0.001) | 4_Adversarial_Domain_Adaptation_mse_rampup --> okK fino a 25
+    | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence --> sta andando
+    | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_hinge_fixed --> ok fino a 25, validating
+    | T5    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_hinge_rampup_smaller --> 
+    | T6    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_mse_rampup_smaller --> 
+    | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_base_0002 (bce_fixed) --> 
+    | T8    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_base (bce_fixed) --> 
+
     """
 
 
@@ -182,10 +187,10 @@ if __name__ == "__main__":
 
     #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "bce_confidence"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
 
-    project_name = "4_Adversarial_Domain_Adaptation_bce_confidence" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup_smaller" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
