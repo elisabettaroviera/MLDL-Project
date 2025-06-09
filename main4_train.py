@@ -172,8 +172,8 @@ if __name__ == "__main__":
     | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence --> sta andando
     | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_hinge_fixed --> okk fino a 25
     | T5    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_hinge_rampup_smaller --> ok sta andando
-    | T6    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_mse_rampup_smaller --> 
-    | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_bce_fixed_0002 --> 
+    | T6    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_mse_rampup_smaller --> ok sta andando
+    | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_bce_fixed_0002 --> ok sta andando
     | T8    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed_0002 --> 
 
     """
@@ -187,10 +187,10 @@ if __name__ == "__main__":
 
     #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "bce_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    trial_type = "hinge_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
 
-    project_name = "4_Adversarial_Domain_Adaptation_bce_fixed_0002" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
