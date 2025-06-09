@@ -79,8 +79,12 @@ if __name__ == "__main__":
 
     transform_cityscapes_dataset = transform_cityscapes()
     target_transform_cityscapes = transform_cityscapes_mask()
+    
+    #if datsets are not saved on kaggle
+    #cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    # if datasets are saved on kaggle
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
-    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
     num_epochs = 25
@@ -98,7 +102,7 @@ if __name__ == "__main__":
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, shuffle_train=False, shuffle_val=False)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
-    project_name = "4_Adversarial_Domain_Adaptation_mse_rampup" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = to_obtain_id(project_name)
