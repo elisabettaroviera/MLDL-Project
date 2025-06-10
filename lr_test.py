@@ -216,9 +216,9 @@ if __name__ == "__main__":
     cfg = CFG()
     cfg.MODEL = type('', (), {})()
     cfg.DATASET = type('', (), {})()
-    cfg.MODEL.NAME = 'pidnet_m' # or 'pidnet_s', 'pidnet_l'
+    cfg.MODEL.NAME = 'pidnet_l' # or 'pidnet_s', 'pidnet_l'
     # Change the path to your actual path
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar' # <-- CHANGE IF NEEDED
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-l/PIDNet_L_ImageNet.pth.tar' # <-- CHANGE IF NEEDED
     cfg.DATASET.NUM_CLASSES = 19
     
     # Instantiate the model
