@@ -29,7 +29,7 @@ def plot_lr_curve(file_path, apply_smoothing=True):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file', type=str, default="lr_range_data_pidnet.npz", help="Path to .npz file")
+    parser.add_argument('--file', type=str, default="lr_range_data_pidnet (1).npz", help="Path to .npz file")
     parser.add_argument('--no-smooth', action='store_true', help="Disable smoothing display")
     args = parser.parse_args()
 

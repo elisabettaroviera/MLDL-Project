@@ -158,6 +158,7 @@ def lr_range_test(
             best_loss = smoothed
 
     # Plot finale
+    # Plot finale
     plt.figure(figsize=(12, 7))
     plt.plot(lrs, losses, label='Total Loss')
     plt.plot(lrs, loss_auxes, label='Aux Loss')
@@ -170,7 +171,9 @@ def lr_range_test(
     plt.title('Learning Rate Range Test (PIDNet Loss)')
     plt.legend()
     plt.grid(True)
-    plt.show()
+    plt.savefig("lr_range_test_pidnet.png", dpi=300)
+    plt.close()
+
 
     return lrs, losses
 
@@ -222,9 +225,9 @@ if __name__ == "__main__":
     dataloader=dataloader_cs_train,
     criterion=criterion,
     compute_pidnet_loss=compute_pidnet_loss,
-    init_lr=5e-5,
-    final_lr=5e-2,
-    num_iter=800,
+    init_lr=2e-5,
+    final_lr=2e-2,
+    num_iter=1000,
     device=device
 )
 
