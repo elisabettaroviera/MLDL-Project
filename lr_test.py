@@ -2,11 +2,12 @@ import os
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from models.pidnet.PIDNET import PIDNet
+from models.pidnet.PIDNET import PIDNet, get_seg_model
 from datasets.cityscapes import CityScapes
 from data.dataloader import dataloader
 from datasets.transform_datasets import transform_cityscapes, transform_cityscapes_mask
 from torch import nn
+from utils.utils import CombinedLoss_All
 
 
 def lr_range_test(
@@ -137,10 +138,10 @@ def lr_range_test(
 
 
 if __name__ == "__main__":
-    print("Eseguendo LR Range Test per BiSeNet su Cityscapes...")
+    print("Eseguendo LR Range Test per PIDNet su Cityscapes...")
 
     # Assicurati che la variabile d'ambiente sia impostata, altrimenti usa un default
-    var_model = os.environ.get('MODEL', 'PidNet')
+    var_model = os.environ.get('MODEL', 'PIDNet')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device in uso: {device}")
 
@@ -151,18 +152,34 @@ if __name__ == "__main__":
     # NOTA: Per un test LR veloce, potresti voler usare un sottoinsieme del dataset
     dataloader_cs_train, _ = dataloader(cs_train, None, 4, True, True, False)
 
-    if var_model == 'PidNet':
-        print("MODELLO: PidNet")
+    class CFG:
+        pass
+
+    cfg = CFG()
+    cfg.MODEL = type('', (), {})()
+    cfg.DATASET = type('', (), {})()
+
+    cfg.MODEL.NAME = 'pidnet_m'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m-imagenet-pretrained-tar/PIDNet_M_ImageNet.pth.tar'
+    cfg.DATASET.NUM_CLASSES = 19
+    # Serve cosi chiamo pesi preaddestrati su ImageNet
+    model = get_seg_model(cfg, imgnet_pretrained=True)
+    model = model.to(device)
+
+    num_classes = 19
+
+    if var_model == 'PIDNet':
+        print("MODELLO: PIDNet")
         # I valori specifici di lr, momentum etc. qui non sono usati per il test,
         # ma sono utili per la configurazione finale del training.
     
-    # Istanzia modello PidNet
-    model = PidNet(num_classes=19, context_path='resnet18').to(device)
+    # Istanzia modello PIDNet
+    #model = PIDNet(num_classes=19, context_path='resnet18').to(device)
 
     # Definisci loss e optimizer
     # L'LR iniziale dell'optimizer (1e-6) sarà sovrascritto dalla funzione di test
-    criterion = nn.CrossEntropyLoss(ignore_index=255)
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-6, momentum=0.9, weight_decay=1e-4)
+    criterion = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
 
     # Esegui il LR Range Test
     lrs, losses = lr_range_test(
