@@ -187,8 +187,8 @@ if __name__ == "__main__":
 
     #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "hinge_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
-    lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
+    trial_type = "bce_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
      
     project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro

@@ -28,7 +28,7 @@ def get_lambda_adv(iteration, max_iters, trial_type):
             return lambda_start + progress * (lambda_max - lambda_start)
     elif trial_type == "bce_confidence":
         return None  # Will be computed dynamically based on discriminator confidence
-    return 0.002  # Default fixed lambda ---> can be changed to 0.002
+    return 0.001  # Default fixed lambda ---> can be changed to 0.002
 
 def lock_model(model):
     """
