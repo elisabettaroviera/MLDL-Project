@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # Preparazione dataset
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
-    cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
+    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)
     # NOTA: Per un test LR veloce, potresti voler usare un sottoinsieme del dataset
     dataloader_cs_train, _ = dataloader(cs_train, None, 4, True, True, False)
 
