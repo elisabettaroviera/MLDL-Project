@@ -29,25 +29,16 @@ def get_boundary_map(target, kernel_size=3):
 
 def compute_pidnet_loss(criterion_ce, x_extra_p, x_main, x_extra_d, target, boundary,
                         lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):
-    """
-    Calculates the combined loss for PIDNet as defined in the paper and your training loop.
-    """
-    # L0: Auxiliary CrossEntropy loss on the P branch
+
     loss_aux = criterion_ce(x_extra_p, target)
-
-    # L1: Binary Cross Entropy on the D branch (for boundaries)
     loss_bce = F.binary_cross_entropy_with_logits(x_extra_d, boundary)
-
-    # L2: Main CrossEntropy loss on the final output
     loss_main = criterion_ce(x_main, target)
 
-    # L3: Boundary-focused CrossEntropy loss
     boundary_mask = (boundary.squeeze(1) > 0.8)
     masked_target = target[boundary_mask]
     valid_mask = (masked_target != 255) # ignore_index
-    
+
     if valid_mask.any():
-        # Apply loss only on valid pixels of the boundary region
         loss_boundary_ce = criterion_ce(
             x_main.permute(0, 2, 3, 1)[boundary_mask][valid_mask],
             masked_target[valid_mask]
@@ -55,15 +46,22 @@ def compute_pidnet_loss(criterion_ce, x_extra_p, x_main, x_extra_d, target, boun
     else:
         loss_boundary_ce = torch.tensor(0.0, device=target.device)
 
-    # Weighted total loss
     total_loss = (
         lambda_0 * loss_aux +
         lambda_1 * loss_bce +
         lambda_2 * loss_main +
         lambda_3 * loss_boundary_ce
     )
-    # For the range test, we only need the total loss
-    return total_loss
+
+    # Ritorna loss totale E dizionario con le loss parziali per logging/plotting
+    loss_dict = {
+        'loss_aux': loss_aux.item() if loss_aux.dim() == 0 else loss_aux,
+        'loss_bce': loss_bce.item() if loss_bce.dim() == 0 else loss_bce,
+        'loss_main': loss_main.item() if loss_main.dim() == 0 else loss_main,
+        'loss_boundary_ce': loss_boundary_ce.item() if loss_boundary_ce.dim() == 0 else loss_boundary_ce
+    }
+    
+    return total_loss, loss_dict
 
 # ==============================================================================
 # UPDATED LR RANGE TEST FUNCTION
