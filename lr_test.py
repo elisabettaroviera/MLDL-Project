@@ -137,7 +137,7 @@ def lr_range_test(
         if smoothed_loss < best_loss:
             best_loss = smoothed_loss
         
-        if smoothed_loss > 4 * best_loss and iter_count > 20: # Added an initial buffer
+        if smoothed_loss > 2.5 * best_loss and iter_count > 20:
             print(f"Loss exploded at iter {iter_count}, stopping the test.")
             break
             
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     cfg.DATASET = type('', (), {})()
     cfg.MODEL.NAME = 'pidnet_m' # or 'pidnet_s', 'pidnet_l'
     # Change the path to your actual path
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-s/PIDNet_S_ImageNet.pth.tar' # <-- CHANGE IF NEEDED
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar' # <-- CHANGE IF NEEDED
     cfg.DATASET.NUM_CLASSES = 19
     
     # Instantiate the model
@@ -238,8 +238,8 @@ if __name__ == "__main__":
         dataloader_cs_train, 
         optimizer, 
         criterion, 
-        lr_start=1e-5,
-        lr_end=1.0,
+        lr_start=5e-5,
+        lr_end=5e-2,
         device=device
     )
 
