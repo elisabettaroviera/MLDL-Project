@@ -209,8 +209,8 @@ if __name__ == "__main__":
     # Change the path to your actual path
     DATASET_PATH = '/kaggle/input/cityscapes-dataset/Cityscapes' # <-- CHANGE IF NEEDED
     cs_train = CityScapes(DATASET_PATH, 'train', transform, target_transform)
-    dataloader_cs_train, _ = dataloader(cs_train, None, batch_size=4, shuffle=True, drop_last=True)
-
+    dataloader_cs_train, _ = dataloader(cs_train, None, batch_size=4, shuffle_train=True, shuffle_val=True, drop_last_bach=True, num_workers=2)
+   
     # Configuration to load the PIDNet model
     class CFG: pass
     cfg = CFG()
