@@ -202,7 +202,7 @@ from torch.optim import SGD
 from torch.nn.functional import cross_entropy
 from collections import deque
 
-def lr_range_test_2(model, dataloader, device='cuda', lr_start=1e-5, lr_end=5e-2, num_iters=200, smoothing=0.98):
+def lr_range_test_2(model, dataloader, device='cuda', lr_start=5e-5, lr_end=5e-2, num_iters=200, smoothing=0.98):
     model.train()
     model.to(device)
 
