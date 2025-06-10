@@ -12,3 +12,5 @@
 | 8   | SGD (lr=0.00625, mom=0.9, wd=1e-4) | Warmup 1100 iters 1e-6→0.00625 + poly (power 0.9)     | CE\_main + 1.0×(CE\_aux1 + CE\_aux2)                                                                | **Gradient Accumulation ×2** (batch effettivo=8) | Stesso lr, ma stabilità e BatchNorm migliorati ➜ +1–2% mIoU attesi.                                 |
 | 9   | SGD (lr=0.00625, mom=0.9, wd=1e-4) | **Warmup 2500 iters** 1e-6→0.00625 + poly (power 0.9) | CE\_main + 1.0×(CE\_aux1 + CE\_aux2)                                                                | –                                                | Warmup più lungo ➜ ottimale per evitare spike in primissime epoche (potenziale +0.5–1% mIoU).       |
 | 10  | SGD (lr=0.00625, mom=0.9, wd=1e-4) | Warmup 1100 iters 1e-6→0.00625 + poly (power 0.9)     | CE con class weights:<br>`total_loss = wCE_main + (wCE_aux1 + wCE_aux2)`                            | –                                                | Bilancia pesi per classi rare ➜ test bilanciamento mIoU.                                            |
+
+
