@@ -1,20 +1,82 @@
 import os
 import torch
+import torch.nn.functional as F
+from torch import nn
 import matplotlib.pyplot as plt
 import numpy as np
-from models.pidnet.PIDNET import PIDNet, get_seg_model
+
+# Necessary functions and classes (moved here to make the script self-contained)
+# We assume that the import paths are correct in your environment.
+from models.pidnet.PIDNET import get_seg_model
 from datasets.cityscapes import CityScapes
 from data.dataloader import dataloader
 from datasets.transform_datasets import transform_cityscapes, transform_cityscapes_mask
-from torch import nn
-from utils.utils import CombinedLoss_All
 
+# ==============================================================================
+# HELPER FUNCTIONS FOR PIDNET LOSS
+# (Taken from your training script for consistency)
+# ==============================================================================
+
+def get_boundary_map(target, kernel_size=3):
+    """
+    Generates a binary boundary map from the segmentation mask.
+    """
+    target_float = target.unsqueeze(1).float()
+    laplace_kernel = torch.tensor(
+        [[[[0, 1, 0], [1, -4, 1], [0, 1, 0]]]], 
+        device=target.device, dtype=torch.float32
+    )
+    boundary = F.conv2d(target_float, laplace_kernel, padding=1).abs()
+    boundary = (boundary > 0).float()
+    return boundary
+
+def compute_pidnet_loss(criterion_ce, x_extra_p, x_main, x_extra_d, target, boundary,
+                        lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):
+    """
+    Calculates the combined loss for PIDNet as defined in the paper and your training loop.
+    """
+    # L0: Auxiliary CrossEntropy loss on the P branch
+    loss_aux = criterion_ce(x_extra_p, target)
+
+    # L1: Binary Cross Entropy on the D branch (for boundaries)
+    loss_bce = F.binary_cross_entropy_with_logits(x_extra_d, boundary)
+
+    # L2: Main CrossEntropy loss on the final output
+    loss_main = criterion_ce(x_main, target)
+
+    # L3: Boundary-focused CrossEntropy loss
+    boundary_mask = (boundary.squeeze(1) > 0.8)
+    masked_target = target[boundary_mask]
+    valid_mask = (masked_target != 255) # ignore_index
+    
+    if valid_mask.any():
+        # Apply loss only on valid pixels of the boundary region
+        loss_boundary_ce = criterion_ce(
+            x_main.permute(0, 2, 3, 1)[boundary_mask][valid_mask],
+            masked_target[valid_mask]
+        )
+    else:
+        loss_boundary_ce = torch.tensor(0.0, device=target.device)
+
+    # Weighted total loss
+    total_loss = (
+        lambda_0 * loss_aux +
+        lambda_1 * loss_bce +
+        lambda_2 * loss_main +
+        lambda_3 * loss_boundary_ce
+    )
+    # For the range test, we only need the total loss
+    return total_loss
+
+# ==============================================================================
+# UPDATED LR RANGE TEST FUNCTION
+# ==============================================================================
 
 def lr_range_test(
     model,
     dataloader_train,
     optimizer,
-    criterion,
+    criterion, # This will be the base CrossEntropyLoss
     lr_start=1e-6,
     lr_end=0.1,
     num_iters=None,
@@ -33,10 +95,8 @@ def lr_range_test(
         param_group['lr'] = lr
 
     iter_count = 0
-    # Usiamo una media mobile per smussare la curva della loss
     avg_loss = 0.
     best_loss = float('inf')
-
     dataloader_iter = iter(dataloader_train)
 
     while iter_count < num_iters:
@@ -49,19 +109,27 @@ def lr_range_test(
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
 
-        outputs = model(inputs)
-        loss_main = criterion(outputs[0], targets)
-        loss_aux1 = criterion(outputs[1], targets)
-        loss_aux2 = criterion(outputs[2], targets)
-        total_loss = loss_main + (loss_aux1 + loss_aux2)
-
+        # --- LOSS CALCULATION SECTION MODIFIED FOR PIDNET ---
+        x_p, x_final, x_d = model(inputs)
+        
+        # Interpolate outputs to the target's size
+        x_p_up = F.interpolate(x_p, size=targets.shape[1:], mode='bilinear', align_corners=False)
+        x_final_up = F.interpolate(x_final, size=targets.shape[1:], mode='bilinear', align_corners=False)
+        x_d_up = F.interpolate(x_d, size=targets.shape[1:], mode='bilinear', align_corners=False)
+        
+        # Create the boundary map
+        boundaries = get_boundary_map(targets)
+        
+        # Calculate the total loss using the specific PIDNet function
+        total_loss = compute_pidnet_loss(criterion, x_p_up, x_final_up, x_d_up, targets, boundaries)
+        # --- END OF MODIFIED SECTION ---
+        
         total_loss.backward()
         optimizer.step()
 
-        # Calcola la media mobile smussata (smoothed moving average)
-        # Il fattore 0.98 dà più peso alle loss precedenti, smussando le fluttuazioni
+        # Calculate smoothed moving average for the loss curve
         avg_loss = 0.98 * avg_loss + 0.02 * total_loss.item() if iter_count > 0 else total_loss.item()
-        smoothed_loss = avg_loss / (1 - 0.98 ** (iter_count + 1)) # Correzione per i primi valori
+        smoothed_loss = avg_loss / (1 - 0.98 ** (iter_count + 1))
 
         lrs.append(lr)
         losses.append(smoothed_loss)
@@ -69,9 +137,8 @@ def lr_range_test(
         if smoothed_loss < best_loss:
             best_loss = smoothed_loss
         
-        # Interrompi se la loss diventa troppo alta rispetto alla migliore finora
-        if smoothed_loss > 4 * best_loss and iter_count > 10:
-            print(f"Loss esplosa a iter {iter_count}, fermo il test.")
+        if smoothed_loss > 4 * best_loss and iter_count > 20: # Added an initial buffer
+            print(f"Loss exploded at iter {iter_count}, stopping the test.")
             break
             
         lr *= lr_mult
@@ -83,113 +150,97 @@ def lr_range_test(
 
         iter_count += 1
         
-    # --- NUOVA SEZIONE: CALCOLO DEI PUNTI DI INTERESSE ---
-    
-    # Rimuoviamo i primi e ultimi valori per evitare artefatti ai bordi
+    # --- Analysis and Plotting (unchanged) ---
+    print("\nAnalyzing and plotting results...")
     lrs_plot = lrs[10:-5]
     losses_plot = losses[10:-5]
     
-    # 1. Trova il LR con la loss minima
+    if not losses_plot:
+        print("Test stopped too early, cannot generate plot.")
+        return lrs, losses
+        
     min_loss_idx = np.argmin(losses_plot)
     lr_min_loss = lrs_plot[min_loss_idx]
 
-    # 2. Trova il LR con la discesa più rapida (gradiente massimo)
-    # Calcoliamo il gradiente della loss rispetto agli step
     grads = np.gradient(losses_plot)
-    # Troviamo l'indice del gradiente più negativo (discesa più ripida)
-    # Cerchiamo solo fino al punto di loss minima per evitare la parte in risalita
     steepest_descent_idx = np.argmin(grads[:min_loss_idx]) if min_loss_idx > 0 else np.argmin(grads)
     lr_steepest = lrs_plot[steepest_descent_idx]
 
-    # Definiamo i punti per il plot
-    lr_best = lr_steepest  # Il nostro candidato come LR migliore
-    interval_a = lr_best
-    interval_b = lr_min_loss
+    lr_best, interval_a, interval_b = lr_steepest, lr_steepest, lr_min_loss
 
-    print("\n--- Risultati Analisi LR ---")
-    print(f"LR Migliore suggerito (discesa più rapida): {lr_best:.6f}")
-    print(f"Intervallo d'oro suggerito (a, b): ({interval_a:.6f}, {interval_b:.6f})")
-    print("-----------------------------\n")
+    print("\n--- LR Analysis Results ---")
+    print(f"Suggested Best LR (steepest descent): {lr_best:.6f}")
+    print(f"Suggested Golden Range (a, b): ({interval_a:.6f}, {interval_b:.6f})")
+    print("---------------------------\n")
 
-    # --- SEZIONE PLOT MODIFICATA ---
     plt.figure(figsize=(12, 6))
     plt.plot(lrs, losses)
-    
-    # Plotta la X per il LR migliore
-    plt.plot(lr_best, losses_plot[steepest_descent_idx], 'rX', markersize=12, label=f'LR Migliore: {lr_best:.6f}')
-    
-    # Plotta le linee verticali per l'intervallo
-    plt.axvline(x=interval_a, color='r', linestyle='--', label=f'Intervallo d\'oro ({interval_a:.6f}, {interval_b:.6f})')
+    plt.plot(lr_best, losses_plot[steepest_descent_idx], 'rX', markersize=12, label=f'Best LR: {lr_best:.6f}')
+    plt.axvline(x=interval_a, color='r', linestyle='--', label=f'Golden Range ({interval_a:.6f}, {interval_b:.6f})')
     plt.axvline(x=interval_b, color='r', linestyle='--')
-
     plt.xscale('log')
-    plt.xlabel('Learning Rate (Scala Logaritmica)')
-    plt.ylabel('Loss (Smussata)')
-    plt.title('LR Range Test con Suggerimenti')
+    plt.xlabel('Learning Rate (Log Scale)')
+    plt.ylabel('Loss (Smoothed)')
+    plt.title('LR Range Test with Suggestions for PIDNet')
     plt.grid(True, which='both', linestyle='-')
     plt.legend()
-    plt.savefig('lr_range_test.png')
+    plt.savefig('lr_range_test_pidnet.png')
     plt.show()
 
-    np.savez('lr_range_data.npz', lrs=lrs, losses=losses)
-    print("Salvato plot e dati in: lr_range_test.png e lr_range_data.npz")
+    np.savez('lr_range_data_pidnet.npz', lrs=lrs, losses=losses)
+    print("Saved plot and data to: lr_range_test_pidnet.png and lr_range_data_pidnet.npz")
 
     return lrs, losses
 
+# ==============================================================================
+# MAIN SCRIPT
+# ==============================================================================
 
 if __name__ == "__main__":
-    print("Eseguendo LR Range Test per PIDNet su Cityscapes...")
+    print("Running LR Range Test for PIDNet on Cityscapes...")
 
-    # Assicurati che la variabile d'ambiente sia impostata, altrimenti usa un default
     var_model = os.environ.get('MODEL', 'PIDNet')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device in uso: {device}")
+    print(f"Using device: {device}")
 
-    # Preparazione dataset
+    # Dataset preparation
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
-    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)
-    # NOTA: Per un test LR veloce, potresti voler usare un sottoinsieme del dataset
-    dataloader_cs_train, _ = dataloader(cs_train, None, 4, True, True, False)
+    # Change the path to your actual path
+    DATASET_PATH = '/kaggle/input/cityscapes-dataset/Cityscapes' # <-- CHANGE IF NEEDED
+    cs_train = CityScapes(DATASET_PATH, 'train', transform, target_transform)
+    dataloader_cs_train, _ = dataloader(cs_train, None, batch_size=4, shuffle=True, drop_last=True)
 
-    class CFG:
-        pass
-
+    # Configuration to load the PIDNet model
+    class CFG: pass
     cfg = CFG()
     cfg.MODEL = type('', (), {})()
     cfg.DATASET = type('', (), {})()
-
-    cfg.MODEL.NAME = 'pidnet_m'
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m-imagenet-pretrained-tar/PIDNet_M_ImageNet.pth.tar'
+    cfg.MODEL.NAME = 'pidnet_m' # or 'pidnet_s', 'pidnet_l'
+    # Change the path to your actual path
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-s/PIDNet_S_ImageNet.pth.tar' # <-- CHANGE IF NEEDED
     cfg.DATASET.NUM_CLASSES = 19
-    # Serve cosi chiamo pesi preaddestrati su ImageNet
-    model = get_seg_model(cfg, imgnet_pretrained=True)
+    
+    # Instantiate the model
+    model = get_seg_model(cfg, imgnet_pretrained=True) # Set True if you use pretrained weights
     model = model.to(device)
 
-    num_classes = 19
-
-    if var_model == 'PIDNet':
-        print("MODELLO: PIDNet")
-        # I valori specifici di lr, momentum etc. qui non sono usati per il test,
-        # ma sono utili per la configurazione finale del training.
+    # --- CORRECT CRITERION ---
+    # The `compute_pidnet_loss` function expects a base CE loss.
+    # A custom combined loss was not correct for this logic.
+    criterion = nn.CrossEntropyLoss(ignore_index=255)
     
-    # Istanzia modello PIDNet
-    #model = PIDNet(num_classes=19, context_path='resnet18').to(device)
-
-    # Definisci loss e optimizer
-    # L'LR iniziale dell'optimizer (1e-6) sarà sovrascritto dalla funzione di test
-    criterion = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255)
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
 
-    # Esegui il LR Range Test
+    # Execute the LR Range Test
     lrs, losses = lr_range_test(
         model, 
         dataloader_cs_train, 
         optimizer, 
         criterion, 
-        lr_start=1e-5, # Un lr_start leggermente più alto potrebbe essere utile
-        lr_end=1.0,     # Anche un lr_end più alto per vedere bene l'esplosione
+        lr_start=1e-5,
+        lr_end=1.0,
         device=device
     )
 
-    print("\nLR Range Test completato. Analizza il plot 'lr_range_test.png' per scegliere il LR ottimale!")
+    print("\nLR Range Test completed. Analyze the plot 'lr_range_test_pidnet.png' to choose the optimal LR!")
