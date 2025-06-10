@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     #run_ids = to_obtain_id(project_name)
     run_name = "epoch_1"
-    entity = "s281401-politecnico-di-torino"
+    entity = "s281401-politecnico-di-torino" # New new entity Auro
     api = wandb.Api()
     for epoch in range(start_epoch, num_epochs + 1):
         

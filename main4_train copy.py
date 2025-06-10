@@ -189,36 +189,38 @@ if __name__ == "__main__":
     # === Step 1: Add global config for trials in the main training script ===
     trial_type = "hinge_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
-     
+
     project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
+    run = wandb.init(project=project_name, entity=entity, name=f"epoch_{start_epoch}", reinit=True)
+    wandb.config.update({
+        "batch_size": batch_size,
+        "learning_rate": learning_rate,
+        "momentum": momentum,
+        "weight_decay": weight_decay,
+        "num_epochs": num_epochs,
+        "num_classes": num_classes
+    })
+    
+    
     if start_epoch > 1:
-            artifact = wandb.use_artifact(f"{project_name}/model_epoch_{start_epoch-1}:latest", type="model")
+        artifact = wandb.use_artifact(f"{project_name}/model_epoch_{start_epoch-1}:latest", type="model")
+        checkpoint_path = artifact.download()
+        checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{start_epoch-1}.pt"))
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        iter_curr = checkpoint.get('iteration', 0)  # fallback a 0 se non esiste
+        for i, discriminator in enumerate(discriminators):
+            artifact = wandb.use_artifact(f"{project_name}/discriminator_{i+1}_epoch_{start_epoch-1}:latest", type="model")
             checkpoint_path = artifact.download()
-            checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{start_epoch-1}.pt"))
-            model.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            iter_curr = checkpoint.get('iteration', 0)  # fallback a 0 se non esiste
-            for i, discriminator in enumerate(discriminators):
-                artifact = wandb.use_artifact(f"{project_name}/discriminator_{i+1}_epoch_{start_epoch-1}:latest", type="model")
-                checkpoint_path = artifact.download()
-                checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_{i+1}_epoch_{start_epoch-1}.pt"))
-                discriminator.load_state_dict(checkpoint['model_state_dict'])
-                discriminators_optimizers[i].load_state_dict(checkpoint['optimizer_state_dict'])
+            checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_{i+1}_epoch_{start_epoch-1}.pt"))
+            discriminator.load_state_dict(checkpoint['model_state_dict'])
+            discriminators_optimizers[i].load_state_dict(checkpoint['optimizer_state_dict'])
 
 
     for epoch in range(start_epoch, num_epochs + 1):
-        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{start_epoch}", reinit=True)
-        wandb.config.update({
-            "batch_size": batch_size,
-            "learning_rate": learning_rate,
-            "momentum": momentum,
-            "weight_decay": weight_decay,
-            "num_epochs": num_epochs,
-            "num_classes": num_classes
-        })
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
