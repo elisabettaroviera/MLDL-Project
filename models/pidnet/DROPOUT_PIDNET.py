@@ -5,7 +5,7 @@
 #   2. PIDNet.forward() after layer5_ and optionally on x_d and x (commented)
 # ------------------------------------------------------------------------------
 # quindi posso provare:
-#1.dropout in segmented head, pidnet forward dopo layer5 e basta
+#1.dropout in segmented head, pidnet forward dopo layer5 e basta -> base
 #2"" e x_d
 #3 "" e x
 #4 "" e x_d e x
