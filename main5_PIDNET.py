@@ -19,8 +19,8 @@ from train import train_pidnet
 from utils.utils import CombinedLoss_All, poly_lr_scheduler, save_metrics_on_wandb
 from validation import validate_pidnet
 from utils.metrics import compute_miou
-#from models.pidnet.PIDNET import PIDNet, get_seg_model
-from models.pidnet.DROPOUT_PIDNET  import get_seg_model #<- SE APPLICO DROPOUT PIDNET
+from models.pidnet.PIDNET import PIDNet, get_seg_model
+#from models.pidnet.DROPOUT_PIDNET  import get_seg_model #<- SE APPLICO DROPOUT PIDNET
 from torch.utils.data import ConcatDataset, Subset
 import torch.nn.functional as F
 
