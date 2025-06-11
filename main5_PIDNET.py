@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
 
     # Define the data loaders
-    batch_size = 3
+    batch_size = 4
     print("Create the dataloaders")
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
     # Select a random fraction of the training dataset (25% of the original dataset)
