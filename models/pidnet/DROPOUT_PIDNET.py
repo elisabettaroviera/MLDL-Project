@@ -6,9 +6,9 @@
 # ------------------------------------------------------------------------------
 # quindi posso provare:
 #1.dropout in segmented head, pidnet forward dopo layer5 e basta -> base
-#2"" e x_d
-#3 "" e x
-#4 "" e x_d e x
+#2"" e x_d : base_x_d
+#3 "" e x : base_x
+#4 "" e x_d e x : base_x_d_x
 
 
 import torch
@@ -180,7 +180,7 @@ class PIDNet(nn.Module):
         x_ = self.dropout(x_)  # <-- Dropout added after layer5_
 
         x_d = self.layer5_d(self.relu(x_d))
-        # x_d = self.dropout(x_d)  # <-- Optional dropout
+        x_d = self.dropout(x_d)  # <-- Optional dropout
 
         x = F.interpolate(self.spp(self.layer5(x)), size=[height_output, width_output], mode='bilinear', align_corners=algc)
         # x = self.dropout(x)  # <-- Optional dropout
