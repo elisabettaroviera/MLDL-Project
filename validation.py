@@ -89,12 +89,8 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
     model.eval()
 
     print(f"Validating on {len(val_loader)} batches") 
-    #lambda_1 = 20* (0.9 ** (epoch / 10))  # exponential decay lambda_1
-    if epoch <16:
-        lambda_1 = 20
-    else:
-        lambda_1 = 1
-    
+    lambda_1 = 20* (0.9 ** (epoch / 10))  # exponential decay lambda_1
+
 
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)

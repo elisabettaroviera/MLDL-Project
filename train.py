@@ -28,8 +28,7 @@ def get_boundary_map(target, kernel_size=3):
     boundary = (boundary > 0).float()  # binarizza
 
     return boundary  # shape (B,1,H,W)
-"""def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
-                        lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=1.0):"""
+
 
 
 def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
@@ -98,11 +97,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
     model.train() 
 
     print(f"Training on {len(dataloader_train)} batches")
-    #lambda_1 = 20* (0.9 ** (epoch / 10))  # exponential decay lambda_1
-    if epoch <16:
-        lambda_1 = 20
-    else:
-        lambda_1 = 1
+    lambda_1 = 20* (0.9 ** (epoch / 10))  # exponential decay lambda_1
     
     # 4. Loop on the batches of the dataset
     for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): 
@@ -129,7 +124,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         # Compute the learning rate
         #### CHANGE HERE !!!!!!!!!!
         # CHOSE ONE OF THE TWO POLY DECAY BELOW
-        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        #lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
         lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iter, max_iter=max_iter, power=0.9,  warmup_iters=3000, warmup_start_lr=1e-6) # WARM_ITER = the number of iteration you want the warmup := 393*number_epochs
 
 
