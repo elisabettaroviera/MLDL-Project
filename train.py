@@ -97,6 +97,11 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
     model.train() 
 
     print(f"Training on {len(dataloader_train)} batches")
+    #lambda_1 = 20* (0.9 ** (epoch / 10))  # exponential decay lambda_1
+    if epoch <16:
+        lambda_1 = 20
+    else:
+        lambda_1 = 1
     
     # 4. Loop on the batches of the dataset
     for batch_idx, (inputs, targets, file_names) in enumerate(dataloader_train): 
@@ -112,8 +117,6 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         x_d_up = F.interpolate(x_d, size=targets.shape[1:], mode='bilinear', align_corners=False)
 
         boundaries = get_boundary_map(targets)
-
-        lambda_1 = 20* (0.9 ** (epoch / 10))  # exponential decay lambda_1
 
         loss, loss_dict = compute_pidnet_loss(criterion,x_p_up, x_final_up, x_d_up, targets, boundaries, lambda_1=lambda_1)
         #print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
