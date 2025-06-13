@@ -102,7 +102,7 @@ if __name__ == "__main__":
     num_epochs = 50#changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
-    start_epoch = 17
+    start_epoch = 16
      #CHECK BEFORE RUNNING
     iter_curr = 0 # Initialize the iteration counter
     max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
