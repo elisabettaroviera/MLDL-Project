@@ -23,6 +23,21 @@ def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
     optimizer.param_groups[0]['lr'] = float(lr) 
     return float(lr) 
 
+# ADD POLY WITH WARMUP !!!!!
+def poly_lr_scheduler_warmup(optimizer, base_lr, curr_iter, max_iter, power=0.9, warmup_iters=500, warmup_start_lr=1e-6):
+    """Polynomial decay with warmup"""
+    if curr_iter < warmup_iters:
+        # Linear warmup
+        lr = warmup_start_lr + (base_lr - warmup_start_lr) * (curr_iter / warmup_iters)
+    else:
+        # Poly decay
+        decay_iter = curr_iter - warmup_iters
+        total_decay = max_iter - warmup_iters
+        lr = base_lr * (1 - decay_iter / total_decay) ** power
+
+    optimizer.param_groups[0]['lr'] = lr
+    return lr
+
 
 def fast_hist(a, b, n):
     '''
