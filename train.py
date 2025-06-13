@@ -10,7 +10,8 @@ from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
 from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
-from utils.utils import poly_lr_scheduler
+from utils.utils import poly_lr_scheduler, poly_lr_scheduler_warmup
+
 import wandb
 import gc
 import torch.nn.functional as F
@@ -126,7 +127,11 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         optimizer.step()
 
         # Compute the learning rate
+        #### CHANGE HERE !!!!!!!!!!
+        # CHOSE ONE OF THE TWO POLY DECAY BELOW
         lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iter, max_iter=max_iter, power=0.9,  warmup_iters=3000, warmup_start_lr=1e-6) # WARM_ITER = the number of iteration you want the warmup := 393*number_epochs
+
 
          # Update running losses
         running_loss_total += loss.item()
