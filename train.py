@@ -124,7 +124,8 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         # Compute the learning rate
         #### CHANGE HERE !!!!!!!!!!
         # CHOSE ONE OF THE TWO POLY DECAY BELOW
-        lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        #lr = poly_lr_scheduler(optimizer, init_lr=learning_rate, iter=iteration, lr_decay_iter=1, max_iter=max_iter, power=0.9)
+        lr = 0.01
         #lr = poly_lr_scheduler_warmup(optimizer, base_lr=learning_rate, curr_iter=iteration, max_iter=max_iter, power=0.9,  warmup_iters=2751, warmup_start_lr=1e-6) # WARM_ITER = the number of iteration you want the warmup := 393*number_epochs
         #2751 = 393*7
 
