@@ -132,7 +132,7 @@ def train_pidnet(epoch, old_model, dataloader_train, criterion, optimizer, itera
         lr_switch = learning_rate * (1 - 20 / 50) ** 0.95
         # Normalizzo tempo da 0 a 1 tra epoch_switch e T
         progress = (epoch - 20) / (50 - 20)
-        lr = lr_switch * (1 - progress) ** 0.6
+        lr = lr_switch * (1 - progress) ** 1.5
 
          # Update running losses
         running_loss_total += loss.item()
