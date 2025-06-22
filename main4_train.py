@@ -140,6 +140,7 @@ if __name__ == "__main__":
     discriminators_optimizers = [optimizer_d1, optimizer_d2]
 
     lambdas = [0.1, 0.1]  # Lambda values for the adversarial loss
+    first_run = True
 
     wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
     for epoch in range(start_epoch, num_epochs + 1):
@@ -157,7 +158,7 @@ if __name__ == "__main__":
             "num_classes": num_classes
         })
 
-        if epoch > 1:
+        if epoch > 1 and first_run:
             artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch-1}:latest", type="model")
             checkpoint_path = artifact.download()
             checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{epoch-1}.pt"))
@@ -175,6 +176,8 @@ if __name__ == "__main__":
             checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_2_epoch_{epoch-1}.pt"))
             discriminator_2.load_state_dict(checkpoint['model_state_dict'])
             optimizer_d2.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            first_run = False
 
         print(f"\nEpoch {epoch}")
         start_train = time.time()
@@ -224,4 +227,4 @@ if __name__ == "__main__":
         run.log_artifact(artifact)
         os.remove(save_path_model)
 
-    wandb.finish()
+        wandb.finish()
