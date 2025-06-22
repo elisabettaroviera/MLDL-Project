@@ -105,21 +105,17 @@ if __name__ == "__main__":
     project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup_smaller" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
-    run_ids = to_obtain_id(project_name)
-
+    #run_ids = to_obtain_id(project_name)
+    run_name = "epoch_1"
+    entity = "s281401-politecnico-di-torino" # New new entity Auro
+    api = wandb.Api()
     for epoch in range(start_epoch, num_epochs + 1):
-        run = wandb.init(
-            project=project_name,
-            entity = "s281401-politecnico-di-torino", # New new entity Auro
-            # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
-            #entity="s328422-politecnico-di-torino",
-            name=f"epoch_{epoch}",
-            id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
-            resume="allow"
-        )
-        artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
-        artifact_path = artifact.download()
-        checkpoint_path = os.path.join(artifact_path, f"model_epoch_{epoch}.pt")
+        
+        artifact_name = f"{project_name}/model_epoch_{epoch}:latest"
+        print(f"\n[INFO] Downloading artifact: {artifact_name}")
+        artifact = api.artifact(artifact_name, type="model")
+        artifact_dir = artifact.download()
+        checkpoint_path = os.path.join(artifact_dir, f"model_epoch_{epoch}.pt")
 
         checkpoint = torch.load(checkpoint_path)
         model.load_state_dict(checkpoint['model_state_dict'])
@@ -131,6 +127,7 @@ if __name__ == "__main__":
         print(f"Validation time: {(end_val - start_val)/60:.2f} min")
 
         print_metrics("Validation", metrics_val)
-        save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
-        
-        wandb.finish()
+        # You can optionally log this to a single run:
+        with wandb.init(project=project_name, entity=entity, name="validation_all_epochs", resume="allow"):
+            save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
+            wandb.finish()
