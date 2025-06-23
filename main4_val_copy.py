@@ -70,6 +70,34 @@ def to_obtain_id(project=""):
     # Esempio: passare run_ids a una funzione
     return run_ids
 
+def to_obtain_artifact_names(project="", run_name=""):
+    """
+    Returns a sorted list of artifact names (e.g., model_epoch_1, model_epoch_2, ...)
+    from a specific run in a wandb project.
+    """
+    entity = "s281401-politecnico-di-torino"
+    api = wandb.Api()
+    # Get the run object
+    run = api.run(f"{entity}/{project}/{run_name}")
+    # Get all logged artifacts for this run
+    artifacts = list(run.logged_artifacts())
+    # Filter and sort artifacts by epoch number
+    def extract_epoch_number(artifact):
+        try:
+            name = artifact.name
+            if name.startswith("model_epoch_"):
+                return int(name.split("_")[2].split(":")[0])
+        except:
+            return float("inf")
+        return float("inf")
+    sorted_artifacts = sorted(
+        [a for a in artifacts if a.name.startswith("model_epoch_")],
+        key=extract_epoch_number
+    )
+    artifact_names = [a.name for a in sorted_artifacts]
+    print("Found", len(artifact_names), "artifacts.")
+    return artifact_names
+
 if __name__ == "__main__":
     set_seed(23)
     wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
@@ -109,11 +137,24 @@ if __name__ == "__main__":
     run_name = "epoch_1"
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     api = wandb.Api()
-    for epoch in range(start_epoch, num_epochs + 1):
-        
-        artifact_name = f"{project_name}/model_epoch_{epoch}:latest"
-        print(f"\n[INFO] Downloading artifact: {artifact_name}")
-        artifact = api.artifact(artifact_name, type="model")
+
+    # Get sorted artifact names from the run
+    artifact_names = to_obtain_artifact_names(project=project_name, run_name=run_name)
+
+    
+    for artifact_name in artifact_names:
+        # Extract epoch number from artifact name
+        try:
+            epoch = int(artifact_name.split("_")[2].split(":")[0])
+        except Exception:
+            print(f"Could not extract epoch from artifact name: {artifact_name}")
+            continue
+
+        if epoch < start_epoch:
+            continue  # Skip epochs before start_epoch
+
+        print(f"\n[INFO] Downloading artifact: {project_name}/{artifact_name}")
+        artifact = api.artifact(f"{project_name}/{artifact_name}", type="model")
         artifact_dir = artifact.download()
         checkpoint_path = os.path.join(artifact_dir, f"model_epoch_{epoch}.pt")
 
@@ -127,7 +168,6 @@ if __name__ == "__main__":
         print(f"Validation time: {(end_val - start_val)/60:.2f} min")
 
         print_metrics("Validation", metrics_val)
-        # You can optionally log this to a single run:
         with wandb.init(project=project_name, entity=entity, name="validation_all_epochs", resume="allow"):
             save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
             wandb.finish()
