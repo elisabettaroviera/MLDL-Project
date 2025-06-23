@@ -194,15 +194,6 @@ if __name__ == "__main__":
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
-    run = wandb.init(project=project_name, entity=entity, name=f"epoch_{start_epoch}", reinit=True)
-    wandb.config.update({
-        "batch_size": batch_size,
-        "learning_rate": learning_rate,
-        "momentum": momentum,
-        "weight_decay": weight_decay,
-        "num_epochs": num_epochs,
-        "num_classes": num_classes
-    })
     
     
     if start_epoch > 1:
@@ -224,6 +215,15 @@ if __name__ == "__main__":
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
+        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
+        wandb.config.update({
+            "batch_size": batch_size,
+            "learning_rate": learning_rate,
+            "momentum": momentum,
+            "weight_decay": weight_decay,
+            "num_epochs": num_epochs,
+            "num_classes": num_classes
+        })
         if epoch % 10 == 0:
             compute_mIoU = True
         else:
