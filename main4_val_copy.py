@@ -161,7 +161,7 @@ if __name__ == "__main__":
             continue  # Skip epochs before start_epoch
 
         print(f"\n[INFO] Downloading artifact: {project_name}/{artifact_name}")
-        artifact = api.artifact(f"{project_name}/{artifact_name}", type="model")
+        artifact = api.artifact(f"{entity}/{project_name}/{artifact_name}", type="model")
         artifact_dir = artifact.download()
         checkpoint_path = os.path.join(artifact_dir, f"model_epoch_{epoch}.pt")
 
