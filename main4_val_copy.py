@@ -76,7 +76,12 @@ def to_obtain_artifact_names(project="", run_name=""):
     from a specific run in a wandb project.
     """
     entity = "s281401-politecnico-di-torino"
+    # Add this before calling to_obtain_artifact_names
     api = wandb.Api()
+    runs = api.runs(f"{entity}/{project_name}")
+    print("Available runs in project:")
+    for run in runs:
+        print(f"Run name: '{run.name}'")
     # Get the run object
     run = api.run(f"{entity}/{project}/{run_name}")
     # Get all logged artifacts for this run
