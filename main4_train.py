@@ -176,6 +176,14 @@ if __name__ == "__main__":
     | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_bce_fixed_0002 --> okk fino a 25
     | T8    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed_0002 --> okk fino a 25
 
+    
+    TO DO : train best experiments with best augmentations for 50 epochs
+    NB: in realtà T1 forse evitabile essendo T5 la sua estensione più corretta, forse invece ha senso fare T8 che è proprio diversa
+    - T1 + 2 random color or all best weather
+    - T1 + one of three best comb color or best comb weather
+    - T5 + 2 random color or all best weather
+    - T5 + one of three best comb color or best comb weather
+    
     """
 
 
