@@ -171,7 +171,7 @@ if __name__ == "__main__":
     | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0.0001 → 0.001) | 4_Adversarial_Domain_Adaptation_mse_rampup --> okK fino a 25
     | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence --> OKK fino a 25
     | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_hinge_fixed --> okk fino a 25
-    | T5    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_hinge_rampup_smaller --> to val
+    | T5    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_hinge_rampup_smaller --> validating but double aartfact (delete 1st validation result)
     | T6    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_mse_rampup_smaller --> to val
     | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_bce_fixed_0002 --> to val
     | T8    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed_0002 --> to val

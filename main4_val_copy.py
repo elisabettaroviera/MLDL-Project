@@ -72,8 +72,8 @@ def to_obtain_id(project=""):
 
 def to_obtain_artifact_names(project="", run_name=""):
     """
-    Returns a sorted list of artifact names (e.g., model_epoch_1, model_epoch_2, ...)
-    from a specific run in a wandb project.
+    Returns a sorted list of unique artifact names (e.g., model_epoch_1, model_epoch_2, ...)
+    from a specific run in a wandb project, keeping only the latest version for each epoch.
     """
     entity = "s281401-politecnico-di-torino"
     api = wandb.Api()
@@ -89,21 +89,25 @@ def to_obtain_artifact_names(project="", run_name=""):
     # Now get the run by ID
     run = api.run(f"{entity}/{project}/{run_id}")
     artifacts = list(run.logged_artifacts())
-    def extract_epoch_number(artifact):
-        try:
-            name = artifact.name
-            if name.startswith("model_epoch_"):
-                return int(name.split("_")[2].split(":")[0])
-        except:
-            return float("inf")
-        return float("inf")
-    sorted_artifacts = sorted(
-        [a for a in artifacts if a.name.startswith("model_epoch_")],
-        key=extract_epoch_number
-    )
+
+    # Keep only the latest version for each epoch
+    epoch_to_artifact = {}
+    for artifact in artifacts:
+        name = artifact.name
+        if name.startswith("model_epoch_"):
+            try:
+                epoch = int(name.split("_")[2].split(":")[0])
+                # If multiple versions, keep the one with the highest version number
+                if (epoch not in epoch_to_artifact) or (artifact.version > epoch_to_artifact[epoch].version):
+                    epoch_to_artifact[epoch] = artifact
+            except Exception:
+                continue
+    # Sort by epoch
+    sorted_artifacts = [epoch_to_artifact[e] for e in sorted(epoch_to_artifact)]
     artifact_names = [a.name for a in sorted_artifacts]
-    print("Found", len(artifact_names), "artifacts.")
+    print("Found", len(artifact_names), "unique artifacts.")
     return artifact_names
+
 
 if __name__ == "__main__":
     set_seed(23)
@@ -137,7 +141,7 @@ if __name__ == "__main__":
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, shuffle_train=False, shuffle_val=False)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
-    project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup_smaller" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_mse_rampup_smaller" #CHECK BEFORE RUNNING
 
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     #run_ids = to_obtain_id(project_name)
@@ -175,6 +179,6 @@ if __name__ == "__main__":
         print(f"Validation time: {(end_val - start_val)/60:.2f} min")
 
         print_metrics("Validation", metrics_val)
-        with wandb.init(project=project_name, entity=entity, name="validation_all_epochs", resume="allow"):
+        with wandb.init(project=project_name, entity=entity, name=f"validation_epoch_{epoch}", resume="allow"):
             save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
             wandb.finish()
