@@ -190,7 +190,7 @@ if __name__ == "__main__":
     trial_type = "hinge_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
 
-    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002_pt2" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
