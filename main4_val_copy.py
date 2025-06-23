@@ -76,17 +76,19 @@ def to_obtain_artifact_names(project="", run_name=""):
     from a specific run in a wandb project.
     """
     entity = "s281401-politecnico-di-torino"
-    # Add this before calling to_obtain_artifact_names
     api = wandb.Api()
-    runs = api.runs(f"{entity}/{project_name}")
+    runs = api.runs(f"{entity}/{project}")
     print("Available runs in project:")
+    run_id = None
     for run in runs:
-        print(f"Run name: '{run.name}'")
-    # Get the run object
-    run = api.run(f"{entity}/{project}/{run_name}")
-    # Get all logged artifacts for this run
+        print(f"Run name: '{run.name}', Run id: '{run.id}'")
+        if run.name == run_name:
+            run_id = run.id
+    if run_id is None:
+        raise ValueError(f"Run with name '{run_name}' not found in project '{project}'")
+    # Now get the run by ID
+    run = api.run(f"{entity}/{project}/{run_id}")
     artifacts = list(run.logged_artifacts())
-    # Filter and sort artifacts by epoch number
     def extract_epoch_number(artifact):
         try:
             name = artifact.name
