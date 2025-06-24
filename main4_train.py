@@ -182,7 +182,7 @@ if __name__ == "__main__":
     - T1 + 2 random color or all best weather
     - T1 + one of three best comb color or best comb weather
     - T8 + 2 random color or all best weather
-    - T8 + one of three best comb color or best comb weather
+    - T8 + one of three best comb color or best comb weather --> 4_Adversarial_Domain_Adaptation_hinge_fixed_0002_augmented
     - T5 + 2 random color or all best weather
     - T5 + one of three best comb color or best comb weather --> 4_Adversarial_Domain_Adaptation_hinge_rampup_augmented
     
@@ -197,10 +197,10 @@ if __name__ == "__main__":
 
 
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
-    lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
+    trial_type = "hinge_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
      
-    project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup_augmented" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002_augmented" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
