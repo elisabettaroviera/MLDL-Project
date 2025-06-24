@@ -55,6 +55,7 @@ class GTA5(Dataset):
             # If ToTensorV2 is not included in augmentation_transform, uncomment below:
             image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
             mask = torch.from_numpy(mask).long()
+            print("augmentations done")
         else:
             if self.transform:
                 image = self.transform(toPil(image))
