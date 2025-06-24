@@ -106,11 +106,11 @@ if __name__ == "__main__":
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 25
+    num_epochs = 50
     num_classes = 19
     ignore_index = 255
     start_epoch = 1 #CHECK BEFORE RUNNING
-    compute_mIoU = False # If True, compute mIoU at the end of each epoch
+    compute_mIoU = True # If True, compute mIoU at the end of each epoch
 
     # Transformation
     transform_gta_dataset = transform_gta()
@@ -181,8 +181,10 @@ if __name__ == "__main__":
     NB: in realtà T1 forse evitabile essendo T5 la sua estensione più corretta, forse invece ha senso fare T8 che è proprio diversa
     - T1 + 2 random color or all best weather
     - T1 + one of three best comb color or best comb weather
+    - T8 + 2 random color or all best weather
+    - T8 + one of three best comb color or best comb weather
     - T5 + 2 random color or all best weather
-    - T5 + one of three best comb color or best comb weather
+    - T5 + one of three best comb color or best comb weather --> 4_Adversarial_Domain_Adaptation_hinge_rampup_augmented
     
     """
 
@@ -193,12 +195,12 @@ if __name__ == "__main__":
 
     discriminators, discriminators_optimizers = generate_discriminators(1, num_classes, device) # Generate 1 discriminator
 
-    #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
+
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "bce_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.001]  # Lambda values for the adversarial loss, only one for the single discriminator
      
-    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup_augmented" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta

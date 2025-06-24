@@ -5,7 +5,7 @@ import os
 from PIL import Image
 import numpy as np
 from albumentations.pytorch import ToTensorV2
-from datasets.transform_datasets import augmentation_transform
+from datasets.transform_datasets import augmentation_transform, augmentation_transform_oneof_col3_wea
 import torch
 
 
@@ -45,12 +45,16 @@ class GTA5(Dataset):
         mask =  decode_image(self.labels[idx]).to(dtype=torch.uint8)
 
         if self.augmentation and self.type_aug:
-            augmented = augmentation_transform(image=toPil(image), mask=toPil(mask), type_aug=self.type_aug)
+            # Applichiamo l'augmentazione con OneOf che include NoOp
+            #augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label)) # one of 3 best color and best wea
+            #label = Image.fromarray(augmented['mask'])
+            #image = Image.fromarray(augmented['image'])
+            augmented = augmentation_transform_oneof_col3_wea(image=toPil(image), mask=toPil(mask), type_aug=self.type_aug) # one of 3 best color and best wea
             image = augmented['image']
             mask = augmented['mask']
             # If ToTensorV2 is not included in augmentation_transform, uncomment below:
-            # image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
-            # mask = torch.from_numpy(mask).long()
+            image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
+            mask = torch.from_numpy(mask).long()
         else:
             if self.transform:
                 image = self.transform(toPil(image))
@@ -58,6 +62,10 @@ class GTA5(Dataset):
                 mask = self.target_transform(toPil(mask))
         filename = ""
         return image, mask, filename
+    
+
+
+    
 
 
 
