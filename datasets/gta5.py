@@ -49,7 +49,7 @@ class GTA5(Dataset):
             #augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label)) # one of 3 best color and best wea
             #label = Image.fromarray(augmented['mask'])
             #image = Image.fromarray(augmented['image'])
-            augmented = augmentation_transform(image=np.array(image), mask=np.array(mask)) # one of 3 best color and best wea
+            augmented = augmentation_transform(image=np.array(image), mask=np.array(mask),type_aug=self.type_aug) # one of 3 best color and best wea
             image = Image.fromarray(augmented['mask'])
             mask = Image.fromarray(augmented['image'])
             # If ToTensorV2 is not included in augmentation_transform, uncomment below:
