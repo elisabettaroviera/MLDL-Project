@@ -53,8 +53,8 @@ class GTA5(Dataset):
             image = Image.fromarray(augmented['mask'])
             mask = Image.fromarray(augmented['image'])
             # If ToTensorV2 is not included in augmentation_transform, uncomment below:
-            #image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
-            #mask = torch.from_numpy(mask).long()
+            image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
+            mask = torch.from_numpy(mask).long()
             print("augmentations done")
         else:
             if self.transform:
