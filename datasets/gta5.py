@@ -44,7 +44,7 @@ class GTA5(Dataset):
         image = decode_image(self.images[idx]).to(dtype=torch.uint8)
         mask =  decode_image(self.labels[idx]).to(dtype=torch.uint8)
 
-        if self.augmentation and self.type_aug:
+        if self.augmentation:
             # Applichiamo l'augmentazione con OneOf che include NoOp
             #augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label)) # one of 3 best color and best wea
             #label = Image.fromarray(augmented['mask'])
