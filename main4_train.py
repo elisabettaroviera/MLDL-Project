@@ -109,7 +109,7 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 22 #CHECK BEFORE RUNNING
+    start_epoch = 23 #CHECK BEFORE RUNNING
     compute_mIoU = False # If True, compute mIoU at the end of each epoch
 
     # Transformation
@@ -187,10 +187,10 @@ if __name__ == "__main__":
 
     #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    trial_type = "hinge_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
 
-    project_name = "4_Adv_Domain_Adapt_hinge_ramup_0002_augmented_2color_or_best3combweather" #CHECK BEFORE RUNNING
+    project_name = "4_Adv_Domain_Adapt_hinge_fixed_0002_augmented_2color_or_best3combweather" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
