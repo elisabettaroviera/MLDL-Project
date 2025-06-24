@@ -1,64 +1,11 @@
 from torch.utils.data import Dataset
-import os
-from PIL import Image
-import random
-import albumentations as A
-import numpy as np
-from datasets.transform_datasets import augmentation_transform
-
-class GTA5(Dataset):
-
-    def __init__(self, root_dir, transform=None, target_transform=None, augmentation = False, type_aug = None):
-        super(GTA5, self).__init__()
-        
-        # Initialize lists to store image and label paths
-        self.images = []
-        self.masks = []
-        self.transform = transform
-        self.target_transform = target_transform
-        self.augmentation = augmentation
-        self.type_aug = type_aug
-
-        # Define image and label directories
-        image_dir = os.path.join(root_dir, 'images')
-        label_dir = os.path.join(root_dir, 'labels')
-
-        # Check if the directories exist
-        if not os.path.exists(image_dir):
-            raise FileNotFoundError(f"Image directory not found: {image_dir}")
-        if not os.path.exists(label_dir):
-            raise FileNotFoundError(f"Label directory not found: {label_dir}")
-
-        # Iterate over all image files
-        for img_name in os.listdir(image_dir):
-            # Only consider common image formats (all images are png actually)
-            if img_name.endswith(('.png', '.jpg', '.jpeg')):
-                img_path = os.path.join(image_dir, img_name)
-                label_path = os.path.join(label_dir, img_name)  # Assume same filename for label
-
-                # Skip if the corresponding label does not exist
-                if not os.path.exists(label_path):
-                    print(f"Warning: label not found for image {img_name}")
-                    continue
-
-                # Store the valid image-label pair paths
-                self.images.append(img_path)
-                self.masks.append(label_path)
-
-        print(f"Loaded {len(self.images)} images and {len(self.masks)} masks.")
-
-
-    def __len__(self):
-            # Return total number of samples
-            return len(self.images)
-    from torch.utils.data import Dataset
 from torchvision.io import decode_image
 from torchvision.transforms import ToPILImage
 import os
 from PIL import Image
 import numpy as np
 from albumentations.pytorch import ToTensorV2
-from datasets.transform_datasets import augmentation_transform, augmentation_transform_oneof_col3_wea
+from datasets.transform_datasets import augmentation_transform
 import torch
 
 
@@ -102,12 +49,13 @@ class GTA5(Dataset):
             #augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label)) # one of 3 best color and best wea
             #label = Image.fromarray(augmented['mask'])
             #image = Image.fromarray(augmented['image'])
-            augmented = augmentation_transform(image=toPil(image), mask=toPil(mask), type_aug=self.type_aug) # one of 3 best color and best wea
-            image = augmented['image']
-            mask = augmented['mask']
+            augmented = augmentation_transform(image=np.array(image), mask=np.array(mask)) # one of 3 best color and best wea
+            image = Image.fromarray(augmented['mask'])
+            mask = Image.fromarray(augmented['image'])
             # If ToTensorV2 is not included in augmentation_transform, uncomment below:
             image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
             mask = torch.from_numpy(mask).long()
+            print("augmentations done")
         else:
             if self.transform:
                 image = self.transform(toPil(image))
@@ -116,5 +64,10 @@ class GTA5(Dataset):
         filename = ""
         return image, mask, filename
     
+
+
+    
+
+
 
 
