@@ -196,6 +196,18 @@ if __name__ == "__main__":
     # entity="s328422-politecnico-di-torino" # old team Betta
     
     
+    # Inizializza wandb PRIMA di usare qualsiasi funzione wandb
+    run = wandb.init(project=project_name, entity=entity, name=f"epoch_{start_epoch}", reinit=True)
+    wandb.config.update({
+        "batch_size": batch_size,
+        "learning_rate": learning_rate,
+        "momentum": momentum,
+        "weight_decay": weight_decay,
+        "num_epochs": num_epochs,
+        "num_classes": num_classes
+    })
+
+    # Se stai riprendendo da una certa epoca, carica i pesi dal checkpoint
     if start_epoch > 1:
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{start_epoch-1}:latest", type="model")
         checkpoint_path = artifact.download()
@@ -203,6 +215,7 @@ if __name__ == "__main__":
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         iter_curr = checkpoint.get('iteration', 0)  # fallback a 0 se non esiste
+
         for i, discriminator in enumerate(discriminators):
             artifact = wandb.use_artifact(f"{project_name}/discriminator_{i+1}_epoch_{start_epoch-1}:latest", type="model")
             checkpoint_path = artifact.download()
@@ -210,20 +223,24 @@ if __name__ == "__main__":
             discriminator.load_state_dict(checkpoint['model_state_dict'])
             discriminators_optimizers[i].load_state_dict(checkpoint['optimizer_state_dict'])
 
-
+    # Inizia il ciclo di training dalle epoche successive
     for epoch in range(start_epoch, num_epochs + 1):
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
-        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
-        wandb.config.update({
-            "batch_size": batch_size,
-            "learning_rate": learning_rate,
-            "momentum": momentum,
-            "weight_decay": weight_decay,
-            "num_epochs": num_epochs,
-            "num_classes": num_classes
-        })
+        # Se vuoi un run per ogni epoca, fai wandb.finish() qui e reinizializza
+        if epoch != start_epoch:
+            wandb.finish()
+            run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
+            wandb.config.update({
+                "batch_size": batch_size,
+                "learning_rate": learning_rate,
+                "momentum": momentum,
+                "weight_decay": weight_decay,
+                "num_epochs": num_epochs,
+                "num_classes": num_classes
+            })
+
         if epoch % 10 == 0:
             compute_mIoU = True
         else:
