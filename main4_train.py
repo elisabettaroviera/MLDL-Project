@@ -109,7 +109,7 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 1 #CHECK BEFORE RUNNING
+    start_epoch = 2 #CHECK BEFORE RUNNING
     compute_mIoU = True # If True, compute mIoU at the end of each epoch
 
     # Transformation
@@ -205,9 +205,9 @@ if __name__ == "__main__":
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
 
-
+    first_run = True
     for epoch in range(start_epoch, num_epochs + 1):
-        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{start_epoch}", reinit=True)
+        run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,
             "learning_rate": learning_rate,
