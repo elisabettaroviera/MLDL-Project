@@ -225,9 +225,9 @@ if __name__ == "__main__":
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
             for i, (discriminator, optimizer_d) in enumerate(zip(discriminators, discriminators_optimizers)):
-                artifact = wandb.use_artifact(f"{project_name}/discriminator_{i}_epoch_{epoch-1}:latest", type="model")
+                artifact = wandb.use_artifact(f"{project_name}/discriminator_{i}_epoch_{epoch}:latest", type="model")
                 checkpoint_path = artifact.download()
-                checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_{i}_epoch_{epoch-1}.pt"))
+                checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_{i}_epoch_{epoch}.pt"))
                 discriminator.load_state_dict(checkpoint['model_state_dict'])
                 optimizer_d.load_state_dict(checkpoint['optimizer_state_dict'])
 
