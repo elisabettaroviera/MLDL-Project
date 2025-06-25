@@ -154,7 +154,7 @@ if __name__ == '__main__':
     class CFG: pass
     cfg = CFG(); cfg.MODEL=type('',(),{})(); cfg.DATASET=type('',(),{})()
     cfg.MODEL.NAME = 'pidnet_m'
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m-imagenet-pretrained-tar/PIDNet_M_ImageNet.pth.tar'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
     model = get_seg_model(cfg, imgnet_pretrained=True).to(device)
 
