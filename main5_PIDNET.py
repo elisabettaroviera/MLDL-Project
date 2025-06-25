@@ -80,7 +80,7 @@ if __name__ == "__main__":
     cfg.DATASET = type('', (), {})()
 
     cfg.MODEL.NAME = 'pidnet_m'
-    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m-imagenet-pretrained-tar/PIDNet_M_ImageNet.pth.tar'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
     # Serve cosi chiamo pesi preaddestrati su ImageNet
     model = get_seg_model(cfg, imgnet_pretrained=True)
