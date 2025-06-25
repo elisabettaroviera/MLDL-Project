@@ -187,17 +187,18 @@ if __name__ == "__main__":
 
     #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
     # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "hinge_fixed"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
     # change to hinge_rampup or hinge_fixed
     lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
     # change to 4_Adversarial_Domain_Adaptation_hinge_rampup_augmented or 4_Adversarial_Domain_Adaptation_hinge_fixed_0002_augmented
-    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002_augmented" #CHECK BEFORE RUNNING
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_rampup_augmented" #CHECK BEFORE RUNNING
     entity = "s281401-politecnico-di-torino" # New new entity Auro
     # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
     # entity="s328422-politecnico-di-torino" # old team Betta
     
     
     if start_epoch > 1:
+        resume_run = wandb.init(project=project_name, entity=entity, name="resume_artifact_loading", reinit=True)
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{start_epoch-1}:latest", type="model")
         checkpoint_path = artifact.download()
         checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{start_epoch-1}.pt"))
@@ -210,7 +211,7 @@ if __name__ == "__main__":
             checkpoint = torch.load(os.path.join(checkpoint_path, f"discriminator_{i+1}_epoch_{start_epoch-1}.pt"))
             discriminator.load_state_dict(checkpoint['model_state_dict'])
             discriminators_optimizers[i].load_state_dict(checkpoint['optimizer_state_dict'])
-
+        wandb.finish()  # End the minimal run
 
     for epoch in range(start_epoch, num_epochs + 1):
         print(f"\nEpoch {epoch}")
