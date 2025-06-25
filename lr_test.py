@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
+from itertools import cycle
 
 from models.pidnet.PIDNET import get_seg_model
 from datasets.cityscapes import CityScapes
@@ -27,13 +28,12 @@ def compute_pidnet_loss(criterion_ce, x_extra_p, x_main, x_extra_d, target, boun
     loss_bce = F.binary_cross_entropy_with_logits(x_extra_d, boundary)
     loss_main = criterion_ce(x_main, target)
 
-    # Boundary CE on main predictions
     boundary_mask = boundary.squeeze(1).bool()
     masked_target = target[boundary_mask]
     valid = masked_target != 255
     if valid.any():
         pred_flat = x_main.permute(0,2,3,1)[boundary_mask][valid]
-        gt_flat   = masked_target[valid]
+        gt_flat = masked_target[valid]
         loss_boundary_ce = criterion_ce(pred_flat, gt_flat)
     else:
         loss_boundary_ce = torch.tensor(0., device=target.device)
@@ -57,21 +57,20 @@ def lr_range_test(model, optimizer, dataloader, criterion, compute_pidnet_loss,
     best_loss = float('inf')
 
     lrs, losses = [], []
-    aux_losses, bce_losses, main_losses, boundary_losses = [], [], [], []
 
     # init lr
     for pg in optimizer.param_groups:
         pg['lr'] = lr
 
-    iterator = tqdm(dataloader, total=num_iter, desc="LR range test")
-    for iteration, (x, y, _) in enumerate(iterator):
-        if iteration >= num_iter:
-            break
+    data_iter = cycle(dataloader)
+    pbar = tqdm(range(num_iter), desc="LR range test")
+
+    for iteration in pbar:
+        x, y, _ = next(data_iter)
         x, y = x.to(device), y.to(device)
         optimizer.zero_grad()
 
         xp, xf, xd = model(x)
-        # upsample
         xp = F.interpolate(xp, size=y.shape[1:], mode='bilinear', align_corners=False)
         xf = F.interpolate(xf, size=y.shape[1:], mode='bilinear', align_corners=False)
         xd = F.interpolate(xd, size=y.shape[1:], mode='bilinear', align_corners=False)
@@ -79,19 +78,12 @@ def lr_range_test(model, optimizer, dataloader, criterion, compute_pidnet_loss,
         boundary = get_boundary_map(y)
         loss, ld = compute_pidnet_loss(criterion, xp, xf, xd, y, boundary)
 
-        # smoothing
         avg_loss = smooth_beta * avg_loss + (1 - smooth_beta) * loss.item()
         smoothed = avg_loss / (1 - smooth_beta ** (iteration + 1))
 
-        # record
         lrs.append(lr)
         losses.append(smoothed)
-        aux_losses.append(ld['loss_aux'])
-        bce_losses.append(ld['loss_bce'])
-        main_losses.append(ld['loss_main'])
-        boundary_losses.append(ld['loss_boundary_ce'])
 
-        # update
         loss.backward()
         optimizer.step()
 
@@ -99,31 +91,27 @@ def lr_range_test(model, optimizer, dataloader, criterion, compute_pidnet_loss,
         for pg in optimizer.param_groups:
             pg['lr'] = lr
 
-        # track
         if smoothed < best_loss:
             best_loss = smoothed
-        if iteration > 0 and smoothed > 4 * best_loss:
+        elif iteration > 10 and smoothed > 4 * best_loss:
             print("Loss diverged, stopping early.")
             break
 
-        iterator.set_postfix({'lr': lr, 'loss': smoothed})
+        pbar.set_postfix({'lr': f"{lr:.2e}", 'loss': f"{smoothed:.2f}"})
 
-    # analyze
     lrs = np.array(lrs)
     losses = np.array(losses)
     min_idx = losses.argmin()
-    # find first rise after min: where loss[i] > loss[i-1]
     rise_idx = min_idx + 1
     while rise_idx < len(losses) and losses[rise_idx] <= losses[rise_idx - 1]:
         rise_idx += 1
-    # clip
-    rise_idx = rise_idx if rise_idx < len(losses) else len(losses)-1
+    if rise_idx >= len(losses):
+        rise_idx = len(losses) - 1
 
-    a_lr = lrs[0] if min_idx == 0 else lrs[min_idx-1]
+    a_lr = lrs[min_idx - 1] if min_idx > 0 else lrs[0]
     b_lr = lrs[rise_idx]
-    print(f"Min loss at lr={lrs[min_idx]:.2e}, golden interval ~ [{a_lr:.2e}, {b_lr:.2e}]")
+    print(f"Golden interval: [{a_lr:.2e}, {b_lr:.2e}]")
 
-    # plot
     plt.figure(figsize=(10,6))
     plt.plot(lrs, losses, label='total loss')
     plt.xscale('log')
@@ -140,17 +128,14 @@ def lr_range_test(model, optimizer, dataloader, criterion, compute_pidnet_loss,
 
 
 if __name__ == '__main__':
-    # setup
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    DATA_PATH = '/kaggle/input/cityscapes-dataset/Cityscapes'  # <-- adjust
+    DATA_PATH = '/kaggle/input/cityscapes-dataset/Cityscapes'
 
-    # dataset & dataloader
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
     ds = CityScapes(DATA_PATH, 'train', transform, target_transform)
     loader, _ = dataloader(ds, None, batch_size=4, shuffle_train=True, shuffle_val=False, drop_last_bach=True, num_workers=2)
 
-    # model
     class CFG: pass
     cfg = CFG(); cfg.MODEL=type('',(),{})(); cfg.DATASET=type('',(),{})()
     cfg.MODEL.NAME = 'pidnet_m'
@@ -158,13 +143,11 @@ if __name__ == '__main__':
     cfg.DATASET.NUM_CLASSES = 19
     model = get_seg_model(cfg, imgnet_pretrained=True).to(device)
 
-    # criterion & optimizer
     criterion = torch.nn.CrossEntropyLoss(ignore_index=255)
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
 
-    # run
     lrs, losses, golden = lr_range_test(
         model, optimizer, loader, criterion, compute_pidnet_loss,
         init_lr=2e-5, final_lr=1e-1, num_iter=5000, device=device
     )
-    print(f"Golden interval: {golden}")
+    print(f"Golden interval: [{golden[0]:.2e}, {golden[1]:.2e}]")
