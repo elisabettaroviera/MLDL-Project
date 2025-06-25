@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
-    project_name = "4_Adv_Domain_Adapt_hinge_fixed_0002_augmented_2color_or_best3combweather" #CHECK BEFORE RUNNING
+    project_name = "4_Adv_Domain_Adapt_hinge_ramup_0002_augmented_2color_or_best3combweather" #CHECK BEFORE RUNNING
     # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = to_obtain_id(project_name)
 
