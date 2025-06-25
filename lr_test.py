@@ -148,8 +148,7 @@ if __name__ == '__main__':
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
     ds = CityScapes(DATA_PATH, 'train', transform, target_transform)
-    loader, _ = dataloader(ds, None, batch_size=4, shuffle_train=True,
-                           shuffle_val=False, drop_last=True, num_workers=4)
+    loader, _ = dataloader(ds, None, batch_size=4, shuffle_train=True, shuffle_val=False, drop_last_bach=True, num_workers=2)
 
     # model
     class CFG: pass
