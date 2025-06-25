@@ -109,7 +109,7 @@ if __name__ == "__main__":
     num_epochs = 50
     num_classes = 19
     ignore_index = 255
-    start_epoch = 1 #CHECK BEFORE RUNNING
+    start_epoch = 29 #CHECK BEFORE RUNNING
     compute_mIoU = False # If True, compute mIoU at the end of each epoch
 
     # Transformation
