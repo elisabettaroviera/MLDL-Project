@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
 
     batch_size = 4
-    num_epochs = 25
+    num_epochs = 50
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
