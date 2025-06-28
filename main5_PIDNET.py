@@ -115,7 +115,14 @@ if __name__ == "__main__":
     # Define the data loaders
     batch_size = 4
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, full_dataloader_cityscapes_train, batch_size, True, True)
+    #dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, full_dataloader_cityscapes_train, batch_size, True, True)
+    cs_val_dataset = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes',
+                            mode='val',
+                            transform=transform_cityscapes_dataset,
+                            target_transform=target_transform_cityscapes)
+
+    dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, cs_val_dataset, batch_size, True, True)
+
     # Select a random fraction of the training dataset (25% of the original dataset)
     #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.5, batch_size=batch_size)
 
