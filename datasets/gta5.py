@@ -54,6 +54,7 @@ class GTA5(Dataset):
 
 
     # get item dentro gta5 PER LA BEST AUGM DI LUCI
+    """
     def __getitem__(self, idx):
         image_path = self.images[idx]
         image = Image.open(image_path).convert('RGB')
@@ -68,6 +69,26 @@ class GTA5(Dataset):
             image = Image.fromarray(augmented['image'])
 
         # Applico sempre le trasformazioni base
+        if self.transform:
+            image = self.transform(image)
+        if self.target_transform:
+            label = self.target_transform(label)
+
+        filename = os.path.basename(image_path)
+        return image, label, filename
+    """
+     def __getitem__(self, idx):
+        image_path = self.images[idx]
+        image = Image.open(image_path).convert('RGB')
+        label = Image.open(self.masks[idx])
+
+        if self.augmentation:
+            # Apply the Augmentation to all the image
+            augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+            image = Image.fromarray(augmented['image'])
+            label = Image.fromarray(augmented['mask'])
+
+        # Apply standard transformation such as resize
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
