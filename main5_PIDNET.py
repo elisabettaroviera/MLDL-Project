@@ -1,4 +1,5 @@
 import os
+from datasets.gta5 import GTA5
 import torch
 from torch import nn
 import wandb
@@ -69,7 +70,9 @@ if __name__ == "__main__":
 
     # Load the datasets (Cityspaces)
     print("Load the datasets")
-    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)
+    cs_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform, target_transform) # qui ci va gta5
+    #gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
+    #
     cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
 
     class CFG:
@@ -96,10 +99,10 @@ if __name__ == "__main__":
 
     # Definition of the parameters for CITYSCAPES 
         # Constant value
-    learning_rate = 0.0165
+    learning_rate = 0.01
     momentum = 0.9
     weight_decay = 5e-4 #sul paper usa questo batch size 12
-    num_epochs = 50#changed bc doing smaller runs
+    num_epochs = 20#changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
@@ -130,7 +133,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_M_ce_polylr_0.0165_warmup_780" # _warmup_1375
+        project_name = f"5_PIDNET_M_gta_to_city_ce_polylr_0.01_power=0.95" # _warmup_1375
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
