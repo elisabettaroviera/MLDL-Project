@@ -24,7 +24,7 @@ def set_seed(seed):
 if __name__ == "__main__":
     # MODEL = 'DeepLabV2' or 'BiSeNet'
     var_model = os.environ['MODEL']
-    start_epoch = 46  # Cambia l'epoca desiderata qui
+    start_epoch = 30  # Cambia l'epoca desiderata qui
 
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -65,8 +65,8 @@ if __name__ == "__main__":
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=ignore_index)
 
     # wandb settings
-    entity = "s325951-politecnico-di-torino-mldl"
-    project_name = "DeepLabV2_ce05_f05_warmup2500_lr_0.0005_ALL_WHEIGHTED"
+    entity = "s328422-politecnico-di-torino"
+    project_name = "BiSeNet_lr_0.00625_cr07_tv03_total_dataset"
     wandb.init(project=project_name, entity=entity, name=f"val_epoch_{start_epoch}", reinit=True)
     
     print("Download model checkpoint from wandb")
