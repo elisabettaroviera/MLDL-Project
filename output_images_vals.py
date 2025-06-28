@@ -9,7 +9,7 @@ from datasets.transform_datasets import *
 from data.dataloader import dataloader
 from datasets.cityscapes import CityScapes
 from utils.utils import CombinedLoss_All, save_metrics_on_wandb
-from validation import validate
+from validation import validate, validate_pidnet
 import random
 import numpy as np
 import time
@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
     print("Run validation")
     start_val = time.time()
-    metrics_val = validate(start_epoch, model, dataloader_cs_val, loss, num_classes)
+    metrics_val = validate_pidnet(start_epoch, model, dataloader_cs_val, loss, num_classes)
     end_val = time.time()
 
     print(f"Validation time: {(end_val - start_val)/60:.2f} minutes")
