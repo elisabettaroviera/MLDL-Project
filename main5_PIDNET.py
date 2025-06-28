@@ -115,7 +115,7 @@ if __name__ == "__main__":
     # Define the data loaders
     batch_size = 4
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, cs_val, batch_size, True, True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, full_dataloader_cityscapes_train, batch_size, True, True)
     # Select a random fraction of the training dataset (25% of the original dataset)
     #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.5, batch_size=batch_size)
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"5_PIDNET_M_gta_to_city_ce_polylr_0.01_power=0.95" # _warmup_1375
+        project_name = f"5_PIDNET_M_gta_to_city_augm_'HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast'_ce_polylr_0.01_power=0.95" # _warmup_1375
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
