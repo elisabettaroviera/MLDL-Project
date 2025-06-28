@@ -4,6 +4,7 @@ import wandb
 import gdown
 from models.deeplabv2.deeplabv2 import get_deeplab_v2
 from models.bisenet.build_bisenet import BiSeNet
+from models.pidnet.PIDNET import PIDNet, get_seg_model
 from datasets.transform_datasets import *
 from data.dataloader import dataloader
 from datasets.cityscapes import CityScapes
@@ -24,7 +25,7 @@ def set_seed(seed):
 if __name__ == "__main__":
     # MODEL = 'DeepLabV2' or 'BiSeNet'
     var_model = os.environ['MODEL']
-    start_epoch = 30  # Cambia l'epoca desiderata qui
+    start_epoch = 16 # Cambia l'epoca desiderata qui
 
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -43,7 +44,7 @@ if __name__ == "__main__":
 
     print("Dataloader")
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, False, True)
-
+    """
     if var_model == 'DeepLabV2':
         print("MODEL DEEPLABV2")
         pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
@@ -56,17 +57,29 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
-        model = BiSeNet(num_classes=num_classes, context_path='resnet18')
+        model = BiSeNet(num_classes=num_classes, context_path='resnet18')"""
+    class CFG:
+        pass
 
+    cfg = CFG()
+    cfg.MODEL = type('', (), {})()
+    cfg.DATASET = type('', (), {})()
+
+    cfg.MODEL.NAME = 'pidnet_m'
+    cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar'
+    cfg.DATASET.NUM_CLASSES = 19
+    # Serve cosi chiamo pesi preaddestrati su ImageNet
+    model = get_seg_model(cfg, imgnet_pretrained=True)
     model = model.to(device)
+
 
     # LOSS
     #anche se non è quella giusta qua non importa tanto le run le avevo gia fatte, mis ervono solo le foto ora
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=ignore_index)
 
     # wandb settings
-    entity = "s328422-politecnico-di-torino"
-    project_name = "BiSeNet_lr_0.00625_cr07_tv03_total_dataset"
+    entity = "s281401-politecnico-di-torino"
+    project_name = "5_PIDNET_M_ce_polylr_0.0165_warmup_780"
     wandb.init(project=project_name, entity=entity, name=f"val_epoch_{start_epoch}", reinit=True)
     
     print("Download model checkpoint from wandb")
