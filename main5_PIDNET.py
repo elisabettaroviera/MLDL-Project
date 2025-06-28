@@ -71,11 +71,31 @@ if __name__ == "__main__":
     target_transform_cityscapes = transform_cityscapes_mask()
     target_transform_gta = transform_gta_mask()
 
+    # BEST CONFIG AURO
+    type_aug = {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} 
+    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
+    # Contains all pictures bc they are all augmented
+    gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug)  # Change the augm that you want
+
+    # Choose with probability 0.5 the augmented images
+    num_augmented = int(0.5 * len(gta_train_aug))
+    indices = random.sample(range(len(gta_train_aug)), num_augmented)
+    gta_train_aug = Subset(gta_train_aug, indices)
+
+    # Union of the dataset
+    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug])  # To obtain the final dataset = train + augment
+
+    # Create dataloader
+    full_dataloader_gta_train, _ = dataloader(gta_train, None, 4, True, True, False, 4)
+    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, 4, True, True)
+    # Take a subset of the dataloader
+
+
     # Load the datasets (Cityspaces+GTA5)
     print("Load the datasets")
     
-    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
-    gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = None)
+    #cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    #gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = None)
 
     class CFG:
         pass
