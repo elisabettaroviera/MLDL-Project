@@ -77,7 +77,7 @@ if __name__ == "__main__":
         planes=64,            # plane size for PIDNet-M
         ppm_planes=96,        # Pyramid Pooling Module planes
         head_planes=128,      # final head classifier planes
-        augment=False         # True during training, False for inference
+        augment=True        # True during training, False for inference
     )
 
     model = model.to(device)
