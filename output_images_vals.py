@@ -68,8 +68,18 @@ if __name__ == "__main__":
     cfg.MODEL.NAME = 'pidnet_m'
     cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
-    # Serve cosi chiamo pesi preaddestrati su ImageNet
-    model = get_seg_model(cfg, imgnet_pretrained=True)
+
+    # PIDNet-M parameters from the paper/repo
+    model = PIDNet(
+        m=2,                  # num PID branches (usually fixed)
+        n=3,                  # number of output feature maps for I, P, D branches
+        num_classes=19,       # Cityscapes: 19 classes
+        planes=64,            # plane size for PIDNet-M
+        ppm_planes=96,        # Pyramid Pooling Module planes
+        head_planes=128,      # final head classifier planes
+        augment=False         # True during training, False for inference
+    )
+
     model = model.to(device)
 
 
