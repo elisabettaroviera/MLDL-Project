@@ -117,7 +117,7 @@ if __name__ == "__main__":
     print("Create the dataloaders")
     #dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, full_dataloader_cityscapes_train, batch_size, True, True)
     cs_val_dataset = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes',
-                            mode='val',
+                            split='val',
                             transform=transform_cityscapes_dataset,
                             target_transform=target_transform_cityscapes)
 
