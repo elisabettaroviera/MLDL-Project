@@ -72,7 +72,7 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     # BEST CONFIG AURO
-    type_aug = {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} 
+    type_aug = None
     gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug)  # Change the augm that you want
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"PIDNET_M_gta_to_city_augm_auro_ce_polylr0.01_power0.95" # _warmup_1375
+        project_name = f"PIDNET_M_gta_to_city_augm_luci_ce_polylr0.01_power0.95" # _warmup_1375
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 

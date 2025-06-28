@@ -4,7 +4,7 @@ from PIL import Image
 import random
 import albumentations as A
 import numpy as np
-from datasets.transform_datasets import augmentation_transform
+from datasets.transform_datasets import augmentation_transform, augmentation_transform_oneof_col3_wea
 
 class GTA5(Dataset):
 
@@ -53,18 +53,21 @@ class GTA5(Dataset):
             return len(self.images)
 
 
+    # get item dentro gta5 PER LA BEST AUGM DI LUCI
     def __getitem__(self, idx):
         image_path = self.images[idx]
         image = Image.open(image_path).convert('RGB')
         label = Image.open(self.masks[idx])
 
         if self.augmentation:
-            # Apply the Augmentation to all the image
-            augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
-            image = Image.fromarray(augmented['image'])
+            # choose augmentation comb
+            #augmented = augmentation_transform_oneof(image=np.array(image), mask=np.array(label)) # one of 4 best comb of color
+            augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label)) # one of 3(!) best color and best weather
+            #augmented = augmentation_transform_oneof_col4_wea(image=np.array(image), mask=np.array(label)) # one of 4(!) best color and best weather
             label = Image.fromarray(augmented['mask'])
+            image = Image.fromarray(augmented['image'])
 
-        # Apply standard transformation such as resize
+        # Applico sempre le trasformazioni base
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
