@@ -65,15 +65,17 @@ if __name__ == "__main__":
     
     # Define transformations
     print("Define transformations")
-    transform = transform_cityscapes()
-    target_transform = transform_cityscapes_mask()
 
-    # Load the datasets (Cityspaces)
+    transform_gta_dataset = transform_gta()
+    transform_cityscapes_dataset = transform_cityscapes()
+    target_transform_cityscapes = transform_cityscapes_mask()
+    target_transform_gta = transform_gta_mask()
+
+    # Load the datasets (Cityspaces+GTA5)
     print("Load the datasets")
-    cs_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform, target_transform) # qui ci va gta5
-    #gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
-    #
-    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
+    
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = None)
 
     class CFG:
         pass
@@ -93,7 +95,7 @@ if __name__ == "__main__":
     # Define the data loaders
     batch_size = 4
     print("Create the dataloaders")
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
+    dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, cs_val, batch_size, True, True)
     # Select a random fraction of the training dataset (25% of the original dataset)
     #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.5, batch_size=batch_size)
 
@@ -102,7 +104,7 @@ if __name__ == "__main__":
     learning_rate = 0.01
     momentum = 0.9
     weight_decay = 5e-4 #sul paper usa questo batch size 12
-    num_epochs = 20#changed bc doing smaller runs
+    num_epochs = 20 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
