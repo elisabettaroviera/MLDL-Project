@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     # LOSS
     #anche se non è quella giusta qua non importa tanto le run le avevo gia fatte, mis ervono solo le foto ora
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=ignore_index)
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=ignore_index)
 
     # wandb settings
     entity = "s281401-politecnico-di-torino"
