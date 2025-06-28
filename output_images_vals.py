@@ -34,7 +34,7 @@ if __name__ == "__main__":
     target_transform = transform_cityscapes_mask()
 
     print("Load datasets")
-    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)
 
     # Parametri modello
     num_classes = 19
@@ -61,6 +61,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     # LOSS
+    #anche se non è quella giusta qua non importa tanto le run le avevo gia fatte, mis ervono solo le foto ora
     loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0, theta=0.3, ignore_index=ignore_index)
 
     # wandb settings
