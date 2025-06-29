@@ -25,7 +25,7 @@ def set_seed(seed):
 if __name__ == "__main__":
     # MODEL = 'DeepLabV2' or 'BiSeNet'
     var_model = os.environ['MODEL']
-    start_epoch = 16 # Cambia l'epoca desiderata qui
+    start_epoch = 38 # Cambia l'epoca desiderata qui
 
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     print("Dataloader")
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, False, True)
-    """
+    
     if var_model == 'DeepLabV2':
         print("MODEL DEEPLABV2")
         pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
@@ -57,7 +57,9 @@ if __name__ == "__main__":
 
     elif var_model == 'BiSeNet':
         print("MODEL BISENET")
-        model = BiSeNet(num_classes=num_classes, context_path='resnet18')"""
+        model = BiSeNet(num_classes=num_classes, context_path='resnet18')
+        
+    """
     class CFG:
         pass
 
@@ -79,7 +81,7 @@ if __name__ == "__main__":
         head_planes=128,      # final head classifier planes
         augment=True        # True during training, False for inference
     )
-
+"""
     model = model.to(device)
 
 
@@ -88,8 +90,8 @@ if __name__ == "__main__":
     loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=ignore_index)
 
     # wandb settings
-    entity = "s281401-politecnico-di-torino"
-    project_name = "5_PIDNET_M_ce_polylr_0.0165_warmup_780"
+    entity = "s328422-politecnico-di-torino"
+    project_name = "3a_GTA5_to_CITY_ce_batch_update"
     wandb.init(project=project_name, entity=entity, name=f"val_epoch_{start_epoch}", reinit=True)
     
     print("Download model checkpoint from wandb")
@@ -102,7 +104,7 @@ if __name__ == "__main__":
 
     print("Run validation")
     start_val = time.time()
-    metrics_val = validate_pidnet(start_epoch, model, dataloader_cs_val, loss, num_classes)
+    metrics_val = validate(start_epoch, model, dataloader_cs_val, loss, num_classes)
     end_val = time.time()
 
     print(f"Validation time: {(end_val - start_val)/60:.2f} minutes")
