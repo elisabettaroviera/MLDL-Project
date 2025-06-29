@@ -106,9 +106,26 @@ if __name__ == "__main__":
     # Lu - color
     # Auro - wheather
     # Betta - geometric
+    
+
     type_aug = {}
-    gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = type_aug)
-    print("Load the GTA5 dataset")
+    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
+    # Contains all pictures bc they are all augmented
+    gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
+
+    # Choose with probability 0.5 the augmented images
+    num_augmented = int(0.5 * len(gta_train_aug))
+    indices = random.sample(range(len(gta_train_aug)), num_augmented)
+    gta_train_aug = Subset(gta_train_aug, indices)
+
+    # Union of the dataset
+    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
+    
+    # Create dataloader
+    full_dataloader_gta_train, _ = dataloader(gta_train, None, 4, True, True)
+    # Take a subset of the dataloader
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=4)
+    
     # Union of the dataset
     #gta_train = ConcatDataset([gta_train, gta_augmentation]) # To obtain the final dataset = train + augment
     # /kaggle/input/gta5-dataset/GTA5/images
@@ -165,8 +182,8 @@ if __name__ == "__main__":
         iter_curr = len(dataloader_gta_train) * (epoch - 1) # Update the iteration counter
         # To save the model we need to initialize wandb 
         # Change the name of the project before the final run of 50 epochs
-        project_name = f"3a_GTA5_to_CITY_augmented_base" # Change here!
-        wandb.init(project=f"{project_name}", entity="s328422-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
+        project_name = f"3a_GTA5_to_CITY_augmented_best" # Change here!
+        wandb.init(project=f"{project_name}", entity = "s281401-politecnico-di-torino", name=f"epoch_{epoch}", reinit=True) # Replace with your wandb entity name
         print("Wandb initialized")
 
         print(f"Epoch {epoch}")
@@ -175,7 +192,7 @@ if __name__ == "__main__":
         # 1. Obtain the pretrained model
         if epoch != 1:
             # Load the model from the previous epoch using wandb artifact
-            artifact = wandb.use_artifact(f"s328422-politecnico-di-torino/{project_name}/model_epoch_{epoch-1}:latest", type="model")
+            artifact = wandb.use_artifact(f"s281401-politecnico-di-torino/{project_name}/model_epoch_{epoch-1}:latest", type="model")
             
             # Get the local path where the artifact is saved
             artifact_dir = artifact.download()
