@@ -111,8 +111,8 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
             total_unions += unions
 
             #only enter the loop if we haven't saved both images    
-            if flag_save < 2:
-                flag_save = save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
+            #if flag_save < 2:
+                #flag_save = save_images(flag_save,save_dir,inputs, file_names, preds, file_name_1, file_name_2)
 
 
     # print the two images i want to save
