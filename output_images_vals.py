@@ -25,7 +25,7 @@ def set_seed(seed):
 if __name__ == "__main__":
     # MODEL = 'DeepLabV2' or 'BiSeNet'
     var_model = os.environ['MODEL']
-    start_epoch = 38 # Cambia l'epoca desiderata qui
+    start_epoch = 32 # Cambia l'epoca desiderata qui
 
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -90,8 +90,8 @@ if __name__ == "__main__":
     loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=ignore_index)
 
     # wandb settings
-    entity = "s328422-politecnico-di-torino"
-    project_name = "3a_GTA5_to_CITY_ce_batch_update"
+    entity = "s281401-politecnico-di-torino"
+    project_name = "4_Adversarial_Domain_Adaptation_hinge_fixed_0002_augmented"
     wandb.init(project=project_name, entity=entity, name=f"val_epoch_{start_epoch}", reinit=True)
     
     print("Download model checkpoint from wandb")
