@@ -130,7 +130,7 @@ if __name__ == "__main__":
     learning_rate = 0.01
     momentum = 0.9
     weight_decay = 5e-4 #sul paper usa questo batch size 12
-    num_epochs = 20 #changed bc doing smaller runs
+    num_epochs = 50 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"PIDNET_M_BASE_RIFATTA_ce_polylr0.01_power0.95" 
+        project_name = f"PIDNET_M_BASE_REPOGIT_WEIGHTED__ce_polylr0.01_power0.95" 
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
