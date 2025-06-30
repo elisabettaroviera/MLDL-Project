@@ -1,0 +1,18 @@
+\begin{table*}[t]
+  \centering
+  \renewcommand{\arraystretch}{1.2}
+  \scriptsize
+  \begin{tabular}{| l | l | c | c | c | c | c | c | c | c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+    \textbf{Model} & \textbf{Type} & \rotatebox{90}{\textbf{road}} & \rotatebox{90}{\textbf{sidewalk}} & \rotatebox{90}{\textbf{building}} & \rotatebox{90}{\textbf{wall}} & \rotatebox{90}{\textbf{fence}} & \rotatebox{90}{\textbf{pole}} & \rotatebox{90}{\textbf{traffic light}} & \rotatebox{90}{\textbf{traffic sign}} & \rotatebox{90}{\textbf{vegetation}} & \rotatebox{90}{\textbf{terrain}} & \rotatebox{90}{\textbf{sky}} & \rotatebox{90}{\textbf{person}} & \rotatebox{90}{\textbf{rider}} & \rotatebox{90}{\textbf{car}} & \rotatebox{90}{\textbf{truck}} & \rotatebox{90}{\textbf{bus}} & \rotatebox{90}{\textbf{train}} & \rotatebox{90}{\textbf{motorcycle}} & \rotatebox{90}{\textbf{bicycle}} & \textbf{mIoU} \\ \hline
+
+    Bisenet & None & 22.92 & 5.26 & 56.30 & 3.52 & 2.85 & 5.21 & 7.54 & 2.34 & 62.11 & 6.12 & 48.17 & 29.09 & 1.09 & 31.78 & 0.54 & 0.81 & 0.00 & 0.00 & 0.00 & 17.85 \\ \hline
+    PidNet & None & 43.18 & 11.30 & 66.23 & 4.04 & 7.18 & 18.68 & 17.16 & 9.68 & 68.12 & 3.92 & 62.78 & 29.68 & 4.80 & 29.10 & 2.61 & 1.71 & 0.14 & 2.33 & 0.17 & 20.15 \\ \hline
+    Bisenet & aug\_1 & 70.35 & 20.35 & 72.00 & 12.68 & 11.64 & 20.05 & 17.75 & 13.06 & 76.39 & 24.48 & 74.70 & 38.13 & 2.94 & 74.45 & 20.22 & 16.82 & 3.87 & 10.07 & 2.36 & 30.65 \\ \hline
+    Bisenet & aug\_2 & 69.39 & 15.55 & 70.12 & 19.91 & 7.74 & 21.80 & 16.22 & 7.28 & 76.63 & 22.14 & 74.03 & 38.93 & 4.72 & 62.29 & 16.45 & 8.00 & 0.00 & 3.98 & 0.24 & 29.74 \\ \hline
+    PidNet & aug\_1 & 65.80 & 28.52 & 71.87 & 14.79 & 15.27 & 30.28 & 21.77 & 9.07 & 74.87 & 22.73 & 77.37 & 38.98 & 8.37 & 44.29 & 19.91 & 7.32 & 22.51 & 9.17 & 0.63 & 30.71 \\ \hline
+    PidNet & aug\_2 & 70.17 & 30.64 & 68.12 & 18.00 & 8.87 & 30.58 & 18.72 & 14.07 & 78.42 & 28.03 & 78.75 & 41.02 & 9.03 & 70.98 & 20.27 & 9.60 & 2.19 & 4.47 & 1.43 & 31.76 \\ \hline
+  \end{tabular}
+  \caption{aug\_1 == auro, aug\_2 == luci}
+  \label{tab:cityscapes_miou}
+\end{table*}

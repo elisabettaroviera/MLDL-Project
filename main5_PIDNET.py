@@ -66,10 +66,10 @@ if __name__ == "__main__":
     # Define transformations
     print("Define transformations")
 
-    transform_gta_dataset = transform_gta()
+    #transform_gta_dataset = transform_gta()
     transform_cityscapes_dataset = transform_cityscapes()
     target_transform_cityscapes = transform_cityscapes_mask()
-    target_transform_gta = transform_gta_mask()
+    #target_transform_gta = transform_gta_mask()
 
     # BEST CONFIG AURO
     type_aug = None
@@ -93,8 +93,8 @@ if __name__ == "__main__":
 
     # Load the datasets (Cityspaces+GTA5)
     print("Load the datasets")
-    
-    #cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)  
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
     #gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = None)
 
     class CFG:
