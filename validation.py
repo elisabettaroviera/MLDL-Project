@@ -161,47 +161,96 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     }
 
     return metrics
+
 ##########PIDNET###############
 def get_boundary_map(target, kernel_size=3):
-    # target: (B, H, W) con valori interi [0, num_classes-1]
-    b, h, w = target.shape
-    target = target.unsqueeze(1).float()  # (B,1,H,W)
+    # target: (B, H, W) con valori interi [0, num_classes-1] oppure 255 per ignorare
+
+    # Creiamo una maschera che esclude i pixel 255
+    valid_mask = (target != 255).float()  # 1 dove valido, 0 dove 255
+
+    target = target.clone().float()  # per non modificare l'originale
+    target[target == 255] = 0  # sostituisci 255 con 0 (classe qualsiasi)
+
+    target = target.unsqueeze(1)  # (B,1,H,W)
 
     laplace_kernel = torch.tensor([[[[0, 1, 0],
                                      [1,-4, 1],
                                      [0, 1, 0]]]], device=target.device).float()
-    
-    boundary = F.conv2d(target, laplace_kernel, padding=1).abs()
-    boundary = (boundary > 0).float()  # binarizza
 
-    return boundary  # shape (B,1,H,W)
+    boundary = F.conv2d(target, laplace_kernel, padding=1).abs()
+
+    # Applichiamo la maschera di validità anche al risultato per azzerare bordi in pixel ignorati
+    boundary = boundary * valid_mask.unsqueeze(1)  # broadcast su canale
+
+    boundary = (boundary > 0).float()
+
+    return boundary
+def weighted_bce(bd_pre, target):
+    n, c, h, w = bd_pre.size()
+    log_p = bd_pre.permute(0,2,3,1).contiguous().view(1, -1)
+    target_t = target.view(1, -1)
+
+    pos_index = (target_t == 1)
+    neg_index = (target_t == 0)
+
+    weight = torch.zeros_like(log_p)
+    pos_num = pos_index.sum()
+    neg_num = neg_index.sum()
+    sum_num = pos_num + neg_num
+    weight[pos_index] = neg_num * 1.0 / sum_num
+    weight[neg_index] = pos_num * 1.0 / sum_num
+
+    loss = F.binary_cross_entropy_with_logits(log_p, target_t, weight, reduction='mean')
+
+    return loss
+
 
 
 def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
-                        lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1):
-    # L0: aux CE loss sulla P branch
+                        lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):
+    """
+    Calcola la loss totale di PIDNet composta da:
+    - CE aux branch
+    - BCE pesata sui bordi
+    - CE sulla main branch
+    - CE focalizzata sui bordi
+
+    Args:
+        criterion: funzione CE standard (es. nn.CrossEntropyLoss(ignore_index=255))
+        x_extra_p: output dalla branch P (B, C, H, W)
+        x_main: output dalla main branch (B, C, H, W)
+        x_extra_d: output dalla branch D (B, 1, H, W)
+        target: ground truth segmentazione (B, H, W)
+        boundary: mappa binaria bordi (B, 1, H, W)
+
+    Returns:
+        total_loss: somma pesata delle quattro componenti
+        losses_dict: dizionario con le singole componenti
+    """
+
+    # L0: CE ausiliaria sulla branch P
     loss_aux = criterion(x_extra_p, target)
 
-    # L1: Binary Cross Entropy sulla D branch (bordi)
-    x_boundary = torch.sigmoid(x_extra_d)
-    loss_bce = F.binary_cross_entropy(x_boundary, boundary)
+    # L1: BCE pesata sulla branch D (bordi)
+    loss_bce = weighted_bce(x_extra_d, boundary)
 
-    # L2: main CE loss finale
+    # L2: CE principale sulla branch main
     loss_main = criterion(x_main, target)
 
-    # L3: CE loss focalizzata sui bordi
-    boundary_mask = (boundary.squeeze(1) > 0.5)
+    # L3: CE focalizzata solo sui pixel al contorno
+    boundary_mask = (boundary.squeeze(1) > 0.8)  # come nel paper PIDNet
     masked_target = target[boundary_mask]
     valid_mask = (masked_target != 255)
+
     if valid_mask.any():
-        loss_boundary_ce = criterion(
-            x_main.permute(0,2,3,1)[boundary_mask][valid_mask],
-            masked_target[valid_mask]
-        )
+        masked_output = x_main.permute(0, 2, 3, 1)[boundary_mask][valid_mask]
+        masked_target = masked_target[valid_mask]
+        loss_boundary_ce = criterion(masked_output, masked_target)
     else:
         loss_boundary_ce = torch.tensor(0.0, device=target.device)
 
-    # Loss finale pesata
+    # Combinazione pesata finale
     total_loss = (
         lambda_0 * loss_aux +
         lambda_1 * loss_bce +
@@ -215,6 +264,8 @@ def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundar
         "loss_main": loss_main.item(),
         "loss_boundary_ce": loss_boundary_ce.item()
     }
+
+
 
 # VALIDATION LOOP
 def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
