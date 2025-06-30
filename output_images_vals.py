@@ -25,7 +25,7 @@ def set_seed(seed):
 if __name__ == "__main__":
     # MODEL = 'DeepLabV2' or 'BiSeNet'
     var_model = os.environ['MODEL']
-    start_epoch = 18 # Cambia l'epoca desiderata qui
+    start_epoch = 16 # Cambia l'epoca desiderata qui
 
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     print("Dataloader")
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, False, True)
-    """
+    
     if var_model == 'DeepLabV2':
         print("MODEL DEEPLABV2")
         pretrain_model_path = "./pretrained/deeplabv2_cityscapes.pth"
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         ppm_planes=96,        # Pyramid Pooling Module planes
         head_planes=128,      # final head classifier planes
         augment=True        # True during training, False for inference
-    )
+    )"""
 
     model = model.to(device)
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     # wandb settings
     entity = "s281401-politecnico-di-torino"
-    project_name = "PIDNET_M_BASE_REPO_GIT_WEIGHTED__ce_polylr0.01_power0.95"
+    project_name = "3a_GTA5_to_CITY_augmented_best"
     wandb.init(project=project_name, entity=entity, name=f"val_epoch_{start_epoch}", reinit=True)
     
     print("Download model checkpoint from wandb")
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     print("Run validation")
     start_val = time.time()
-    metrics_val = validate_pidnet(start_epoch, model, dataloader_cs_val, loss, num_classes)
+    metrics_val = validate(start_epoch, model, dataloader_cs_val, loss, num_classes)
     end_val = time.time()
 
     print(f"Validation time: {(end_val - start_val)/60:.2f} minutes")

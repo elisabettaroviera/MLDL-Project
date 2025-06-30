@@ -239,7 +239,7 @@ def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundar
     loss_main = criterion(x_main, target)
 
     # L3: CE focalizzata solo sui pixel al contorno
-    boundary_mask = (boundary.squeeze(1) > 0.8)  # come nel paper PIDNet
+    boundary_mask = (boundary.squeeze(1) > 0.8)  # come nel paper PIDNet anche se basta 0 per come l'abbiamo definita come binary
     masked_target = target[boundary_mask]
     valid_mask = (masked_target != 255)
 
