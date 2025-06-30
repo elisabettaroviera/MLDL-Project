@@ -25,7 +25,7 @@ def set_seed(seed):
 if __name__ == "__main__":
     # MODEL = 'DeepLabV2' or 'BiSeNet'
     var_model = os.environ['MODEL']
-    start_epoch = 16 # Cambia l'epoca desiderata qui
+    start_epoch = 18 # Cambia l'epoca desiderata qui
 
     set_seed(23)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
