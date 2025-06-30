@@ -73,20 +73,20 @@ if __name__ == "__main__":
 
     # BEST CONFIG AURO
     type_aug = None
-    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
+    #gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
     # Contains all pictures bc they are all augmented
-    gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug)  # Change the augm that you want
+    #gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug)  # Change the augm that you want
 
     # Choose with probability 0.5 the augmented images
-    num_augmented = int(0.5 * len(gta_train_aug))
-    indices = random.sample(range(len(gta_train_aug)), num_augmented)
-    gta_train_aug = Subset(gta_train_aug, indices)
+    #num_augmented = int(0.5 * len(gta_train_aug))
+    #indices = random.sample(range(len(gta_train_aug)), num_augmented)
+    #gta_train_aug = Subset(gta_train_aug, indices)
 
     # Union of the dataset
-    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug])  # To obtain the final dataset = train + augment
+    #gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug])  # To obtain the final dataset = train + augment
 
     # Create dataloader
-    full_dataloader_gta_train, _ = dataloader(gta_train, None, 4, True, True, False, 4)
+    #full_dataloader_gta_train, _ = dataloader(gta_train, None, 4, True, True, False, 4)
     full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, 4, True, True)
     # Take a subset of the dataloader
 
@@ -116,12 +116,11 @@ if __name__ == "__main__":
     batch_size = 4
     print("Create the dataloaders")
     #dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, full_dataloader_cityscapes_train, batch_size, True, True)
-    cs_val_dataset = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes',
-                            split='val',
-                            transform=transform_cityscapes_dataset,
-                            target_transform=target_transform_cityscapes)
+    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val' ,transform_cityscapes_dataset, target_transform_cityscapes))
 
-    dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, cs_val_dataset, batch_size, True, True)
+
+    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
 
     # Select a random fraction of the training dataset (25% of the original dataset)
     #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.5, batch_size=batch_size)
@@ -162,7 +161,7 @@ if __name__ == "__main__":
         # To save the model we need to initialize wandb 
         # entity="s328422-politecnico-di-torino" # Old entity Betta
         entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"PIDNET_M_gta_to_city_augm_luci_ce_polylr0.01_power0.95" # _warmup_1375
+        project_name = f"PIDNET_M_BASE_RIFATTA_ce_polylr0.01_power0.95" # _warmup_1375
         #perche prima usavo t:0.5
         #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
