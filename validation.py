@@ -13,6 +13,7 @@ from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, 
 from PIL import Image
 import torch.nn.functional as F
 
+
 def get_boundary_map(target, kernel_size=3):
     # target: (B, H, W) con valori interi [0, num_classes-1] oppure 255 per ignorare
 
@@ -36,40 +37,71 @@ def get_boundary_map(target, kernel_size=3):
     boundary = (boundary > 0).float()
 
     return boundary
+def weighted_bce(bd_pre, target):
+    n, c, h, w = bd_pre.size()
+    log_p = bd_pre.permute(0,2,3,1).contiguous().view(1, -1)
+    target_t = target.view(1, -1)
+
+    pos_index = (target_t == 1)
+    neg_index = (target_t == 0)
+
+    weight = torch.zeros_like(log_p)
+    pos_num = pos_index.sum()
+    neg_num = neg_index.sum()
+    sum_num = pos_num + neg_num
+    weight[pos_index] = neg_num * 1.0 / sum_num
+    weight[neg_index] = pos_num * 1.0 / sum_num
+
+    loss = F.binary_cross_entropy_with_logits(log_p, target_t, weight, reduction='mean')
+
+    return loss
+
 
 
 def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundary,
                         lambda_0=0.4, lambda_1=20.0, lambda_2=1.0, lambda_3=1.0):
+    """
+    Calcola la loss totale di PIDNet composta da:
+    - CE aux branch
+    - BCE pesata sui bordi
+    - CE sulla main branch
+    - CE focalizzata sui bordi
 
+    Args:
+        criterion: funzione CE standard (es. nn.CrossEntropyLoss(ignore_index=255))
+        x_extra_p: output dalla branch P (B, C, H, W)
+        x_main: output dalla main branch (B, C, H, W)
+        x_extra_d: output dalla branch D (B, 1, H, W)
+        target: ground truth segmentazione (B, H, W)
+        boundary: mappa binaria bordi (B, 1, H, W)
 
-    # L0: aux CE loss sulla P branch
+    Returns:
+        total_loss: somma pesata delle quattro componenti
+        losses_dict: dizionario con le singole componenti
+    """
+
+    # L0: CE ausiliaria sulla branch P
     loss_aux = criterion(x_extra_p, target)
 
-    # --- L1: BCE pesata sulla D branch
-    with torch.no_grad():
-        num_pos = boundary.sum()
-        num_neg = (1 - boundary).sum()
-        pos_weight = num_neg / (num_pos + 1e-6)
+    # L1: BCE pesata sulla branch D (bordi)
+    loss_bce = weighted_bce(x_extra_d, boundary)
 
-    bce_criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-    loss_bce = bce_criterion(x_extra_d, boundary)
-
-    # L2: main CE loss finale
+    # L2: CE principale sulla branch main
     loss_main = criterion(x_main, target)
 
-    # L3: CE loss focalizzata sui bordi
-    boundary_mask = (boundary.squeeze(1) > 0.8) #sul paper
+    # L3: CE focalizzata solo sui pixel al contorno
+    boundary_mask = (boundary.squeeze(1) > 0.8)  # come nel paper PIDNet
     masked_target = target[boundary_mask]
     valid_mask = (masked_target != 255)
+
     if valid_mask.any():
-        loss_boundary_ce = criterion(
-            x_main.permute(0,2,3,1)[boundary_mask][valid_mask],
-            masked_target[valid_mask]
-        )
+        masked_output = x_main.permute(0, 2, 3, 1)[boundary_mask][valid_mask]
+        masked_target = masked_target[valid_mask]
+        loss_boundary_ce = criterion(masked_output, masked_target)
     else:
         loss_boundary_ce = torch.tensor(0.0, device=target.device)
 
-    # Loss finale pesata
+    # Combinazione pesata finale
     total_loss = (
         lambda_0 * loss_aux +
         lambda_1 * loss_bce +
@@ -83,7 +115,6 @@ def compute_pidnet_loss(criterion, x_extra_p, x_main, x_extra_d, target, boundar
         "loss_main": loss_main.item(),
         "loss_boundary_ce": loss_boundary_ce.item()
     }
-
 
 # VALIDATION LOOP
 def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
