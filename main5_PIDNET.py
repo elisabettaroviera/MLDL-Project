@@ -116,8 +116,8 @@ if __name__ == "__main__":
     batch_size = 4
     print("Create the dataloaders")
     #dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, full_dataloader_cityscapes_train, batch_size, True, True)
-    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)
-    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val' ,transform_cityscapes_dataset, target_transform_cityscapes))
+    #cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)
+    #cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val' ,transform_cityscapes_dataset, target_transform_cityscapes)
 
 
     dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
