@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # Create dataloader
     #full_dataloader_gta_train, _ = dataloader(gta_train, None, 4, True, True, False, 4)
-    full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, 4, True, True)
+    #full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, 4, True, True)
     # Take a subset of the dataloader
 
 
