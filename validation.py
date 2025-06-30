@@ -319,7 +319,7 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             x_d_up = F.interpolate(x_d, size=targets.shape[1:], mode='bilinear', align_corners=False)
 
             boundaries = get_boundary_map(targets)
-
+            """
             loss, loss_dict = compute_pidnet_loss(criterion,x_p_up, x_final_up, x_d_up, targets, boundaries, lambda_1=lambda_1)
             #print(f"Loss: {loss.item():.4f} | Aux Loss: {loss_dict['loss_aux']:.4f} | BCE Loss: {loss_dict['loss_bce']:.4f} | Main Loss: {loss_dict['loss_main']:.4f} | Boundary CE Loss: {loss_dict['loss_boundary_ce']:.4f}")
 
@@ -329,7 +329,7 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             running_loss_bce += loss_dict['loss_bce']
             running_loss_main += loss_dict['loss_main']
             running_loss_boundary_ce += loss_dict['loss_boundary_ce']
-
+"""
             # Convert model outputs to predicted class labels
             preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
