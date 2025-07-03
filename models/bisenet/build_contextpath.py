@@ -1,5 +1,3 @@
-# We have to implement somethin in this file?
-
 import torch
 from torchvision import models
 

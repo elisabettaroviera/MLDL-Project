@@ -1,12 +1,10 @@
-# We have to implement somethin in this file?
-
 import torch
 from torch import nn
 from .build_contextpath import build_contextpath
 import warnings
 warnings.filterwarnings(action='ignore')
 
-# questo è ognuno dei blocchi dentro Spatial Path con le trasformazioni conv+bn+relu
+
 # **ConvBlock**. This class implements a standard convolutional block consisting of a 2D convolution, Batch Normalization, 
 # and ReLU activation. It is typically used for downsampling the feature map.
 class ConvBlock(torch.nn.Module):
@@ -25,7 +23,7 @@ class ConvBlock(torch.nn.Module):
         x = self.conv1(input)
         return self.relu(self.bn(x))
 
-#sussueguri di blocchi in spatial path
+
 # **Spatial_path**. This module processes the input image to extract rich spatial details.
 # It consists of a sequence of three `ConvBlock` instances.
 class Spatial_path(torch.nn.Module):
@@ -59,9 +57,6 @@ class AttentionRefinementModule(torch.nn.Module):
         self.in_channels = in_channels
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
 
-    # **AttentionRefinementModule.forward**. This method defines the forward pass of the module. It computes global average
-    # pooling on the input, applies convolution/BN/sigmoid to get attention weights, and finally multiplies these weights 
-    # with the original input feature map.
     def forward(self, input):
         # global average pooling
         x = self.avgpool(input)
