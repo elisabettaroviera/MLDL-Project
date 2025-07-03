@@ -84,3 +84,4 @@ def build_contextpath(name):
         'resnet101': resnet101(pretrained=True)
     }
     return model[name]
+

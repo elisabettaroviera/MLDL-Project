@@ -144,7 +144,7 @@ class BiSeNet(torch.nn.Module):
             # build feature fusion module
             self.feature_fusion_module = FeatureFusionModule(num_classes, 1024)
         else:
-            print('Error: unspport context_path network \n')
+            print('Error: unspported context_path network \n')
 
         # build final convolution
         self.conv = nn.Conv2d(in_channels=num_classes, out_channels=num_classes, kernel_size=1)
@@ -211,3 +211,4 @@ class BiSeNet(torch.nn.Module):
             return result, cx1_sup, cx2_sup
 
         return result
+
