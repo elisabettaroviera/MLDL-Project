@@ -1,14 +1,11 @@
+# CODE TAKEN FROM: https://github.com/XuJiacong/PIDNet
 # ------------------------------------------------------------------------------
-# Modified PIDNet with Dropout
+# Modified VERSION PIDNet with Dropout
 # Dropout added in:
 #   1. segmenthead (Dropout2d before final conv)
 #   2. PIDNet.forward() after layer5_ and optionally on x_d and x (commented)
 # ------------------------------------------------------------------------------
-# quindi posso provare:
-#1.dropout in segmented head, pidnet forward dopo layer5 e basta -> base
-#2"" e x_d : base_x_d
-#3 "" e x : base_x
-#4 "" e x_d e x : base_x_d_x
+
 
 
 import torch

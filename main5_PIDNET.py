@@ -187,6 +187,7 @@ if __name__ == "__main__":
     cfg.DATASET = type('', (), {})()
 
     cfg.MODEL.NAME = 'pidnet_m'
+    #PRETRAINED WEIGHTS ON IMAGENET
     cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
     # Serve cosi chiamo pesi preaddestrati su ImageNet
