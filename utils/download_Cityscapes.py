@@ -3,7 +3,7 @@ from zipfile import ZipFile
 from io import BytesIO
 import gdown
 
-# Personal Google Drive links for the datasets - CHOOSE one of them -> used on COLAB
+# Personal Google Drive links for the datasets - CHOOSE one of them -> USED ON COLAB
 # Link 1 - 1HmmcWizKfXW8h7VzNzZ4c2cTkiMojR5J
 # Link 2 - 1qKP1oqImbrMfDI9R9dJpnlLYn_hgS8Ht
 # Link 3 - 10XPV2_VJ0kqSPhEHyleYwsalVdVSl1uI
