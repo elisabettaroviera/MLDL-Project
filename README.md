@@ -15,6 +15,7 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 - [WANDB Logging](#wandb-logging)
 - [Notebook Usage](#notebook-usage)
 - [Experiments](#experiments)
+- [Final Results](#final-results)
 - [References](#references)
 - [Authors](#authors)
 
@@ -123,6 +124,10 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 During the course of the project many experiments have been performed.
 To take a look to all the source code relative to those experiments please surf the different branches of [this repository](https://github.com/elisabettaroviera/MLDL-Project).
 
+---
+
+## Final Results
+Finally, after collecting all the data, we made our findings available in the [final report](Semantic%20Segmentation%20-%20A%20Comparative%20Study%20on%20DeepLabV2,%20BiSeNet,%20PIDNet.pdf).
 ---
 
 ## References
