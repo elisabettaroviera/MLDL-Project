@@ -50,11 +50,14 @@ if __name__ == "__main__":
     target_transform = transform_cityscapes_mask()
 
     # Load the datasets (Cityspaces) to run to colab
-    # If you want to run on Kaggle, change the path to the datasets
     print("Load the datasets")
+    # If you want to run with dataset stored on Drive or locally (put the path to your dataset)
     cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
-
+    # If you want to run with Kaggle's dataset
+    # cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform, target_transform)  
+    # cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform, target_transform)  
+    
 
     # Choose the model's parameters
     if var_model == 'DeepLabV2':
@@ -97,12 +100,12 @@ if __name__ == "__main__":
         print("Load the model")
         model = get_deeplab_v2(num_classes=num_classes, pretrain=True, pretrain_model_path=pretrain_model_path)
        
-        start_epoch = 43 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
         
 
     elif var_model == 'BiSeNet':
         model = BiSeNet(num_classes=num_classes, context_path='resnet18')
-        start_epoch = 45 # CHANGE HERE THE STARTING EPOCH
+        start_epoch = 1 # CHANGE HERE THE STARTING EPOCH
 
     # Load the model on the device    
     model = model.to(device)
@@ -119,16 +122,17 @@ if __name__ == "__main__":
     # beta    - Lovász
     # gamma   - Tversky
     # theta   - Dice
+    # delta   - Focal
     
     # Iteration loop on EPOCHS
     for epoch in range(start_epoch, num_epochs + 1):
         iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
 
         # To save the model we need to initialize wandb 
-        # entity="s328422-politecnico-di-torino" # Old entity Betta
-        entity = "s325951-politecnico-di-torino-mldl" # New entity Lucia
-        #entity = "s281401-politecnico-di-torino" #new team auro
-        project_name = f"{var_model}_cv07_di03"
+        # entity="s328422-politecnico-di-torino" # entity Betta
+        # entity = "s325951-politecnico-di-torino-mldl" # entity Luci
+        entity = "s281401-politecnico-di-torino" # entity Auro
+        project_name = f"{var_model}_ADD_HERE_THE_PROJECT_NAME" # Project name
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
@@ -147,7 +151,7 @@ if __name__ == "__main__":
             checkpoint_path = os.path.join(artifact_dir, f"model_epoch_{epoch-1}.pt")
             checkpoint = torch.load(checkpoint_path)  
 
-            # Load the model and the ottimizator state
+            # Load the model and the optimizer state
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
          
@@ -174,7 +178,6 @@ if __name__ == "__main__":
 
         print("Validation step done")
 
-
         # Compute the total time taken for the epoch (training + validation)
         tot_time = end_val - start_train
         print(f"Total time taken for epoch {epoch}: {(tot_time)/60:.2f} minutes")
@@ -182,4 +185,5 @@ if __name__ == "__main__":
         save_metrics_on_wandb(epoch, metrics_train, metrics_val)
 
         wandb.finish()
+
    
