@@ -10,9 +10,10 @@ from models.bisenet.build_bisenet import BiSeNet
 from utils.utils import CombinedLoss_All, save_metrics_on_wandb
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
-from torch.utils.data import ConcatDataset, Subset
+from torch.utils.data import ConcatDataset, Subset 
 from train import train_with_adversary
-from models.discriminator.build_discriminator import FCDiscriminator
+from validation import validate
+from models.discriminator.build_discriminator import FCDiscriminator 
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
@@ -69,6 +70,40 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
 
     return subset_dataloader
 
+def to_obtain_id(project=""):
+    # Configurazione del tuo progetto wandb
+    entity = "s281401-politecnico-di-torino" # nuovo team Lucia
+    # entity = "s328422-politecnico-di-torino"
+
+    api = wandb.Api()
+
+    # Recupera tutte le run del progetto
+    runs = api.runs(f"{entity}/{project}")
+
+    # Funzione per estrarre il numero dell'epoca dal nome della run
+    def extract_epoch_number(run):
+        try:
+            name = run.name
+            if name.startswith("epoch_"):
+                return int(name.split("_")[1])
+        except:
+            return float("inf")
+        return float("inf")
+
+    # Filtra e ordina le run per numero di epoca
+    sorted_runs = sorted(
+        [run for run in runs if run.name and run.name.startswith("epoch_")],
+        key=extract_epoch_number
+    )
+
+    # Crea la lista degli ID delle run ordinate
+    run_ids = [run.id for run in sorted_runs]
+
+    # Ora puoi usare run_ids come vuoi, ad esempio:
+    print("Ho caricato", len(run_ids), "run ID.")
+    # Esempio: passare run_ids a una funzione
+    return run_ids
+
 def generate_discriminators(num, num_classes, device='CPU'):
     """
     Generates a list of discriminators based on the number of classes.
@@ -117,18 +152,22 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
+    # Define the type of augmentation to apply
     """
-    type_aug_dict = {
-    'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast'],
-    'weather': ['RandomShadow', 'RandomRain', 'RandomFog', 'ISONoise', 'GaussianBlur'],
-    'geometric': ['RandomCrop', 'Affine', 'Perspective']
-    }
-    """
+    for aug_1:
+    type_aug == {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']}
 
-    type_aug = {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} 
-    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
-    # Contains all pictures bc they are all augmented
-    gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
+    for aug_2:
+    type_aug = None
+    """
+    type_aug = None
+
+    # to run with local Drive : 
+    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) 
+    gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) 
+    # OR to run on kaggle uncomment :
+    #gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) 
+    #gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) 
 
     # Choose with probability 0.5 the augmented images
     num_augmented = int(0.5 * len(gta_train_aug))
@@ -137,14 +176,11 @@ if __name__ == "__main__":
 
     # Union of the dataset
     gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
-    
+
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
     full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, batch_size, True, True)
-    # Take a subset of the dataloader
-    #dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1, batch_size=batch_size)
-    #dataloader_cityscapes_train = select_random_fraction_of_dataset(full_dataloader_cityscapes_train, fraction=1, batch_s.0ize=batch_size)
-
+    
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
@@ -156,47 +192,28 @@ if __name__ == "__main__":
     gamma   # Tversky
     theta   # Dice
     """
-
-    """
-    ########## PROVE ##########
-    # Current Best Baseline (Control Trial 0) : 
-    | Trial ID | Segmentation Loss          | Adversarial Loss | λ<sub>adv</sub> Strategy |
-    | T0       | 0.7 * CE + 0.3 * Tversky | BCE              | Fixed 0.001              |
-
-    num_epochs = 25, fract_dataset = 100 % 
-    | Trial | L_seg                | L_adv / L_d                     | L_adv Strategy           | Project Name
-    | ----- | -------------------- | ------------------------------- | ------------------------ | -----------------
-    | T0    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_base (bce_fixed) --> 
-    | T1    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (0.0001 → 0.001) | 4_Adversarial_Domain_Adaptation_hinge_rampup --> okk fino a 25
-    | T2    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (0.0001 → 0.001) | 4_Adversarial_Domain_Adaptation_mse_rampup --> okK fino a 25
-    | T3    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Confidence-aware         | 4_Adversarial_Domain_Adaptation_bce_confidence --> OKK fino a 25
-    | T4    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.001              | 4_Adversarial_Domain_Adaptation_hinge_fixed --> okk fino a 25
-    | T5    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_hinge_rampup_smaller --> to val
-    | T6    | 0.7 CE + 0.3 Tversky | MSE / MSE (LSGAN)               | Ramp-up (1e-6 → 0.001)   | 4_Adversarial_Domain_Adaptation_mse_rampup_smaller --> to val
-    | T7    | 0.7 CE + 0.3 Tversky | BCE / BCE                       | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_bce_fixed_0002 --> to val
-    | T8    | 0.7 CE + 0.3 Tversky | Hinge / Hinge                   | Fixed 0.002              | 4_Adversarial_Domain_Adaptation_hinge_fixed_0002 --> to val
-
-    """
-
-
-
     max_iter = num_epochs * len(full_dataloader_gta_train)
     iter_curr = 0
 
+    """
+     ADVERSARIAL TRAINING SETTINGS
+    | possible configurations | Segmentation Loss          | Adversarial Loss | λ<sub>adv</sub> Strategy | trial_type
+    | Baseline                | 0.7 * CE + 0.3 * Tversky   | BCE              | Fixed 0.001              | "bce_fixed"
+    | hinge ramp up           | 0.7 CE + 0.3 Tversky       | Hinge / Hinge    | Ramp-up (1e-6 → 0.001)   | "hinge_rampup"
+    | hinge fixed             | 0.7 CE + 0.3 Tversky       | Hinge / Hinge    | Fixed 0.002              | "hinge_fixed"
+    
+    """
+
     discriminators, discriminators_optimizers = generate_discriminators(1, num_classes, device) # Generate 1 discriminator
 
-    #lambdas = [0.001, 0.001]  # Lambda values for the adversarial loss
-    # === Step 1: Add global config for trials in the main training script ===
-    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence,  #NB add hinge_fixed
+    # select trial type based on the configuration
+    trial_type = "hinge_rampup"  # Options: bce_fixed (base), hinge_rampup, mse_rampup, bce_confidence, hinge_fixed
     lambdas = [0.002]  # Lambda values for the adversarial loss, only one for the single discriminator
 
-    project_name = "4_Adv_Domain_Adapt_hinge_ramup_0002_augmented_2color_or_best3combweather" #CHECK BEFORE RUNNING
-    entity = "s281401-politecnico-di-torino" # New new entity Auro
-    # entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
-    # entity="s328422-politecnico-di-torino" # old team Betta
+    project_name = "4_Adv_Domain_Adapt_hinge_ramup_0002_augmented_2color_or_best3combweather" 
+    entity = "s281401-politecnico-di-torino"
     
-    
-    # Inizializza wandb PRIMA di usare qualsiasi funzione wandb
+    # initialize wandb run
     run = wandb.init(project=project_name, entity=entity, name=f"epoch_{start_epoch}", reinit=True)
     wandb.config.update({
         "batch_size": batch_size,
@@ -207,14 +224,14 @@ if __name__ == "__main__":
         "num_classes": num_classes
     })
 
-    # Se stai riprendendo da una certa epoca, carica i pesi dal checkpoint
+    # if start_epoch > 1, load the model and discriminator checkpoints
     if start_epoch > 1:
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{start_epoch-1}:latest", type="model")
         checkpoint_path = artifact.download()
         checkpoint = torch.load(os.path.join(checkpoint_path, f"model_epoch_{start_epoch-1}.pt"))
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        iter_curr = checkpoint.get('iteration', 0)  # fallback a 0 se non esiste
+        iter_curr = checkpoint.get('iteration', 0) 
 
         for i, discriminator in enumerate(discriminators):
             artifact = wandb.use_artifact(f"{project_name}/discriminator_{i+1}_epoch_{start_epoch-1}:latest", type="model")
@@ -223,12 +240,12 @@ if __name__ == "__main__":
             discriminator.load_state_dict(checkpoint['model_state_dict'])
             discriminators_optimizers[i].load_state_dict(checkpoint['optimizer_state_dict'])
 
-    # Inizia il ciclo di training dalle epoche successive
+    # training loop
     for epoch in range(start_epoch, num_epochs + 1):
         print(f"\nEpoch {epoch}")
         start_train = time.time()
 
-        # Se vuoi un run per ogni epoca, fai wandb.finish() qui e reinizializza
+        # Initialize wandb for each epoch
         if epoch != start_epoch:
             wandb.finish()
             run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
@@ -241,13 +258,8 @@ if __name__ == "__main__":
                 "num_classes": num_classes
             })
 
-        if epoch % 10 == 0:
-            compute_mIoU = True
-        else:
-            compute_mIoU = True
-
         metrics_train, iter_curr = train_with_adversary(epoch, model, discriminators, full_dataloader_gta_train, full_dataloader_cityscapes_train, loss, optimizer, discriminators_optimizers, iter_curr,
-                                                        learning_rate, num_classes, max_iter, lambdas, compute_mIoU, trial_type)
+                                                        learning_rate, num_classes, max_iter, lambdas, True, trial_type)
         end_train = time.time()
         print(f"Time for training: {(end_train - start_train)/60:.2f} min")
 
@@ -282,6 +294,51 @@ if __name__ == "__main__":
             os.remove(save_path_model)
 
     wandb.finish()
-        #run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
 
+
+    print("************ VALIDATION ON CITYSCAPES ***************")
+
+    transform_cityscapes_dataset = transform_cityscapes()
+    target_transform_cityscapes = transform_cityscapes_mask()
+
+    # to run with local Drive:
+    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    #OR to run on kaggle : 
+    #cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+
+    _, dataloader_cs_val = dataloader(None, cs_val, batch_size, shuffle_train=False, shuffle_val=False)
+
+    model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
+
+    project_name = "4_Adv_Domain_Adapt_hinge_ramup_0002_augmented_2color_or_best3combweather" #CHECK BEFORE RUNNING
+    
+    # take run ids from wandb
+    run_ids = to_obtain_id(project_name)
+
+    for epoch in range(start_epoch, num_epochs + 1):
+        run = wandb.init(
+            project=project_name,
+            # entity = "s325951-politecnico-di-torino-mldl" 
+            entity="s281401-politecnico-di-torino",
+            name=f"epoch_{epoch}",
+            id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
+            resume="allow"
+        )
+        artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
+        artifact_path = artifact.download()
+        checkpoint_path = os.path.join(artifact_path, f"model_epoch_{epoch}.pt")
+
+        checkpoint = torch.load(checkpoint_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+        print(f"Evaluating model from epoch {epoch}...")
+        start_val = time.time()
+        metrics_val = validate(epoch, model, dataloader_cs_val, loss, num_classes)
+        end_val = time.time()
+        print(f"Validation time: {(end_val - start_val)/60:.2f} min")
+
+        print_metrics("Validation", metrics_val)
+        save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
+        
+        wandb.finish()
         
