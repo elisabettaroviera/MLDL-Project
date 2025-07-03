@@ -125,26 +125,41 @@ if __name__ == "__main__":
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
-    # Define the type of augmentation to apply
-    """
-    type_aug_dict = {
-    'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast'],
-    'weather': ['RandomShadow', 'RandomRain', 'RandomFog', 'ISONoise', 'GaussianBlur'],
-    'geometric': ['RandomCrop', 'Affine', 'Perspective']
-    }
-    """
-    type_aug = None
-    gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
-    # Contains all pictures bc they are all augmented
-    gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
 
-    # Choose with probability 0.5 the augmented images
-    num_augmented = int(0.5 * len(gta_train_aug))
-    indices = random.sample(range(len(gta_train_aug)), num_augmented)
-    gta_train_aug = Subset(gta_train_aug, indices)
+    #select if you want augmentations (3b) or not (3a):
+    a_or_b = 'b' # 'a' if 3a , 'b' if 3b
 
-    # Union of the dataset
-    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
+    if a_or_b == 'b':
+        # Define the type of augmentation to apply
+        """
+        for aug_1:
+        type_aug == {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']}
+
+        for aug_2:
+        type_aug = None
+        """
+        type_aug = None
+
+        # to run with local Drive : 
+        gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) 
+        gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) 
+        # OR to run on kaggle uncomment :
+        #gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) 
+        #gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) 
+
+        # Choose with probability 0.5 the augmented images
+        num_augmented = int(0.5 * len(gta_train_aug))
+        indices = random.sample(range(len(gta_train_aug)), num_augmented)
+        gta_train_aug = Subset(gta_train_aug, indices)
+
+        # Union of the dataset
+        gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug]) # To obtain the final dataset = train + augment
+    elif a_or_b == 'a':
+        # to run with local Drive : 
+        gta_train = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) 
+        # OR to run on kaggle uncomment :
+        #gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) 
+
     
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
@@ -218,7 +233,11 @@ if __name__ == "__main__":
     transform_cityscapes_dataset = transform_cityscapes()
     target_transform_cityscapes = transform_cityscapes_mask()
 
+    # to run with local Drive:
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    #OR to run on kaggle : 
+    #cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    
     _, dataloader_cs_val = dataloader(None, cs_val, batch_size, shuffle_train=False, shuffle_val=False)
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
