@@ -4,8 +4,7 @@
 # Dropout added in:
 #   1. segmenthead (Dropout2d before final conv)
 #   2. PIDNet.forward() after layer5_ and optionally on x_d and x (commented)
-# ------------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 
 import torch
 import torch.nn as nn
