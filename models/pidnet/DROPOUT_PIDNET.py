@@ -19,7 +19,7 @@ BatchNorm2d = nn.BatchNorm2d
 bn_mom = 0.1
 algc = False
 
-# segmenthead is deinied here instead of pidnet_utils to allow for dropout in the segmenthead (per non confondere)
+# segmenthead is deinied here instead of pidnet_utils to allow for dropout in the segmenthead 
 class segmenthead(nn.Module):
     def __init__(self, inplanes, interplanes, outplanes, dropout=0.3):  # <-- Dropout parameter added
         super(segmenthead, self).__init__()
