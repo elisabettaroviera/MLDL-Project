@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import time
-from .PIDNET_utils import BasicBlock, Bottleneck,  DAPPM, PAPPM, PagFM, Bag, Light_Bag
+from .pidnet_utils import BasicBlock, Bottleneck,  DAPPM, PAPPM, PagFM, Bag, Light_Bag
 import logging
 
 BatchNorm2d = nn.BatchNorm2d
