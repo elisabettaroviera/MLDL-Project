@@ -16,6 +16,7 @@ from datasets.transform_datasets import transform_gta, transform_gta_mask, trans
 from data.dataloader import dataloader
 from torch.utils.data import ConcatDataset, Subset
 from train import train
+from validation import validate
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.

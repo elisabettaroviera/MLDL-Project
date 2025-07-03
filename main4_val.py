@@ -8,7 +8,7 @@ import time
 import numpy as np
 from datasets.cityscapes import CityScapes
 from models.bisenet.build_bisenet import BiSeNet
-from utils.utils import CombinedLoss_All, save_metrics_on_file, save_metrics_on_wandb
+from utils.utils import CombinedLoss_All,  save_metrics_on_wandb
 from datasets.transform_datasets import transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
 from validation import validate
@@ -36,16 +36,16 @@ def print_metrics(title, metrics):
         print(f"{cls:<20} {val:>6.2f}")
 
 def to_obtain_id(project=""):
-    # project configuration on wandb
-    entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
+    # Configurazione del tuo progetto wandb
+    entity = "s281401-politecnico-di-torino" # nuovo team Lucia
     # entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
 
-    # take project runs
+    # Recupera tutte le run del progetto
     runs = api.runs(f"{entity}/{project}")
 
-    # Function to extract the epoch number from the run name
+    # Funzione per estrarre il numero dell'epoca dal nome della run
     def extract_epoch_number(run):
         try:
             name = run.name
@@ -55,17 +55,18 @@ def to_obtain_id(project=""):
             return float("inf")
         return float("inf")
 
-    # Filter and sort the runs by epoch number
+    # Filtra e ordina le run per numero di epoca
     sorted_runs = sorted(
         [run for run in runs if run.name and run.name.startswith("epoch_")],
         key=extract_epoch_number
     )
 
-    # Create the list of ordered run IDs
+    # Crea la lista degli ID delle run ordinate
     run_ids = [run.id for run in sorted_runs]
 
+    # Ora puoi usare run_ids come vuoi, ad esempio:
     print("Ho caricato", len(run_ids), "run ID.")
-    
+    # Esempio: passare run_ids a una funzione
     return run_ids
 
 if __name__ == "__main__":
@@ -77,14 +78,14 @@ if __name__ == "__main__":
     transform_cityscapes_dataset = transform_cityscapes()
     target_transform_cityscapes = transform_cityscapes_mask()
 
-    cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    num_epochs = 50 
+    num_epochs = 50
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) 
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
     """
     alpha   # CrossEntropy
     beta    # Lovász
@@ -96,18 +97,17 @@ if __name__ == "__main__":
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
-    project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent" 
-
-    # take run ids from wandb
+    project_name = "4_Adv_Domain_Adapt_hinge_ramup_0002_augmented_2color_or_best3combweather" #CHECK BEFORE RUNNING
+    # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
     run_ids = to_obtain_id(project_name)
 
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
-            entity = "s325951-politecnico-di-torino-mldl", 
-            # entity="s328422-politecnico-di-torino",
+            # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
+            entity="s281401-politecnico-di-torino",
             name=f"epoch_{epoch}",
-            id=run_ids[epoch - 1],  
+            id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
             resume="allow"
         )
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
