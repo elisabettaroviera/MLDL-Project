@@ -1,5 +1,11 @@
+# ------------------------------------------------------------------------------
 # Lovasz-Softmax and Jaccard hinge loss in PyTorch
-# Maxim Berman 2018 ESAT-PSI KU Leuven (MIT License)
+# Original implementation by Maxim Berman (2018), ESAT-PSI, KU Leuven
+# Reference: "The Lovász-Softmax loss: A tractable surrogate for the optimization of the intersection-over-union measure in neural networks"
+# Maxim Berman, Amal Rannen Triki, Matthew B. Blaschko - CVPR 2018
+# License: MIT License
+# URL: https://github.com/bermanmaxim/LovaszSoftmax
+# ------------------------------------------------------------------------------
 
 
 from __future__ import print_function, division
@@ -244,3 +250,4 @@ def mean(l, ignore_nan=False, empty=0):
     if n == 1:
         return acc
     return acc / n
+
