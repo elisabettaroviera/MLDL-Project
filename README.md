@@ -136,7 +136,7 @@ Finally, after collecting all the data, we made our findings available in the [f
 - [GTA5 Dataset](https://download.visinf.tu-darmstadt.de/data/from_games/)
 - [BiSeNet Paper](https://arxiv.org/abs/1808.00897)
 - [DeepLabV2 Paper](https://arxiv.org/abs/1606.00915)
-- [PIDNet Paper](https://arxiv.org/abs/2206.02680)
+- [PIDNet Paper](https://arxiv.org/abs/2206.02066)
 
 ---
 
