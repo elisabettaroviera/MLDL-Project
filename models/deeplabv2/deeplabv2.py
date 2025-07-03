@@ -87,7 +87,7 @@ class ClassifierModule(nn.Module):
     # a normal distribution.
     def __init__(self, inplanes, dilation_series, padding_series, num_classes):
         super(ClassifierModule, self).__init__()
-        self.conv2d_list = nn.ModuleList() #credo siano i 4 branch  in ASPP diciamo cioè quelli che poi vengono sommati
+        self.conv2d_list = nn.ModuleList() # These are the 4 parallel branches in the ASPP module, each with a different dilation rate.
         for dilation, padding in zip(dilation_series, padding_series):
             self.conv2d_list.append(
                 nn.Conv2d(inplanes, num_classes, kernel_size=3, stride=1, padding=padding,
@@ -281,3 +281,4 @@ def get_deeplab_v2(num_classes=19, pretrain=True, pretrain_model_path='DeepLab_r
         model.load_state_dict(new_params, strict=False)
 
     return model
+
