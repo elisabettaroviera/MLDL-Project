@@ -1,3 +1,4 @@
+import argparse
 import os
 from datasets.gta5 import GTA5
 import torch
@@ -25,23 +26,6 @@ from models.pidnet.PIDNET import PIDNet, get_seg_model
 from torch.utils.data import ConcatDataset, Subset
 import torch.nn.functional as F
 
-def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
-    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
-
-    dataset = full_dataloader.dataset
-    total_samples = len(dataset)
-    num_samples = int(total_samples * fraction)
-
-    # Seleziona indici casuali senza ripetizioni
-    indices = np.random.choice(total_samples, num_samples, replace=False)
-
-    # Crea un subset e un nuovo dataloader
-    subset = Subset(dataset, indices)
-    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True) # Drop of the last batch
-
-    return subset_dataloader
-
-
 # This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
     torch.manual_seed(seed) # Set the seed for CPU
@@ -51,55 +35,153 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
 
+#mai1: city to city
+def main1():
+    print("Executing main1: PIDNet City to City")
+    name_main = 'city_to_city'
+    
+    # Tranformations for Cityscapes Train and Val
+    transform_cityscapes_dataset = transform_cityscapes()
+    target_transform_cityscapes = transform_cityscapes_mask()
+
+    # Load the Cityscapes dataset + make dataloader
+    print("Load the datasets and create the datalaoders")
+    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)  
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    dataloader_train, dataloader_val = dataloader(cs_train, cs_val, batch_size, True, True)
+
+#main2: gta5 to city no augmentations
+def main2():
+    print("Executing main2: PIDNet GTA5 (no augmentations) to City")
+    name_main = 'gta_to_city_no_aug'
+    
+    # Tranformations for Cityscapes and GTA5 
+    transform_cityscapes_dataset = transform_cityscapes()
+    target_transform_cityscapes = transform_cityscapes_mask()
+    transform_gta_dataset = transform_gta()
+    target_transform_gta = transform_gta_mask()
+
+    # Load the Cityscapes dataset + make dataloader
+    print("Load the datasets and create the datalaoders")
+   
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
+
+    dataloader_train, _ = dataloader(gta_train_nonaug, None, batch_size, True, True, False, 4)
+    _, dataloader_val = dataloader(None, cs_val, batch_size, True, True, False, 4)
+
+# main3: gta5 to city with augmentation aug_1
+def main3():
+    print("Executing main3: PIDNet GTA5 (with augmentation aug_1) to City")
+    name_main = 'gta_to_city_aug_1'
+    
+    # Tranformations for Cityscapes and GTA5 
+    transform_cityscapes_dataset = transform_cityscapes()
+    target_transform_cityscapes = transform_cityscapes_mask()
+    transform_gta_dataset = transform_gta()
+    target_transform_gta = transform_gta_mask()
+
+    # Load the Cityscapes dataset + make dataloader
+    print("Load the datasets and create the datalaoders")
+   
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
+    #if aug_1 -> augmentation_transform
+    type_aug = {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} 
+    #if aug_2 -> augmentation_transform_oneof_col3_wea
+    #type_aug = None
+    gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug)  # Change the augm that you want
+
+    # Choose with probability 0.5 the augmented images
+    num_augmented = int(0.5 * len(gta_train_aug))
+    indices = random.sample(range(len(gta_train_aug)), num_augmented)
+    gta_train_aug = Subset(gta_train_aug, indices)
+
+    # Union of the dataset
+    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug])  # To obtain the final dataset = train + augment
+
+    dataloader_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
+    _, dataloader_val = dataloader(None, cs_val, batch_size, True, True, False, 4)
+
+
+# main4: gta5 to city with augmentation aug_2
+def main4():
+    print("Executing main3: PIDNet GTA5 (with augmentation aug_2) to City")
+    name_main = 'gta_to_city_aug_2'
+    
+    # Tranformations for Cityscapes and GTA5 
+    transform_cityscapes_dataset = transform_cityscapes()
+    target_transform_cityscapes = transform_cityscapes_mask()
+    transform_gta_dataset = transform_gta()
+    target_transform_gta = transform_gta_mask()
+
+    # Load the Cityscapes dataset + make dataloader
+    print("Load the datasets and create the datalaoders")
+   
+    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
+    gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
+
+    #if aug_2 -> augmentation_transform_oneof_col3_wea
+    type_aug = None
+    gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug)  # Change the augm that you want
+
+    # Choose with probability 0.5 the augmented images
+    num_augmented = int(0.5 * len(gta_train_aug))
+    indices = random.sample(range(len(gta_train_aug)), num_augmented)
+    gta_train_aug = Subset(gta_train_aug, indices)
+
+    # Union of the dataset
+    gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug])  # To obtain the final dataset = train + augment
+
+    dataloader_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
+    _, dataloader_val = dataloader(None, cs_val, batch_size, True, True, False, 4)
+
+
 if __name__ == "__main__":
-
-
-    set_seed(23)  # Set a seed for reproducibility
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    ############################################################################################################
-    ################################################## STEP 5 ##################################################
-    ############################################################################################################
-
-    print(f"************ STEP 2 : TRAINING PIDNET ON CITYSCAPES ***************")
+    
+    print(f"************ STEP : TRAINING PIDNET ON CITYSCAPES ***************")
     
     # Define transformations
     print("Define transformations")
 
-    #transform_gta_dataset = transform_gta()
-    transform_cityscapes_dataset = transform_cityscapes()
-    target_transform_cityscapes = transform_cityscapes_mask()
-    #target_transform_gta = transform_gta_mask()
+    set_seed(23)  # Set a seed for reproducibility
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Definition of the hyperparameters 
+    learning_rate = 0.01
+    momentum = 0.9
+    weight_decay = 5e-4 
+    num_epochs = 50 #changed bc doing smaller runs
+    num_classes = 19
+    ignore_index = 255
+    start_epoch = 1
+    batch_size = 4
 
-    # BEST CONFIG AURO
-    type_aug = None
-    #gta_train_nonaug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={})  # No type_aug 
-    # Contains all pictures bc they are all augmented
-    #gta_train_aug = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug)  # Change the augm that you want
+    # Defintion of the loss function: usano cross entropy nel apper
+    print("Definition of the loss")
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) 
+    # alpha   - CrossEntropy
+    # beta    - Lovász
+    # gamma   - Tversky
+    # theta   - Dice
 
-    # Choose with probability 0.5 the augmented images
-    #num_augmented = int(0.5 * len(gta_train_aug))
-    #indices = random.sample(range(len(gta_train_aug)), num_augmented)
-    #gta_train_aug = Subset(gta_train_aug, indices)
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="Scegli quale main eseguire")
+    parser.add_argument("--mode", type=str, choices=["main1", "main2", "main3"], required=True)
+    args = parser.parse_args()
 
-    # Union of the dataset
-    #gta_train = ConcatDataset([gta_train_nonaug, gta_train_aug])  # To obtain the final dataset = train + augment
+    if args.mode == "main1":
+        main1()
+    elif args.mode == "main2":
+        main2()
+    elif args.mode == "main3":
+        main3()
 
-    # Create dataloader
-    #full_dataloader_gta_train, _ = dataloader(gta_train, None, 4, True, True, False, 4)
-    #full_dataloader_cityscapes_train, _ = dataloader(CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', transform=transform_cityscapes(), target_transform=transform_cityscapes_mask()), None, 4, True, True)
-    # Take a subset of the dataloader
+    elif args.mode == "main4":
+        main4()
 
-
-    # Load the datasets (Cityspaces+GTA5)
-    print("Load the datasets")
-    cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)  
-    cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
-    #gta_train = GTA5('/kaggle/input/gta5-dataset/GTA5', transform_gta_dataset, target_transform_gta, augmentation = False, type_aug = None)
-
+    # Define the model (PIDNet M)
     class CFG:
         pass
-
     cfg = CFG()
     cfg.MODEL = type('', (), {})()
     cfg.DATASET = type('', (), {})()
@@ -112,58 +194,25 @@ if __name__ == "__main__":
     model = model.to(device)
 
 
-    # Define the data loaders
-    batch_size = 4
-    print("Create the dataloaders")
-    #dataloader_cs_train, dataloader_cs_val = dataloader(gta_train, full_dataloader_cityscapes_train, batch_size, True, True)
-    #cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)
-    #cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val' ,transform_cityscapes_dataset, target_transform_cityscapes)
-
-
-    dataloader_cs_train, dataloader_cs_val = dataloader(cs_train, cs_val, batch_size, True, True)
-
-    # Select a random fraction of the training dataset (25% of the original dataset)
-    #dataloader_cs_train = select_random_fraction_of_dataset(dataloader_cs_train, fraction=0.5, batch_size=batch_size)
-
-    # Definition of the parameters for CITYSCAPES 
-        # Constant value
-    learning_rate = 0.01
-    momentum = 0.9
-    weight_decay = 5e-4 #sul paper usa questo batch size 12
-    num_epochs = 50 #changed bc doing smaller runs
-    num_classes = 19
-    ignore_index = 255
-    start_epoch = 1
     #CHECK BEFORE RUNNING
     iter_curr = 0 # Initialize the iteration counter
-    max_iter = num_epochs * len(dataloader_cs_train) # Maximum number of iterations (epochs * batches per epoch)
+    max_iter = num_epochs * len(dataloader_train) # Maximum number of iterations (epochs * batches per epoch)
 
-
-
-    # Definition of the optimizer for the first epoch
+    # Definition of the optimizer
     print("Definition of the optimizer")
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay) # CHANGE HERE THE OPTIMIZER
     
-    
-    # Defintion of the loss function: usano cross entropy nel apper
-    print("Definition of the loss")
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) # CHANGE HERE THE LOSS
-    # in realta in train e validation la ridefinisco 
-    # alpha   - CrossEntropy
-    # beta    - Lovász
-    # gamma   - Tversky
-    # theta   - Dice
+    ############################################################################################################
     
     # Iteration loop on EPOCHS
     for epoch in range(start_epoch, num_epochs + 1):
-        iter_curr = len(dataloader_cs_train) * (epoch - 1) # Update the iteration counter
+        iter_curr = len(dataloader_train) * (epoch - 1) # Update the iteration counter
 
         # To save the model we need to initialize wandb 
-        # entity="s328422-politecnico-di-torino" # Old entity Betta
-        entity = "s281401-politecnico-di-torino" # New entity  Auro
-        project_name = f"PIDNET_m_BASE_REPO_GIT_GIUSTA__ce_polylr0.01_power0.95" 
-        #perche prima usavo t:0.5
-        #lambda_0=0.4, lambda_1=0.6, lambda_2=1.0, lambda_3=0.1
+        # entity="s328422-politecnico-di-torino" # entity Betta
+        entity = "s281401-politecnico-di-torino" # entity  Auro
+        project_name = f"PIDNet_M_{name_main}" 
+
         wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True) 
         print("Wandb initialized")
 
@@ -191,7 +240,7 @@ if __name__ == "__main__":
         print("Training step")
 
         start_train = time.time()
-        metrics_train, iter_curr = train_pidnet(epoch, model, dataloader_cs_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
+        metrics_train, iter_curr = train_pidnet(epoch, model, dataloader_train, loss, optimizer, iter_curr, learning_rate, num_classes, max_iter)
         end_train = time.time()
 
         print(f"Time taken for training step: {(end_train - start_train)/60:.2f} minutes")
@@ -202,7 +251,7 @@ if __name__ == "__main__":
         print("Validation step")
 
         start_val = time.time()
-        metrics_val = validate_pidnet(epoch, model, dataloader_cs_val, loss, num_classes) 
+        metrics_val = validate_pidnet(epoch, model, dataloader_val, loss, num_classes) 
         end_val = time.time()
 
         print(f"Time taken for validation step: {(end_val - start_val)/60:.2f} minutes")
@@ -217,4 +266,3 @@ if __name__ == "__main__":
         save_metrics_on_wandb(epoch, metrics_train, metrics_val)
 
         wandb.finish()
-   

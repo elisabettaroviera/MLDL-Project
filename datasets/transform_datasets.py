@@ -78,20 +78,21 @@ def transform_gta_mask():
 
 #3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent
 def augmentation_transform(image, mask, type_aug):
-    """
-    Con probabilità 0.5 applica:
-    - 2 trasformazioni casuali dalla lista 'color' di type_aug
-    Oppure:
-    - Tutte e 3 le trasformazioni atmosferiche: RandomFog, RandomRain, ISONoise
-    
-    Le trasformazioni vengono applicate con p=1.0.
-    
-    type_aug deve essere del tipo:
+    """ aug_1:
+    With probability 0.5, applies either:
+    - 2 random transformations from the 'color' list in type_aug
+    Or:
+    - All 3 atmospheric transformations: RandomFog, RandomRain, ISONoise
+
+    The transformations are applied with p=1.0.
+
+    type_aug must be structured as:
     type_aug = {
         'color': ['HueSaturationValue', 'RGBShift', 'CLAHE', ...]
     }
     """
-    # Trasformazioni di colore disponibili
+
+    # Color tarnsforms available
     color_transforms = {
         'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
         'CLAHE': A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
@@ -100,7 +101,7 @@ def augmentation_transform(image, mask, type_aug):
         'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
     }
 
-    # Trasformazioni "weather"
+    # "weather" tarsnforms
     weather_transforms = [
         A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
         A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
@@ -111,19 +112,19 @@ def augmentation_transform(image, mask, type_aug):
     if use_color:
         selected_names = [name for name in type_aug.get('color', []) if name in color_transforms]
         if len(selected_names) < 2:
-            raise ValueError("Servono almeno 2 trasformazioni di colore valide.")
+            raise ValueError("need two valid  colortransforms")
         chosen_color = random.sample(selected_names, 2)
         selected_transforms = [color_transforms[name] for name in chosen_color]
     else:
-        selected_transforms = weather_transforms  # tutte e 3
+        selected_transforms = weather_transforms  
 
-    # Componi e applica le trasformazioni
+    # Compose and transform
     transform = A.Compose(selected_transforms, p=1.0)
     augmented = transform(image=image, mask=mask)
     return augmented
 
-# Trasformazione BEST LUCI per pidnet
-# one of the 3 best combs of color and best weather (la migliore insieme a quella di Auro)
+# Transform aug_2
+# one of the 3 best combs of color and best weather 
 def augmentation_transform_oneof_col3_wea(image, mask):
     aug_transform = A.OneOf([
     A.Compose([ # a+d+e
@@ -152,83 +153,3 @@ def augmentation_transform_oneof_col3_wea(image, mask):
 
     return augmented
 
-    '''
-### DATA AUGMENTATION VECCHIO PER SCEGLEIRE PIU TRASFORMAZIONI INSIEME ###
-def augmentation_transform(image, mask, type_aug): 
-    # HorizontalFlip: ruota orizzontalmente l’immagine e la maschera con probabilità del 50%
-    # RGBShift: modifica i canali rosso, verde e blu con uno shift casuale nei valori di pixel
-    # RandomBrightnessContrast : cambia casualmente luminosità e contrasto
-    # MotionBlur : applica una leggera sfocatura da movimento
-    # GaussNoise : aggiunge rumore gaussiano (tipo "grana") all’immagine.
-    # ShiftScaleRotate : trasla, scala e ruota leggermente l’immagine e la maschera.  
-    # NB: le p sono le probabilità con cui quella trasformazione viene applicata
-
-    if 'color' in type_aug:
-        n_trans = random.randint(1, 3)          # 1‑3 trasformazioni
-        aug_transform = A.Compose([
-            A.OneOf([
-                A.NoOp(),
-                A.SomeOf([
-                    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15,
-                                            val_shift_limit=10, p=1.0),
-                    A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
-                    A.GaussNoise(var_limit=(10.0, 50.0), mean=0, p=1.0),
-                    A.RGBShift(r_shift_limit=10, g_shift_limit=10,
-                                b_shift_limit=10, p=1.0),
-                    A.RandomBrightnessContrast(brightness_limit=0.2,
-                                                contrast_limit=0.2, p=1.0)
-                ], n=n_trans, replace=False)
-            ], p=1.0)
-        ])
-    elif 'weather' in type_aug :
-        # WEATHER AND ILLUMINATION 
-        # RandomShadow — per aggiungere ombre stradali o da edifici.
-        # RandomFog o RandomRain — per simulare condizioni meteo.
-        # ISONoise — aggiunge rumore simile a fotocamere reali.
-        # MotionBlur o GaussianBlur — per simulare imperfezioni delle fotocamere in movimento.
-        n_trans = random.randint(1, 2)          # 1‑2 trasformazioni
-        aug_transform = A.Compose([
-            A.OneOf([
-                A.NoOp(),
-                A.SomeOf([
-                    A.RandomShadow(shadow_roi=(0, 0.5, 1, 1),
-                                   num_shadows_lower=1, num_shadows_upper=2, p=1.0),
-                    A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15,
-                                alpha_coef=0.1, p=1.0),
-                    A.RandomRain(blur_value=2, drop_length=10, drop_width=1,
-                                 brightness_coefficient=0.95, p=1.0),
-                    A.ISONoise(color_shift=(0.01, 0.05),
-                               intensity=(0.1, 0.3), p=1.0),
-                    A.GaussianBlur(blur_limit=(3, 5), sigma_limit=0.5, p=1.0)
-                ], n=n_trans, replace=False)
-            ], p=1.0)
-        ])
-    elif 'geometric' in type_aug:
-        # GEOMETRIC TRANSFORMATIONS Geometric Transforms
-        # RandomCrop — per forzare la stessa FOV o porzione visiva.
-        # Affine con leggera rotazione/traslazione.
-        # Resize — per uniformare la risoluzione.
-        # Perspective (con cautela) — per rendere la prospettiva più simile a Cityscapes.
-        n_trans = random.randint(1, 2)          # 1‑2 trasformazioni
-        aug_transform = A.Compose([
-            A.OneOf([
-                A.NoOp(),
-                A.SomeOf([
-                    A.RandomCrop(height=720, width=1280, p=1.0),
-                    A.Affine(scale=(0.95, 1.05),
-                            translate_percent=(0.02, 0.05),
-                            rotate=(-5, 5),
-                            shear=(-2, 2), p=1.0),
-                    A.Perspective(scale=(0.02, 0.05),
-                                keep_size=True, p=1.0)
-                ], n=n_trans, replace=False)
-            ], p=1.0)
-        ])
-
-    else:   # fallback sicuro, nel caso in cui non passo nessuno dei tipi tra color, wheather e geometric
-        aug_transform = A.Compose([A.NoOp()])
-
-    # ---------- applica le trasformazioni ----------
-    augmented = aug_transform(image=image, mask=mask)
-    return augmented
-'''

@@ -57,9 +57,14 @@ class GTA5(Dataset):
         image = Image.open(image_path).convert('RGB')
         label = Image.open(self.masks[idx])
 
-        if self.augmentation:
-            # Apply the Augmentation to all the image
-            augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+        if self.augmentation :
+            if self.type_aug == {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} :
+                # Apply the Augmentation aug_1 to all the imageS
+                augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+
+            else:
+                # Apply the Augmentation aug_2 to all the images
+                augmented = augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label))
             image = Image.fromarray(augmented['image'])
             label = Image.fromarray(augmented['mask'])
 
@@ -72,28 +77,4 @@ class GTA5(Dataset):
         filename = os.path.basename(image_path)
         return image, label, filename
     
-    # get item dentro gta5 PER LA BEST AUGM DI LUCI
-    """
-    def __getitem__(self, idx):
-        image_path = self.images[idx]
-        image = Image.open(image_path).convert('RGB')
-        label = Image.open(self.masks[idx])
-
-        if self.augmentation:
-            # choose augmentation comb
-            #augmented = augmentation_transform_oneof(image=np.array(image), mask=np.array(label)) # one of 4 best comb of color
-            augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label)) # one of 3(!) best color and best weather
-            #augmented = augmentation_transform_oneof_col4_wea(image=np.array(image), mask=np.array(label)) # one of 4(!) best color and best weather
-            label = Image.fromarray(augmented['mask'])
-            image = Image.fromarray(augmented['image'])
-
-        # Applico sempre le trasformazioni base
-        if self.transform:
-            image = self.transform(image)
-        if self.target_transform:
-            label = self.target_transform(label)
-
-        filename = os.path.basename(image_path)
-        return image, label, filename
-    """
-     
+    
