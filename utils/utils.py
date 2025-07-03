@@ -100,7 +100,8 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
     # Logging finale su wandb
     wandb.log(to_serialize)
 
-
+bce_loss = torch.nn.BCEWithLogitsLoss(reduction="mean")
+softmax = torch.nn.functional.softmax
 # Lambda scheduler function
 def get_lambda_adv(iteration, max_iters, trial_type):
     if trial_type in ["hinge_rampup", "mse_rampup"]:
