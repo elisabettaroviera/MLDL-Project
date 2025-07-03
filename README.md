@@ -120,7 +120,7 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 ## Experiments
 
 During the course of the project many experiments have been performed.
-To take a look to all the source code relative to those experiments please surf the different branches of this repository.
+To take a look to all the source code relative to those experiments please surf the different branches of [this repository](https://github.com/elisabettaroviera/MLDL-Project).
 
 ---
 
