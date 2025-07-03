@@ -20,6 +20,7 @@ from utils.utils import CombinedLoss_All, poly_lr_scheduler, save_metrics_on_fil
 from validation import validate
 from utils.metrics import compute_miou
 
+
 # This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
     torch.manual_seed(seed) # Set the seed for CPU
@@ -28,6 +29,7 @@ def set_seed(seed):
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
+
 
 if __name__ == "__main__":
     # Ambient variable
@@ -47,7 +49,8 @@ if __name__ == "__main__":
     transform = transform_cityscapes()
     target_transform = transform_cityscapes_mask()
 
-    # Load the datasets (Cityspaces)
+    # Load the datasets (Cityspaces) to run to colab
+    # If you want to run on Kaggle, change the path to the datasets
     print("Load the datasets")
     cs_train = CityScapes('./datasets/Cityscapes', 'train', transform, target_transform)
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform, target_transform)
