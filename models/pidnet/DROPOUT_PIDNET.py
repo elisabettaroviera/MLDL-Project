@@ -7,7 +7,6 @@
 # ------------------------------------------------------------------------------
 
 
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -235,3 +234,4 @@ def get_pred_model(name, num_classes):
         model = PIDNet(m=3, n=4, num_classes=num_classes, planes=64, ppm_planes=112, head_planes=256, augment=False)
     
     return model
+

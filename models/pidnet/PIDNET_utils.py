@@ -2,6 +2,8 @@
 # ------------------------------------------------------------------------------
 # Written by Jiacong Xu (jiacong.xu@tamu.edu)
 # ------------------------------------------------------------------------------
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -377,15 +379,3 @@ class Bag(nn.Module):
         edge_att = torch.sigmoid(d)
         return self.conv(edge_att*p + (1-edge_att)*i)
     
-
-"""
-if __name__ == '__main__':
-
-    
-    x = torch.rand(4, 64, 32, 64).cuda()
-    y = torch.rand(4, 64, 32, 64).cuda()
-    z = torch.rand(4, 64, 32, 64).cuda()
-    net = PagFM(64, 16, with_channel=True).cuda()
-    
-    out = net(x,y)
-    """
