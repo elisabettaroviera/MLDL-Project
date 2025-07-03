@@ -15,6 +15,7 @@ from train import train_with_adversary
 from validation import validate
 from models.discriminator.build_discriminator import FCDiscriminator 
 
+
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
@@ -42,7 +43,6 @@ def print_metrics(title, metrics):
     print(f"{title} Metrics")
     print(f"Loss: {metrics['mean_loss']:.4f}")
     print(f"Latency: {metrics['mean_latency']:.2f} ms")
-    #print(f"FPS: {metrics['fps']:.2f} frames/sec")
     print(f"FLOPs: {metrics['num_flops']:.2f} GFLOPs")
     print(f"Parameters: {metrics['trainable_params']:.2f} M")
     print(f"Mean IoU (mIoU): {metrics['mean_iou']:.2f} %")
@@ -321,7 +321,7 @@ if __name__ == "__main__":
             # entity = "s325951-politecnico-di-torino-mldl" 
             entity="s281401-politecnico-di-torino",
             name=f"epoch_{epoch}",
-            id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
+            id=run_ids[epoch - 1],  
             resume="allow"
         )
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
@@ -341,4 +341,4 @@ if __name__ == "__main__":
         save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
         
         wandb.finish()
-        
+
