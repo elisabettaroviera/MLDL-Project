@@ -1,9 +1,13 @@
+# main_train.py
+
 import os
 import torch
 import wandb
 import time
 import random
 import numpy as np
+from torch.utils.data import Subset
+import random
 from datasets.gta5 import GTA5
 from datasets.cityscapes import CityScapes
 from models.bisenet.build_bisenet import BiSeNet
@@ -23,7 +27,6 @@ def set_seed(seed):
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
-    #A.set_seed(seed) # ATTENZIONE serve anche se abbiamo messo come seed gli id delle foto???
 
 # Function to print the metrics
 # This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
@@ -59,10 +62,10 @@ def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=
     total_samples = len(dataset)
     num_samples = int(total_samples * fraction)
 
-    # Seleziona indici casuali senza ripetizioni
+    # selection of random indices
     indices = np.random.choice(total_samples, num_samples, replace=False)
 
-    # Crea un subset e un nuovo dataloader
+    # create a subset of the dataset using the selected indices
     subset = Subset(dataset, indices)
     subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True) # Drop of the last batch
 
@@ -74,21 +77,22 @@ if __name__ == "__main__":
 
     print("************ TRAINING BiSeNet ON GTA5 ***************")
 
-    # Constant value
+    # Constant values
     batch_size = 4
     learning_rate = 0.00625
     momentum = 0.9
     weight_decay = 1e-4
-    num_epochs = 15 #changed bc doing smaller runs
+    num_epochs = 50 
     num_classes = 19
     ignore_index = 255
-    start_epoch = 1 #CHECK BEFORE RUNNING
+    start_epoch = 1 
 
     # Transformation
     transform_gta_dataset = transform_gta()
     target_transform_gta = transform_gta_mask()
 
     print("Loading datasets")
+    # Define the type of augmentation to apply
     """
     type_aug_dict = {
     'color': ['HueSaturationValue', 'CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast'],
@@ -96,8 +100,7 @@ if __name__ == "__main__":
     'geometric': ['RandomCrop', 'Affine', 'Perspective']
     }
     """
-
-    type_aug = {} # CHANGE HERE!!!
+    type_aug = None
     gta_train_nonaug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=False, type_aug={}) # No type_aug 
     # Contains all pictures bc they are all augmented
     gta_train_aug = GTA5('./datasets/GTA5', transform_gta_dataset, target_transform_gta, augmentation=True, type_aug=type_aug) # Change the augm that you want
@@ -113,7 +116,7 @@ if __name__ == "__main__":
     # Create dataloader
     full_dataloader_gta_train, _ = dataloader(gta_train, None, batch_size, True, True)
     # Take a subset of the dataloader
-    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=0.25, batch_size=batch_size)
+    dataloader_gta_train = select_random_fraction_of_dataset(full_dataloader_gta_train, fraction=1.0, batch_size=batch_size)
     
     # Definition of the model
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
@@ -131,10 +134,9 @@ if __name__ == "__main__":
     iter_curr = 0
 
     for epoch in range(start_epoch, num_epochs + 1):
-        project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
-        entity = "s325951-politecnico-di-torino-mldl" # new team Lucia
-        #entity = "s281401-politecnico-di-torino" #new team auro
-        # entity="s328422-politecnico-di-torino" # old team Betta
+        project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent"
+        entity = "s325951-politecnico-di-torino-mldl" 
+        # entity="s328422-politecnico-di-torino" 
         run = wandb.init(project=project_name, entity=entity, name=f"epoch_{epoch}", reinit=True)
         wandb.config.update({
             "batch_size": batch_size,

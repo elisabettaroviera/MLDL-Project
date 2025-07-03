@@ -36,17 +36,16 @@ def print_metrics(title, metrics):
         print(f"{cls:<20} {val:>6.2f}")
 
 def to_obtain_id(project=""):
-    # Configurazione del tuo progetto wandb
+    # project configuration on wandb
     entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
-    #entity = "s281401-politecnico-di-torino" #new team auro
     # entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
 
-    # Recupera tutte le run del progetto
+    # take project runs
     runs = api.runs(f"{entity}/{project}")
 
-    # Funzione per estrarre il numero dell'epoca dal nome della run
+    # Function to extract the epoch number from the run name
     def extract_epoch_number(run):
         try:
             name = run.name
@@ -56,18 +55,17 @@ def to_obtain_id(project=""):
             return float("inf")
         return float("inf")
 
-    # Filtra e ordina le run per numero di epoca
+    # Filter and sort the runs by epoch number
     sorted_runs = sorted(
         [run for run in runs if run.name and run.name.startswith("epoch_")],
         key=extract_epoch_number
     )
 
-    # Crea la lista degli ID delle run ordinate
+    # Create the list of ordered run IDs
     run_ids = [run.id for run in sorted_runs]
 
-    # Ora puoi usare run_ids come vuoi, ad esempio:
     print("Ho caricato", len(run_ids), "run ID.")
-    # Esempio: passare run_ids a una funzione
+    
     return run_ids
 
 if __name__ == "__main__":
@@ -82,11 +80,11 @@ if __name__ == "__main__":
     cs_val = CityScapes('./datasets/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)
 
     batch_size = 4
-    num_epochs = 50
+    num_epochs = 50 
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
-    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) #CHECK BEFORE RUNNING
+    loss = CombinedLoss_All(num_classes=num_classes, alpha=0.7, beta=0, gamma=0.3, theta=0, ignore_index=255) 
     """
     alpha   # CrossEntropy
     beta    # Lovász
@@ -98,19 +96,18 @@ if __name__ == "__main__":
 
     model = BiSeNet(num_classes=num_classes, context_path='resnet18').to(device)
 
-    project_name = "3b_GTA5_to_CITY_augmented_geometric_cv07_tv_03" #CHECK BEFORE RUNNING
+    project_name = "3b_GTA5_to_CITY_aug_color_weather_oneof_3_comb_100_percent" 
 
-    # Inserisci qui la lista degli id dei run, in ordine (epoch_1, epoch_2, ..., epoch_50)
+    # take run ids from wandb
     run_ids = to_obtain_id(project_name)
 
     for epoch in range(start_epoch, num_epochs + 1):
         run = wandb.init(
             project=project_name,
-            # entity = "s325951-politecnico-di-torino-mldl" # nuovo team Lucia
-            #entity = "s281401-politecnico-di-torino" #new team auro
-            entity="s328422-politecnico-di-torino",
+            entity = "s325951-politecnico-di-torino-mldl", 
+            # entity="s328422-politecnico-di-torino",
             name=f"epoch_{epoch}",
-            id=run_ids[epoch - 1],  # <-- INDICE CORRETTO!
+            id=run_ids[epoch - 1],  
             resume="allow"
         )
         artifact = wandb.use_artifact(f"{project_name}/model_epoch_{epoch}:latest", type="model")
