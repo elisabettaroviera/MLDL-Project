@@ -131,7 +131,7 @@ def generate_discriminators(num, num_classes, device='CPU'):
 
 if __name__ == "__main__":
     set_seed(23)
-    wandb.login(key="2bc32b7d4d8f8601d9a93be55631ae9e18f78690")
+    wandb.login(key="YOUR_API_KEY") # Replace with your actual API key
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print("************ TRAINING BiSeNet ON GTA5 ***************")
