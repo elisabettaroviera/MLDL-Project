@@ -47,17 +47,15 @@ def transform_gta_to_cityscapes_label(mask):
     
     # Create a new mask initialized to 255 (ignore value)
     mapped = torch.full_like(mask, fill_value=255)
-<<<<<<< HEAD
     # If a region in the image has an ID not in the id_to_trainid dict,
     # it is set to 255 to mark it as invalid or to be ignored.
-=======
->>>>>>> 5e4c2f82f2891f5910363baf829c3e204d6095ed
     for gta_id, train_id in id_to_trainid.items():
         mapped[mask == gta_id] = train_id
 
     return mapped
 
 
+## TODO: 
 def transform_gta(): 
     # NOTE: The training resolution and the val resolution are equal in Cityscapes
     # Hence, we can use the same transform for both train and test
@@ -78,6 +76,7 @@ def transform_gta_mask():
     return transform
 
 
+#3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent
 def augmentation_transform(image, mask, type_aug):
     """ aug_1:
     With probability 0.5, applies either:
@@ -102,17 +101,13 @@ def augmentation_transform(image, mask, type_aug):
         'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
     }
 
-<<<<<<< HEAD
     # Weather transforms
-=======
-    # "weather" transforms
->>>>>>> 5e4c2f82f2891f5910363baf829c3e204d6095ed
     weather_transforms = [
         A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
         A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
         A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0)] #i)]
 
-    use_color = random.random() < 0.5  # 50% probability
+    use_color = random.random() < 0.5  # 50% di probabilità
 
     if use_color:
         selected_names = [name for name in type_aug.get('color', []) if name in color_transforms]
