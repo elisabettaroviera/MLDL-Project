@@ -14,6 +14,9 @@ from utils.utils import poly_lr_scheduler
 import wandb
 import torch.nn.functional as F
 
+##########################################################################################################################################
+############################################################### MAIN 2 a b ###############################################################
+##########################################################################################################################################
 # TRAIN LOOP
 def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learning_rate, num_classes, max_iter): # criterion == loss function
     var_model = os.environ['MODEL'] 
@@ -56,7 +59,6 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
             alpha = 1 # In the paper they use 1
             loss +=  alpha * criterion(outputs[1], targets) + alpha *  criterion(outputs[2], targets)
              
-
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
@@ -112,7 +114,6 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
         std_fps = -1
 
 
-
     # 6. Save the parameter of the model 
     print("Saving the model")
 
@@ -155,7 +156,7 @@ def train(epoch, old_model, dataloader_train, criterion, optimizer, iter, learni
     return metrics, iter
 
 ##########################################################################################################################################
-##################################################   PIDNET    #############################################################################
+##################################################   PIDNET    ###########################################################################
 def get_boundary_map(target, kernel_size=3):
     # target: (B, H, W) with integer values [0, num_classes-1] or 255 for ignore
 
