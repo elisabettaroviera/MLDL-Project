@@ -105,7 +105,7 @@ def augmentation_transform(image, mask, type_aug):
         A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
         A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.3), p=1.0)] #i)]
 
-    use_color = random.random() < 0.5  # 50% di probabilità
+    use_color = random.random() < 0.5  # 50% probability
 
     if use_color:
         selected_names = [name for name in type_aug.get('color', []) if name in color_transforms]
