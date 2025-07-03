@@ -128,6 +128,7 @@ To take a look to all the source code relative to those experiments please surf 
 
 ## Final Results
 Finally, after collecting all the data, we made our findings available in the [final report](Semantic%20Segmentation%20-%20A%20Comparative%20Study%20on%20DeepLabV2,%20BiSeNet,%20PIDNet.pdf).
+
 ---
 
 ## References
