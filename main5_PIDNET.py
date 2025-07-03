@@ -21,10 +21,11 @@ from train import train_pidnet
 from utils.utils import CombinedLoss_All, poly_lr_scheduler, save_metrics_on_wandb
 from validation import validate_pidnet
 from utils.metrics import compute_miou
-from models.pidnet.PIDNET import PIDNet, get_seg_model
-#from models.pidnet.DROPOUT_PIDNET  import get_seg_model #<- SE APPLICO DROPOUT PIDNET
+from models.pidnet.pidnet import PIDNet, get_seg_model
+#from models.pidnet.dropout_pident  import get_seg_model #<- If you want to apply dropout pident
 from torch.utils.data import ConcatDataset, Subset
 import torch.nn.functional as F
+
 
 # This function sets the seed for various libraries to ensure that the results are reproducible.
 def set_seed(seed):
@@ -34,6 +35,7 @@ def set_seed(seed):
     random.seed(seed) # Set the seed for random
     torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
     torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
+
 
 #mai1: city to city
 def main1():
@@ -45,10 +47,12 @@ def main1():
     target_transform_cityscapes = transform_cityscapes_mask()
 
     # Load the Cityscapes dataset + make dataloader
+    # If you want to run with colab you have to change the path of the dataset
     print("Load the datasets and create the datalaoders")
     cs_train = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'train', transform_cityscapes_dataset, target_transform_cityscapes)  
     cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
     dataloader_train, dataloader_val = dataloader(cs_train, cs_val, batch_size, True, True)
+
 
 #main2: gta5 to city no augmentations
 def main2():
@@ -69,6 +73,7 @@ def main2():
 
     dataloader_train, _ = dataloader(gta_train_nonaug, None, batch_size, True, True, False, 4)
     _, dataloader_val = dataloader(None, cs_val, batch_size, True, True, False, 4)
+
 
 # main3: gta5 to city with augmentation aug_1
 def main3():
@@ -150,19 +155,20 @@ if __name__ == "__main__":
     learning_rate = 0.01
     momentum = 0.9
     weight_decay = 5e-4 
-    num_epochs = 50 #changed bc doing smaller runs
+    num_epochs = 20 #changed bc doing smaller runs
     num_classes = 19
     ignore_index = 255
     start_epoch = 1
     batch_size = 4
 
-    # Defintion of the loss function: usano cross entropy nel apper
+    # Defintion of the loss function: CE in the paper
     print("Definition of the loss")
     loss = CombinedLoss_All(num_classes=num_classes, alpha=1.0, beta=0, gamma=0, theta=0, ignore_index=255) 
     # alpha   - CrossEntropy
     # beta    - Lovász
     # gamma   - Tversky
     # theta   - Dice
+    # delta   - Focal
 
     # Parse arguments
     parser = argparse.ArgumentParser(description="Choose main")
@@ -175,7 +181,6 @@ if __name__ == "__main__":
         main2()
     elif args.mode == "main3":
         main3()
-
     elif args.mode == "main4":
         main4()
 
@@ -187,10 +192,10 @@ if __name__ == "__main__":
     cfg.DATASET = type('', (), {})()
 
     cfg.MODEL.NAME = 'pidnet_m'
-    #PRETRAINED WEIGHTS ON IMAGENET
+    # PRETRAINED WEIGHTS ON IMAGENET
     cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
-    # Serve cosi chiamo pesi preaddestrati su ImageNet
+    # It serves as pre-trained weights on ImageNet
     model = get_seg_model(cfg, imgnet_pretrained=True)
     model = model.to(device)
 
@@ -232,7 +237,7 @@ if __name__ == "__main__":
             checkpoint_path = os.path.join(artifact_dir, f"model_epoch_{epoch-1}.pt")
             checkpoint = torch.load(checkpoint_path)  
 
-            # Load the model and the ottimizator state
+            # Load the model and the optimizer state
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
          
@@ -267,3 +272,4 @@ if __name__ == "__main__":
         save_metrics_on_wandb(epoch, metrics_train, metrics_val)
 
         wandb.finish()
+
