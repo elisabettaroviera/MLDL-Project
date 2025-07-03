@@ -55,7 +55,6 @@ def transform_gta_to_cityscapes_label(mask):
     return mapped
 
 
-## TODO: 
 def transform_gta(): 
     # NOTE: The training resolution and the val resolution are equal in Cityscapes
     # Hence, we can use the same transform for both train and test
@@ -76,7 +75,6 @@ def transform_gta_mask():
     return transform
 
 
-#3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent
 def augmentation_transform(image, mask, type_aug):
     """ aug_1:
     With probability 0.5, applies either:
@@ -92,7 +90,7 @@ def augmentation_transform(image, mask, type_aug):
     }
     """
 
-    # Color tarnsforms available
+    # Color transforms available
     color_transforms = {
         'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
         'CLAHE': A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
@@ -101,7 +99,7 @@ def augmentation_transform(image, mask, type_aug):
         'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
     }
 
-    # "weather" tarsnforms
+    # "weather" transforms
     weather_transforms = [
         A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
         A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
