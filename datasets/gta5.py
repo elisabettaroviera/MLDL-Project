@@ -4,7 +4,7 @@ from PIL import Image
 import random
 import albumentations as A
 import numpy as np
-from datasets.transform_datasets import augmentation_transform
+from datasets.transform_datasets import augmentation_transform, augmentation_transform_oneof_col3_wea
 
 class GTA5(Dataset):
 
@@ -52,15 +52,19 @@ class GTA5(Dataset):
             # Return total number of samples
             return len(self.images)
 
-
     def __getitem__(self, idx):
         image_path = self.images[idx]
         image = Image.open(image_path).convert('RGB')
         label = Image.open(self.masks[idx])
 
-        if self.augmentation:
-            # Apply the Augmentation to all the image
-            augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+        if self.augmentation :
+            if self.type_aug == {'color': ['HueSaturationValue','CLAHE', 'GaussNoise', 'RGBShift', 'RandomBrightnessContrast']} :
+                # Apply the Augmentation aug_1 to all the imageS
+                augmented = augmentation_transform(image=np.array(image), mask=np.array(label), type_aug = self.type_aug)
+
+            else:
+                # Apply the Augmentation aug_2 to all the images
+                augmented = augmented = augmentation_transform_oneof_col3_wea(image=np.array(image), mask=np.array(label))
             image = Image.fromarray(augmented['image'])
             label = Image.fromarray(augmented['mask'])
 
@@ -72,3 +76,5 @@ class GTA5(Dataset):
 
         filename = os.path.basename(image_path)
         return image, label, filename
+    
+    
