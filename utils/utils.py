@@ -101,6 +101,88 @@ def save_metrics_on_wandb(epoch, metrics_train, metrics_val, final_epoch=50):
     wandb.log(to_serialize)
 
 
+# Lambda scheduler function
+def get_lambda_adv(iteration, max_iters, trial_type):
+    if trial_type in ["hinge_rampup", "mse_rampup"]:
+        lambda_start = 1e-6
+        lambda_max = 0.001
+        ramp_up_iters = 0.4 * max_iters
+    # the formula is min(0.001, 0.001 * (iteration / (0.4 * max_iters))) but i want it to start from a small value like 1e-6
+        if iteration >= ramp_up_iters:
+            return lambda_max
+        else:
+            progress = (iteration - 1) / (ramp_up_iters - 1)
+            return lambda_start + progress * (lambda_max - lambda_start)
+    elif trial_type == "bce_confidence":
+        return None  # Will be computed dynmically based on discriminator confidence
+    return 0.002  # Default fixed lambda ---> can be changed to 0.002
+
+def lock_model(model):
+    """
+    Lock the model parameters to avoid training them.
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+    return model
+
+def unlock_model(model):
+    """
+    Unlock the model parameters to allow training.
+    """
+    for param in model.parameters():
+        param.requires_grad = True
+    return model
+
+def backpropagate(optimizer, loss, scaler = None):
+    """
+    Perform backpropagation and optimization step.
+    """
+    if scaler is not None:
+        optimizer.zero_grad()  # Zero the gradients
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)  # Update the model parameters
+        scaler.update()
+    else:
+        optimizer.zero_grad()  # Zero the gradients
+        loss.backward()        # Backpropagate the loss
+        optimizer.step()       # Update the model parameters
+    return optimizer
+
+# === Step 2: Update adversarial_loss function (or create it if not defined) ===
+# === Step 2: Update adversarial_loss function (or create it if not defined) ===
+def adversarial_loss(discriminators, outputs_target, target_label, source_label, device, lambdas, trial_type):
+    loss_total = 0.0
+    for i, discriminator in enumerate(discriminators):
+        # Compute softmax
+        softmax_output = torch.softmax(outputs_target[i], dim=1)
+        pred = discriminator(softmax_output)
+
+        if trial_type.startswith("hinge"):
+            loss = -pred.mean()  # Hinge loss: maximize D output
+        elif trial_type.startswith("mse"):
+            loss = F.mse_loss(pred, torch.full_like(pred, source_label, device=device))
+        elif trial_type.startswith("bce"):
+            loss = F.binary_cross_entropy_with_logits(pred, torch.full_like(pred, source_label, device=device))
+        else:
+            raise ValueError(f"Unsupported trial_type: {trial_type}")
+
+        lambda_adv = lambdas[i] if lambdas[i] is not None else 0.001  # fallback
+        loss_total += lambda_adv * loss
+
+    return loss_total
+
+
+def adversarial_loss_base(discriminators, outputs, target_label, source_label, device, lambdas):
+    total_adv_loss = 0.0
+    with torch.cuda.amp.autocast():
+        for i, discriminator in enumerate(discriminators):
+            disc_pred = discriminator(softmax(outputs[i], dim=1).detach())
+            target_tensor = torch.full(disc_pred.shape, float(source_label), device=device, dtype=disc_pred.dtype)
+            adv_loss = bce_loss(disc_pred, target_tensor) 
+            total_adv_loss += lambdas[i]*adv_loss
+    return total_adv_loss
+
+
 # To avoid void class on TverskyLoss
 class MaskedTverskyLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.5, beta=0.5, ignore_index=255):

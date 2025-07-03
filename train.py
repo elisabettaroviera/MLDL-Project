@@ -9,10 +9,14 @@ import matplotlib.pyplot as plt
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 import torchvision.transforms.functional as TF
 from datasets.cityscapes import CityScapes
-from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters
-from utils.utils import poly_lr_scheduler
+from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, compute_parameters, compute_miou_torch, compute_miou_torch_vectorized
+from utils.utils import poly_lr_scheduler, backpropagate, lock_model, unlock_model, adversarial_loss, get_lambda_adv
 import wandb
+import gc
 import torch.nn.functional as F
+
+bce_loss = torch.nn.BCEWithLogitsLoss(reduction="mean")
+softmax = torch.nn.functional.softmax
 
 ##########################################################################################################################################
 ############################################################### MAIN 2 a b ###############################################################
