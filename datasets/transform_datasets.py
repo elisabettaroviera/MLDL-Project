@@ -8,8 +8,8 @@ import random
 
 # Define transformations for the Cityscapes
 # Add here any specific transformations you want to apply to the Cityscapes dataset
-# Resizing is useful beacuse the images  have high rtesolution and we want to reduce the size to speed up the training
-# while from the papers we see that the results are not affected too mucnh by the resizing only about 1-2%
+# Resizing is useful because the images  have high resolution and we want to reduce the size to speed up the training
+# while from the papers we see that the results are not affected too much by the resizing only about 1-2%
 def transform_cityscapes(): 
     # NOTE: The training resolution and the val resolution are equal in Cityscapes
     # Hence, we can use the same transform for both train and test
@@ -47,8 +47,8 @@ def transform_gta_to_cityscapes_label(mask):
     
     # Create a new mask initialized to 255 (ignore value)
     mapped = torch.full_like(mask, fill_value=255)
-    #se una certa regione dell'immagine ha un ID che non è presente nel dizionario
-    #id_to_trainid, viene impostato su 255 per segnalarlo come "non valido" o "da ignorare".
+    # If a region in the image has an ID not in the id_to_trainid dict,
+    # it is set to 255 to mark it as invalid or to be ignored.
     for gta_id, train_id in id_to_trainid.items():
         mapped[mask == gta_id] = train_id
 
@@ -92,7 +92,7 @@ def augmentation_transform(image, mask, type_aug):
     }
     """
 
-    # Color tarnsforms available
+    # Color transforms available
     color_transforms = {
         'HueSaturationValue': A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=10, p=1.0),
         'CLAHE': A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=1.0),
@@ -101,7 +101,7 @@ def augmentation_transform(image, mask, type_aug):
         'RandomBrightnessContrast': A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0)
     }
 
-    # "weather" tarsnforms
+    # Weather transforms
     weather_transforms = [
         A.RandomFog(fog_coef_lower=0.05, fog_coef_upper=0.15, alpha_coef=0.1, p=1.0), #g)
         A.RandomRain(blur_value=2, drop_length=10, drop_width=1, brightness_coefficient=0.95, p=1.0), #h)
