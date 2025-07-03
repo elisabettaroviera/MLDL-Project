@@ -81,7 +81,7 @@ def main3():
     transform_gta_dataset = transform_gta()
     target_transform_gta = transform_gta_mask()
 
-    # Load the Cityscapes dataset + make dataloader
+    # Load datasets + make dataloader
     print("Load the datasets and create the datalaoders")
    
     cs_val = CityScapes('/kaggle/input/cityscapes-dataset/Cityscapes', 'val', transform_cityscapes_dataset, target_transform_cityscapes)  
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     # theta   - Dice
 
     # Parse arguments
-    parser = argparse.ArgumentParser(description="Scegli quale main eseguire")
+    parser = argparse.ArgumentParser(description="Choose main")
     parser.add_argument("--mode", type=str, choices=["main1", "main2", "main3"], required=True)
     args = parser.parse_args()
 
