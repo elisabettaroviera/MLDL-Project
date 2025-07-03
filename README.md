@@ -1,7 +1,7 @@
 # Semantic Segmentation: Domain Adaptation Project
 
 This repository contains code for the semantic segmentation project of the MLDL course at Politecnico di Torino.
-The project has a focus on domain adaptation from synthetic (GTA5) to real-world (Cityscapes) datasets. It supports multiple architectures (DeepLabV2, BiSeNet, PIDNet) and advanced training strategies including adversarial learning.
+The project has a focus on domain adaptation from synthetic (GTA5) to real-world (Cityscapes) datasets, but it revolves around testing the performance of different solutions. It supports multiple architectures (DeepLabV2, BiSeNet, PIDNet) and advanced training strategies including adversarial learning.
 
 ---
 
@@ -22,7 +22,7 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 
 ## Project Overview
 
-- **Goal:** Improve semantic segmentation performance when transferring from synthetic (GTA5) to real-world (Cityscapes) domains.
+- **Goal:** Evaluate the performance of different approaches in the semantic segmentation field.
 - **Models:** DeepLabV2, BiSeNet, PIDNet.
 - **Techniques:** Standard training, domain adaptation, adversarial training, advanced augmentations.
 - **Logging:** [Weights & Biases (wandb)](https://wandb.ai/) for experiment tracking and model checkpointing.
@@ -64,7 +64,7 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
     ```bash
     python main2ab.py
     ```
-    - Model selection via [MODEL](http://_vscodecontentref_/0) environment variable (`DeepLabV2` or [BiSeNet](http://_vscodecontentref_/1)).
+    - Model selection via `MODEL` environment variable (`DeepLabV2` or `BiSeNet`) only when relevant.
     - Training and validation on Cityscapes.
     - WANDB used for logging and checkpointing.
 
@@ -101,12 +101,12 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 
 ## WANDB Logging
 
-- Set your WANDB API key as an environment variable:
+- Set your WANDB API key as an environment variable (follow your cli guidelines on how to do it):
     
 ```bash    export WANDB_API_KEY=your_api_key_here
-    ```
+```
 - Each epoch is logged as a separate run; models are checkpointed as artifacts and can be resumed.
-
+- It might be necessary to force the API key with the login method inside the python script.
 ---
 
 ## Notebook Usage
@@ -145,7 +145,7 @@ To take a look to all the source code relative to those experiments please surf 
 
 ## Notes
 
-- For more details on dataset structure and metrics, see the [read_me](http://_vscodecontentref_/3) folder.
+- For more details on dataset structure and metrics, see the [read_me](read_me) folder.
 - For custom experiments, modify the scripts in the root directory.
 - For troubleshooting, see comments in the code and the notebook.
 
