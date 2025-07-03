@@ -99,7 +99,7 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 
 ---
 
-## WANDB Logging
+## WANDB Logging 
 
 - Set your WANDB API key as an environment variable (follow your cli guidelines on how to do it):
     
