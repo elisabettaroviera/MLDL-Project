@@ -10,10 +10,10 @@ from models.bisenet.build_bisenet import BiSeNet
 from utils.utils import CombinedLoss_All, save_metrics_on_wandb
 from datasets.transform_datasets import transform_gta, transform_gta_mask, transform_cityscapes, transform_cityscapes_mask
 from data.dataloader import dataloader
-from torch.utils.data import ConcatDataset, Subset # questi non ci sono più... da mettereeeeee
+from torch.utils.data import ConcatDataset, Subset 
 from train import train_with_adversary
 from validation import validate
-from models.discriminator.build_discriminator import FCDiscriminator # MANCA STA ROBA NEI MODELLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+from models.discriminator.build_discriminator import FCDiscriminator 
 
 # Function to set the seed for reproducibility
 # This function sets the seed for various libraries to ensure that the results are reproducible.
