@@ -68,10 +68,3 @@ class CityScapes(Dataset):
         # Return the image, mask and filename
         return image, mask, filename
 
-
-
-# DETAIL ON THE CLASS STRUCTION
-# Method       | What it does                                               | When it is called
-# __init__     | Prepares the dataset (paths, file lists, transformations)  | Once, when the dataset object is created
-# __getitem__  | Returns the image and corresponding mask at a given index  | Every time the DataLoader requests a batch
-# __len__      | Returns the total number of samples in the dataset         | At the beginning and during epoch creation
