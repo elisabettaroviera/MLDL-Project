@@ -136,7 +136,7 @@ To take a look to all the source code relative to those experiments please surf 
 
 ## Authors
 
-- Aurona Gashi (`s281401`)
+- Aurona Gashi (`s322791`)
 - Lucia Ghezzi (`s325951`)
 - Giacomo Maino (`s338682`)
 - Elisabetta Roviera (`s328422`)
