@@ -22,3 +22,4 @@ gdown.download(cityscapes_url, cityscapes_output, quiet=False) # Download the fi
 with ZipFile("cityscapes.zip", "r") as zip_ref:
     zip_ref.extractall('./datasets')
 print('Download of the dataset Cityscapes and extraction complete!')
+

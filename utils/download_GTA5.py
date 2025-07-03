@@ -22,3 +22,4 @@ gdown.download(gta5_url, gta5_output, quiet=False) # Download the file using gdo
 with ZipFile("gta5.zip", "r") as zip_ref:
     zip_ref.extractall('./datasets')
 print('Download of the dataset GTA5 and extraction complete!')
+
