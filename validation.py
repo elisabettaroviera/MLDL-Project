@@ -13,6 +13,7 @@ from utils.metrics import compute_miou, compute_latency_and_fps, compute_flops, 
 from PIL import Image
 import torch.nn.functional as F
 
+
 # Function to save sample images,ground truth color masks, prediction color masks
 def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_name_2):
     resize_transform = transforms.Resize((512, 1024))  # Resize da applicare
@@ -45,13 +46,17 @@ def save_images(flag_save, save_dir,inputs, file_names, preds,file_name_1, file_
             # Store the colored target mask
             gt_file_name = file_name.replace("leftImg8bit", "gtFine_color")
             gt_path = os.path.join("/kaggle/input/cityscapes-dataset/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name)
-           # gt_path = os.path.join("./datasets/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name) #colab
+            # gt_path = os.path.join("./datasets/Cityscapes/Cityspaces/gtFine/val/frankfurt", gt_file_name) #colab
             color_target_img = Image.open(gt_path).convert('RGB')
             resized_target = resize_transform(color_target_img)
             resized_target.save(f"{save_dir}/{file_name}_color_target.png")
 
     return flag_save
 
+
+##########################################################################################################################################
+############################################################### MAIN 2 a b ###############################################################
+##########################################################################################################################################
 # VALIDATION LOOP
 def validate(epoch, new_model, val_loader, criterion, num_classes):
     var_model = os.environ['MODEL']
@@ -84,7 +89,6 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     # frankfurt_000001_062016_gtFine_color.png
     file_name_2 = "frankfurt_000001_062016_leftImg8bit.png"
     
-
     # 4. Loop on the batches of the dataset
     with torch.no_grad(): # NOT compute the gradient (we already computed in the previous step)
         for batch_idx, (inputs, targets, file_names) in enumerate(val_loader):
@@ -163,7 +167,7 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     return metrics
 
 ##########################################################################################################################################
-##################################################   PIDNET    #############################################################################
+##################################################   PIDNET    ###########################################################################
 def get_boundary_map(target, kernel_size=3):
     # target: (B, H, W) with integer values [0, num_classes-1] or 255 for ignore
 
@@ -387,3 +391,4 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
     }
 
     return metrics
+
