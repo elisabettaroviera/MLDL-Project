@@ -55,7 +55,6 @@ def transform_gta_to_cityscapes_label(mask):
     return mapped
 
 
-## TODO: 
 def transform_gta(): 
     # NOTE: The training resolution and the val resolution are equal in Cityscapes
     # Hence, we can use the same transform for both train and test
@@ -76,7 +75,6 @@ def transform_gta_mask():
     return transform
 
 
-#3b_GTA5_to_CITY_augmented_color_2_random_tranform_color_OR_ALL_g_h_i_100_percent
 def augmentation_transform(image, mask, type_aug):
     """ aug_1:
     With probability 0.5, applies either:
