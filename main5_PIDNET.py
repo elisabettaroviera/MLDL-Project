@@ -136,10 +136,10 @@ def main4():
     dataloader_train, _ = dataloader(gta_train, None, batch_size, True, True, False, 4)
     _, dataloader_val = dataloader(None, cs_val, batch_size, True, True, False, 4)
 
-
+# RUN WITH: !python python main5_PIDNET.py --mode main1 or 2 or 3 or 4
 if __name__ == "__main__":
     
-    print(f"************ STEP : TRAINING PIDNET ON CITYSCAPES ***************")
+    print(f"************ MAIN5: PIDNET ***************")
     
     # Define transformations
     print("Define transformations")
