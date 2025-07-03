@@ -17,6 +17,7 @@ from datasets.cityscapes import CityScapes
 # 2. Latency & FPS --> compute_latency_and_fps
 # 3. FLOPs --> compute_flops
 
+
 # 1. mIoU% 
 # Function to compute the mean Intersection over Union (mIoU) for a given set of predictions and targets
 def compute_miou(gt_images, pred_images, num_classes, return_raw=True):
@@ -50,6 +51,7 @@ def compute_miou(gt_images, pred_images, num_classes, return_raw=True):
         return mean_iou, iou_per_class, intersections, unions
     else:
         return mean_iou, iou_per_class
+
 
 # 2. Latency & FPS
 # Function to compute the latency and FPS of a model on a given input size
@@ -88,7 +90,6 @@ def compute_latency_and_fps(model, height=512, width=1024, iterations=1000, warm
     return mean_latency, std_latency, mean_fps, std_fps
 
 
-
 # 3. FLOPs
 # Function to compute the FLOPs of a model on a given input size
 def compute_flops(model, height=512, width=1024):
@@ -102,6 +103,7 @@ def compute_flops(model, height=512, width=1024):
 
     return total_flops / 1e9  # Number of FLOPS in GigaFLOPs
 
+
 # 4. Parameters
 def compute_parameters(model):
     # Compute the number of parameters in the model
@@ -109,3 +111,4 @@ def compute_parameters(model):
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
     return tot_params, trainable_params
+
