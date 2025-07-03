@@ -15,6 +15,7 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 - [WANDB Logging](#wandb-logging)
 - [Notebook Usage](#notebook-usage)
 - [Experiments](#experiments)
+- [Final Results](#final-results)
 - [References](#references)
 - [Authors](#authors)
 
@@ -125,13 +126,18 @@ To take a look to all the source code relative to those experiments please surf 
 
 ---
 
+## Final Results
+Finally, after collecting all the data, we made our findings available in the [final report](Semantic%20Segmentation%20-%20A%20Comparative%20Study%20on%20DeepLabV2,%20BiSeNet,%20PIDNet.pdf).
+
+---
+
 ## References
 
 - [Cityscapes Dataset](https://www.cityscapes-dataset.com/)
 - [GTA5 Dataset](https://download.visinf.tu-darmstadt.de/data/from_games/)
 - [BiSeNet Paper](https://arxiv.org/abs/1808.00897)
 - [DeepLabV2 Paper](https://arxiv.org/abs/1606.00915)
-- [PIDNet Paper](https://arxiv.org/abs/2206.02680)
+- [PIDNet Paper](https://arxiv.org/abs/2206.02066)
 
 ---
 
