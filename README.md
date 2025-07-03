@@ -103,11 +103,16 @@ The project has a focus on domain adaptation from synthetic (GTA5) to real-world
 
 - Set your WANDB API key as an environment variable (follow your cli guidelines on how to do it):
     
+<<<<<<< HEAD
 ```bash
     export WANDB_API_KEY=your_api_key_here
+=======
+```bash    
+export WANDB_API_KEY=your_api_key_here
+>>>>>>> cb71cbd24713e8d575f3b1d81389e826034839c4
 ```
 - Each epoch is logged as a separate run; models are checkpointed as artifacts and can be resumed.
-- It might be necessary to force the API key with the login method inside the python script.
+- It might be necessary to force the API key with the login method inside the python script (like in [main4](main4.py)).
 ---
 
 ## Notebook Usage
