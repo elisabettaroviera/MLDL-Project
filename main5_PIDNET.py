@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     # Parse arguments
     parser = argparse.ArgumentParser(description="Choose main")
-    parser.add_argument("--mode", type=str, choices=["main1", "main2", "main3"], required=True)
+    parser.add_argument("--mode", type=str, choices=["main1", "main2", "main3", "main4"], required=True)
     args = parser.parse_args()
 
     if args.mode == "main1":
@@ -187,6 +187,7 @@ if __name__ == "__main__":
     cfg.DATASET = type('', (), {})()
 
     cfg.MODEL.NAME = 'pidnet_m'
+    #PRETRAINED WEIGHTS ON IMAGENET
     cfg.MODEL.PRETRAINED = '/kaggle/input/pidnet-m/PIDNet_M_ImageNet.pth.tar'
     cfg.DATASET.NUM_CLASSES = 19
     # Serve cosi chiamo pesi preaddestrati su ImageNet
