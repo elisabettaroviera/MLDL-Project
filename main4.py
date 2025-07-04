@@ -17,29 +17,30 @@ from models.discriminator.build_discriminator import FCDiscriminator
 
 
 # Function to set the seed for reproducibility
-# This function sets the seed for various libraries to ensure that the results are reproducible.
+# This function sets the seed for various libraries to ensure reproducible results
 def set_seed(seed):
-    torch.manual_seed(seed) # Set the seed for CPU
-    torch.cuda.manual_seed(seed) # Set the seed for CPU
-    torch.cuda.manual_seed_all(seed) # Set the seed for all GPUs
-    np.random.seed(seed) # Set the seed for NumPy
-    random.seed(seed) # Set the seed for random
-    torch.backends.cudnn.benchmark = True # Enable auto-tuning for max performance
-    torch.backends.cudnn.deterministic = False # Allow non-deterministic algorithms for better performance
-    #A.set_seed(seed) # ATTENZIONE serve anche se abbiamo messo come seed gli id delle foto???
+    torch.manual_seed(seed)  # Set seed for CPU
+    torch.cuda.manual_seed(seed)  # Set seed for current GPU
+    torch.cuda.manual_seed_all(seed)  # Set seed for all GPUs
+    np.random.seed(seed)  # Set seed for NumPy
+    random.seed(seed)  # Set seed for Python's random module
+    torch.backends.cudnn.benchmark = True  # Enable auto-tuning for optimal performance
+    torch.backends.cudnn.deterministic = False  # Allow non-deterministic algorithms for speed
+    # A.set_seed(seed)  # WARNING: is this necessary if we already seed using image IDs?
 
-# Function to print the metrics
-# This function print various metrics such as latency, FPS, FLOPs, parameters, and mIoU for a given model and dataset
+# Function to print evaluation metrics
+# This function displays various metrics such as latency, FPS, FLOPs, parameters, and mIoU
 def print_metrics(title, metrics):
-    # NB: this is how the metrics dictionary returned in train is defined
+    # Note: this is how the metrics dictionary returned from train is defined:
     # metrics = {
-    #    'mean_loss': mean_loss,
-    #    'mean_iou': mean_iou,
-    #    'iou_per_class': iou_per_class,
-    #    'mean_latency' : mean_latency,
-    #    'num_flops' : num_flops,
-    #    'trainable_params': trainable_params}
-    
+    #     'mean_loss': mean_loss,
+    #     'mean_iou': mean_iou,
+    #     'iou_per_class': iou_per_class,
+    #     'mean_latency': mean_latency,
+    #     'num_flops': num_flops,
+    #     'trainable_params': trainable_params
+    # }
+
     print(f"{title} Metrics")
     print(f"Loss: {metrics['mean_loss']:.4f}")
     print(f"Latency: {metrics['mean_latency']:.2f} ms")
@@ -53,34 +54,36 @@ def print_metrics(title, metrics):
     for cls, val in enumerate(metrics['iou_per_class']):
         print(f"{cls:<20} {val:>6.2f}")
 
-
+# Function to select a random fraction of the dataset
+# This selects a subset of the dataset by randomly sampling a fraction of indices (without replacement)
 def select_random_fraction_of_dataset(full_dataloader, fraction=1.0, batch_size=4):
-    assert 0 < fraction <= 1.0, "La frazione deve essere tra 0 e 1."
+    assert 0 < fraction <= 1.0, "Fraction must be between 0 and 1."
 
     dataset = full_dataloader.dataset
     total_samples = len(dataset)
     num_samples = int(total_samples * fraction)
 
-    # Seleziona indici casuali senza ripetizioni
+    # Randomly select indices without replacement
     indices = np.random.choice(total_samples, num_samples, replace=False)
 
-    # Crea un subset e un nuovo dataloader
+    # Create a subset and a new dataloader
     subset = Subset(dataset, indices)
-    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True) # Drop of the last batch
+    subset_dataloader, _ = dataloader(subset, None, batch_size, True, True, True)  # Drop the last incomplete batch
 
     return subset_dataloader
 
+# Function to retrieve W&B run IDs ordered by epoch number
 def to_obtain_id(project=""):
-    # Configurazione del tuo progetto wandb
-    entity = "s281401-politecnico-di-torino" # nuovo team Lucia
+    # Configuration for your wandb project
+    entity = "s281401-politecnico-di-torino" 
     # entity = "s328422-politecnico-di-torino"
 
     api = wandb.Api()
 
-    # Recupera tutte le run del progetto
+    # Fetch all runs from the project
     runs = api.runs(f"{entity}/{project}")
 
-    # Funzione per estrarre il numero dell'epoca dal nome della run
+    # Helper function to extract epoch number from the run name
     def extract_epoch_number(run):
         try:
             name = run.name
@@ -90,31 +93,33 @@ def to_obtain_id(project=""):
             return float("inf")
         return float("inf")
 
-    # Filtra e ordina le run per numero di epoca
+    # Filter and sort the runs by epoch number
     sorted_runs = sorted(
         [run for run in runs if run.name and run.name.startswith("epoch_")],
         key=extract_epoch_number
     )
 
-    # Crea la lista degli ID delle run ordinate
+    # Extract the ordered run IDs
     run_ids = [run.id for run in sorted_runs]
 
-    # Ora puoi usare run_ids come vuoi, ad esempio:
-    print("Ho caricato", len(run_ids), "run ID.")
-    # Esempio: passare run_ids a una funzione
+    # You can now use run_ids as needed
+    print("Loaded", len(run_ids), "run IDs.")
     return run_ids
 
+# Function to generate a list of discriminators and their optimizers
 def generate_discriminators(num, num_classes, device='CPU'):
     """
     Generates a list of discriminators based on the number of classes.
     Each discriminator is an instance of FCDiscriminator.
-    
+
     Args:
         num (int): Number of discriminators to generate.
-        num_classes (int): Number of classes for the discriminators.
-        
+        num_classes (int): Number of output classes.
+        device (str): Device to load the models onto.
+
     Returns:
         list: A list of discriminator instances.
+        list: A list of optimizers corresponding to each discriminator.
     """
     discriminators = []
     discriminators_optimizers = []
@@ -126,7 +131,6 @@ def generate_discriminators(num, num_classes, device='CPU'):
         discriminators_optimizers.append(optimizer)
 
     return discriminators, discriminators_optimizers
-
 
 
 if __name__ == "__main__":
