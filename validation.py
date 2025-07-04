@@ -167,7 +167,8 @@ def validate(epoch, new_model, val_loader, criterion, num_classes):
     return metrics
 
 ##########################################################################################################################################
-##################################################   PIDNET    ###########################################################################
+################################################################# MAIN 5 #################################################################
+##########################################################################################################################################
 def get_boundary_map(target, kernel_size=3):
     # target: (B, H, W) with integer values [0, num_classes-1] or 255 for ignore
 
@@ -325,7 +326,6 @@ def validate_pidnet(epoch, new_model, val_loader, criterion, num_classes):
             running_loss_bce += loss_dict['loss_bce']
             running_loss_main += loss_dict['loss_main']
             
-
             # Convert model output to predicted class labels
             preds = x_final_up.argmax(dim=1).detach().cpu().numpy()
             gts = targets.detach().cpu().numpy()
