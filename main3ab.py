@@ -1,5 +1,3 @@
-# main_train.py
-
 import os
 import torch
 import wandb
@@ -272,3 +270,4 @@ if __name__ == "__main__":
         save_metrics_on_wandb(epoch, metrics_train=None, metrics_val=metrics_val)
         
         wandb.finish()
+
