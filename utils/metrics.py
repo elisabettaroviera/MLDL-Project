@@ -1,4 +1,3 @@
-# Import necessary libraries
 import os
 import torch
 from torchvision.datasets import ImageFolder
@@ -153,3 +152,4 @@ def compute_miou_torch_vectorized(gt_tensor, pred_tensor, num_classes, device=No
         return mean_iou.item(), iou_per_class, intersections, unions
     else:
         return mean_iou.item(), iou_per_class
+    
