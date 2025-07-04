@@ -17,4 +17,5 @@ GTA5 is a synthetic dataset for semantic segmentation, consisting of 24,966 high
 In the event that these links could not be used correctly, due to overloading in the download of the datasets, I created a drive where I uploaded them so that, by just changing the previous links with these, we could access them at any time.
 
 **Cityscapes**: https://drive.google.com/file/d/11JDxO0DX7MV5DVB225DuIW7vXP-tZGmb/view?usp=drive_link
+
 **GTA5**: https://drive.google.com/file/d/1W7lXYYeRl30jDvq01Kt9BlojFXKQglKO/view?usp=drive_link
